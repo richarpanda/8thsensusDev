@@ -440,7 +440,7 @@ $.ajax({
 
                htmlString_1 = htmlString_1 + "<tr /*onclick=myFunction('" + url + "')*/>";
                htmlString_1 = htmlString_1 + "<td><i class='fa fa-clock-o'></i> " + timeStamp + "</td>";
-               htmlString_1 = htmlString_1 + "<td><a href='Users.html?usrid=" + userName + "'>" + userName + "</td>";
+               htmlString_1 = htmlString_1 + "<td><a href='users.html?usrid=" + userName + "'>" + userName + "</td>";
                /*htmlString_1 = htmlString_1 + "<td>" + address + "</td>";*/
 
                htmlString_1 =
