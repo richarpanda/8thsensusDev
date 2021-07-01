@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <title>8th Sensus.</title>
+
+   <link href="css/bootstrap.min.css" rel="stylesheet">
+   <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+   <link href="css/animate.css" rel="stylesheet">
+   <link href="css/style.css" rel="stylesheet">
+   <link href="css/plugins/select2/select2.min.css" rel="stylesheet">
+   <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+   <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet">
+   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+
+<body class="top-navigation">
+
+   <div id="wrapper">
+      <div id="page-wrapper" class="dark-bg">
+         <!--MENU-->
+         <div class="row border-bottom gray-bg">
+            <nav class="navbar navbar-expand-lg navbar-static-top" role="navigation">
+               <a href="#" class="navbar-brand"><img src="img/logo.png"></a>
+               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+                  aria-expanded="false" aria-label="Toggle navigation">
+                  <i class="fa fa-reorder"></i>
+               </button>
+               <!--ITEMS-->
+               <div class="navbar-collapse collapse" id="navbar">
+                  <ul class="nav navbar-nav mr-auto">
+                     <li> <a aria-expanded="false" href="index.html"> Home</a></li>
+                     <li> <a aria-expanded="false" href="productivity.html"> Productivity (TBD)</a></li>
+                     <li> <a aria-expanded="false" href="logs.html"> Logs</a></li>
+                     <li class="active"> <a aria-expanded="false" href="licenses.html"> Licenses</a></li>
+
+                  </ul>
+                  <ul class="nav navbar-top-links navbar-right">
+                     <li>
+                        <a href="login.html">
+                           <i class="fa fa-sign-out"></i> Log out
+                        </a>
+                     </li>
+                  </ul>
+               </div>
+            </nav>
+         </div>
+         <!--CONTAINER-->
+
+         <div class="wrapper wrapper-content">
+            <!--PICKERS-->
+            <div class="ibox-content">
+               <div class="table-responsive">
+                  <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
+                     <table id="example" class="display dataTable table-striped" width="100%"
+                        aria-describedby="example_info" role="grid" style="width: 100%;">
+                        <thead>
+                           <tr role="row">
+                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-label="User ID: activate to sort column ascending" style="width: 40px;">User ID
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-label="Machine Name: activate to sort column ascending" style="width: 56px;">
+                                 Number of Assets</th>
+                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-label="MAC Address: activate to sort column ascending" style="width: 63px;">
+                                 Version</th>
+                              <th class="sorting_desc" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-sort="descending" aria-label="Date/Time: activate to sort column ascending"
+                                 style="width: 102px;">License</th>
+                           </tr>
+                        </thead>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <!--LIST SAMPLE-->
+
+         </div>
+         <!--FOOTER-->
+         <div class="footer">
+            <div>
+               <strong>Copyright</strong> Sample 8th Sensus 2021.
+            </div>
+         </div>
+      </div>
+   </div>
+   <!-- Mainly scripts -->
+   <script src="js/jquery-3.1.1.min.js"></script>
+   <script src="js/popper.min.js"></script>
+   <script src="js/bootstrap.js"></script>
+   <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+   <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+   <!-- Custom and plugin javascript -->
+   <script src="js/inspinia.js"></script>
+   <script src="js/plugins/pace/pace.min.js"></script>
+   <script src="js/multislider.js"></script>
+   <!-- Flot -->
+   <script src="js/plugins/flot/jquery.flot.js"></script>
+   <script src="js/plugins/flot/jquery.flot.tooltip.min.js"></script>
+   <script src="js/plugins/flot/jquery.flot.resize.js"></script>
+   <script src="js/plugins/flot/jquery.flot.pie.js"></script>
+   <script src="js/plugins/flot/jquery.flot.time.js"></script>
+   <!-- ChartJS-->
+   <script src="js/plugins/chartJs/Chart.min.js"></script>
+   <script src="js/demo/chartjs-pro.js"></script>
+   <!-- Peity -->
+   <script src="js/plugins/peity/jquery.peity.min.js"></script>
+   <!-- Peity demo -->
+   <script src="js/demo/peity-demo.js"></script>
+   <!-- Selector -->
+   <script src="js/plugins/select2/select2.full.min.js"></script>
+   <!-- Data picker -->
+   <script src="js/plugins/datapicker/bootstrap-datepicker.js"></script>
+   <!-- data table -->
+   <script src="js/plugins/dataTables/datatables.min.js"></script>
+   <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+   <script src="js/alasql.js"></script>
+</body>
+<script>
+   let dataSet = null;
+
+   $.ajax({
+      url: 'https://dashboard.8thsensus.com:8080/message',
+      headers: {
+         'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      type: "GET", /* or type:"GET" or type:"PUT" */
+      dataType: "json",
+      data: {
+      },
+      success: function (result) {
+         assets = alasql("SELECT UPPER(userid) as userid , COUNT(DISTINCT machinename) as machinename, MAX(version) as version, MAX(customerid) as stamp FROM ? GROUP BY UPPER(userid)", [result]);
+         console.log(assets);
+
+         //alert(JSON.stringify(result));
+
+         var matrix = result.length;
+
+         //for (var i = 0; i < result.length; ++i) {
+         //var x = JSON.stringify(result[i]);
+         //alert(x)
+         //}
+
+         var table = $('#example').DataTable({
+            data: assets,
+            columns: [
+               { data: "userid" },
+               { data: "machinename" },
+               { data: "version" },
+               { data: "stamp" },
+
+            ],
+
+            select: true,
+            pageLength: 25,
+            responsive: true,
+            dom: '<"html5buttons"B>lTfgitp',
+            buttons: [
+               { extend: 'copy' },
+               { extend: 'csv' },
+               { extend: 'excel', title: 'ExampleFile' },
+               { extend: 'pdf', title: 'ExampleFile' },
+
+               {
+                  extend: 'print',
+                  customize: function (win) {
+                     $(win.document.body).addClass('white-bg');
+                     $(win.document.body).css('font-size', '10px');
+
+                     $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', 'inherit');
+                  }
+               }
+            ]
+
+         });
+
+         table.column(1).data().unique();
+
+         $("#example tr").css('cursor', 'hand');
+         //setInterval( function () {
+         //    table.ajax.reload();
+         //alert("sadsasda")
+         //}, 3000 );
+
+
+      },
+      error: function () {
+         console.log("error");
+      }
+   });
+
+</script>
+
+</html>
