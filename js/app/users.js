@@ -22,23 +22,22 @@ $.ajax({
 
       let tableString = "";
       let data = alasql(`
-         SELECT customerid, machinename, devicelist, os, hardware, localip
+         SELECT customerid, devicelist, os, hardware, localip
          FROM ?
          WHERE userid = '${ usrid }'
-         GROUP BY customerid, machinename, devicelist, os, hardware, localip
-         `, [result]);
+         GROUP BY customerid, devicelist, os, hardware, localip
+      `, [result]);
+
+      let machines = alasql(`
+         SELECT machinename
+         FROM ? 
+         WHERE userid = '${ usrid }'
+         GROUP BY machinename
+      `, [result]);
 
       tableString += `
          <tr>
             <td><b>Customer Id: </b> ${ data[0].customerid }</td>
-         </tr>
-         <tr>
-            <td>
-               <b>Machine Name: </b> 
-               <a href='machines.html?mchname=${ data[0].machinename }'>
-                  ${ data[0].machinename }
-               </a>
-            </td>
          </tr>
          <tr>
             <td><b>Device List: </b> ${ data[0].devicelist }</td>
@@ -52,7 +51,23 @@ $.ajax({
          <tr>
             <td><b>Local IP: </b> ${ data[0].localip }</td>
          </tr>
+         <tr><td class='user-machines'><b>Machine Name: </b><br/><br />
       `;
+
+      machines.forEach(machine => {
+         console.log(machine);
+         tableString += `
+            <a href='machines.html?mchname=${ machine.machinename }' 
+               class="machine">
+               <i class="fa fa-desktop"></i>
+               <p>
+                  ${ machine.machinename }
+               </p>
+            </a>
+         `;
+      });
+      
+      tableString += `</td></tr>`;
 
       $("#usr-table tbody").append(tableString);
    },

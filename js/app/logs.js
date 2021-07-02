@@ -1,4 +1,52 @@
    let dataSet = null;
+   var dataTable = null;
+
+   $.ajax({
+      url: 'https://dashboard.8thsensus.com:8080/message',
+      headers: {
+         'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      type: "GET",
+      dataType: "json",
+      contentType: 'application/json',
+      data: {
+      },
+      success: function (result) {
+         let machinesData = alasql(`
+            SELECT machinename
+            FROM ?
+            GROUP BY machinename
+         `, [result]);
+
+         let usersData = alasql(`
+            SELECT userid
+            FROM ?
+            GROUP BY userid
+         `, [result]);
+
+         let slctMachineHtml = `<option value=""></option>`;
+         let slctUsersHtml = `<option value=""></option>`;
+
+         machinesData.forEach(machine => {
+            slctMachineHtml += `
+               <option value="${ machine.machinename }">${ machine.machinename }</option>
+            `;
+         });
+
+         usersData.forEach(user => {
+            slctUsersHtml += `
+               <option value="${ user.userid }">${ user.userid }</option>
+            `;
+         });
+
+         $("#slctUserId").html(slctUsersHtml);
+         $("#slctMachine").html(slctMachineHtml);
+      },
+      error: function (request, status, error) {
+         console.error(error);
+      }
+   });
+
    getLogs();
 
    function getLogs() {
@@ -12,12 +60,13 @@
          contentType: 'application/json',
          data: {
          },
-
          success: function (result) {
             var matrix = result.length;
             let dateFrom = document.getElementById("dateFrom").value;
             let dateTo = document.getElementById("dateTo").value;
             let slctEvents = document.getElementById("slctEvents").value;
+            let slctUserId = document.getElementById("slctUserId").value;
+            let slctMachine = document.getElementById("slctMachine").value;
 
             Date.prototype.addDays = function(days) {
                var date = new Date(this.valueOf());
@@ -32,16 +81,28 @@
                dateTo = document.getElementById("dateTo").value;
             }
 
+            let inEventsString = "";
+            if (slctEvents !== "") {
+               inEventsString = slctEvents == "Locked" ? 
+                  "AND diagcode IN ('D0003','D0004','D0005','D0007','D0009','D0012','D0015')":
+                  "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
+            }
+            
             let tableData = alasql(`
                SELECT *
                FROM ?
                WHERE utc >= '${ dateFrom }' AND utc <='${ dateTo }' 
-               ${ slctEvents !== "" ? " AND diagcode = '" + slctEvents + "'" : "" }
-               GROUP BY applications, gps
+               ${ inEventsString }
+               ${ slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : "" }
+               ${ slctMachine !== "" ? " AND machinename = '" + slctMachine + "'" : "" }
             `, [result]);
                        
-            var table = $('#example').DataTable({
+            if(dataTable !== null)
+               dataTable.destroy();
+
+            dataTable = $('#example').DataTable({
                data: tableData,
+               destroy: true,
                columns: [
                   { data: "userid" },
                   { data: "machinename" },
@@ -67,20 +128,23 @@
                   }
                },
                rowCallback: function (row, data, index) {
+                  $(row).find('td:eq(0)').html(`<a style="color: #000000;" href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
+                  $(row).find('td:eq(1)').html(`<a style="color: #000000;" href="machines.html?mchname=${data['machinename']}">${data['machinename']}</a>`);
                   $(row).find('td:eq(6)').html(formatDate(data['stamp']));
                   $(row).find('td:eq(7)').html(getCode(data['diagcode']));
                },
                select: true,
                pageLength: 10,
                responsive: true,
-               dom: '<"html5buttons"B>lTfgitp',
+               // dom: '<"html5buttons"B>lfrtip',
+               dom: '<"top"i>rt<"bottom"flp><"clear">',
                retrieve: true,
+               searching: false,
                buttons: [
                   { extend: 'copy' },
                   { extend: 'csv' },
                   { extend: 'excel', title: 'ExampleFile' },
                   { extend: 'pdf', title: 'ExampleFile' },
-
                   {
                      extend: 'print',
                      customize: function (win) {
@@ -98,7 +162,7 @@
             $("#example tr").css('cursor', 'hand');
          },
          error: function (request, status, error) {
-            //alert("Response: " + error);
+            console.error(error);
          }
       })      
    }
@@ -120,11 +184,11 @@
             ? "0" + d.getSeconds()
             : d.getSeconds();
       return (
-         d.getFullYear() +
-         "-" +
          month +
          "-" +
          day +
+         "-" +
+         d.getFullYear() +
          " " +
          hour +
          ":" +

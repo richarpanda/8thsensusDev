@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 
 <head>
    <meta charset="utf-8">
@@ -59,44 +59,46 @@
                      <div class="p-4 logs-filters">
                         <div class="form-row justify-content-md-center">
                            <div class="col-md-2">
+                              <label for="slctUserId">User ID:</label>
+                              <select id="slctUserId" class="select_user form-control">
+                                 <option value=""></option>
+                              </select>
+                           </div>
+
+                           <div class="col-md-2">
+                              <label for="slctMachine">Machine Name:</label>
+                              <select id="slctMachine" class="select_machine form-control">
+                                 <option value=""></option>
+                              </select>
+                           </div>
+
+                           <div class="col-md-2">
                               <label for="dateFrom">From:</label>
-                              <input type="date" id="dateFrom" class="form-control" name="inptClient" />
+                              <input type="date" id="dateFrom" class="form-control form-control-sm" name="inptClient" />
                            </div>
 
                            <div class="col-md-2">
                               <label for="dateTo">To:</label>
-                              <input type="date" id="dateTo" class="form-control" name="inptClient" />
+                              <input type="date" id="dateTo" class="form-control form-control-sm" name="inptClient" />
                            </div>
 
                            <div class="col-md-2">
                               <label for="slctEvents">Events</label>
-                              <select id="slctEvents" class="custom-select">
+                              <select id="slctEvents" class="select_event custom-select">
                                  <option value="">Select Event</option>
-                                 <option value="D0001">Screen Unlocked | Initial Login after reboot | Confidence 1:5,000,000</option>
-                                 <option value="D0002">Screen Unlocked | Zero Touch Unlocked authorized user |  1:5,000,000</option>
-                                 <option value="D0003">Screen Locked 0 | Zero Touch Locked no user present | Confidence 1:5,000,000</option>
-                                 <option value="D0004">Screen Locked 2 | Manual Lock Initiated by authorized user |  1:5,000,000</option>
-                                 <option value="D0005">Screen Locked 1| Lock without Camera | Confidence 1:5,000,000</option>
-                                 <option value="D0006">Screen Unlocked | Authorized user certified | Confidence 1:25,000,000</option>
-                                 <option value="D0007">Screen Locked 2 | Manual Lock Initiated by authorized user | Manual Process</option>
-                                 <option value="D0008">Screen Unlocked | Unauthorized user(s) presented |  Confidence 1:5,000,000</option>
-                                 <option value="D0009">Screen Locked 1 | Unauthorized user(s) presented  | Confidence 1:5,000,000</option>
-                                 <option value="D0010">Screen Unlocked | Authorized user(s) presented | 1:5,000,000</option>
-                                 <option value="D0011">Screen Unlocked | Unauthorized user(s) presented | Confidence 1:100,000</option>
-                                 <option value="D0012">Screen Locked 3 | Power Savings Lock Initiated | System Process</option>
-                                 <option value="D0013">Screen Unlocked | 8th Sensus EVE Stopped | Error</option>
-                                 <option value="D0014">Screen Unlocked | Video Conference in progress| Confidence 1:5,000,000</option>
-                                 <option value="D0015">Screen Locked 1 | Over the Shoulder unauthorized user(s) presented |  > </option>
+                                 <option value="Locked">Screen Locked</option>
+                                 <option value="Unlocked">Screen Unlocked</option>
                               </select>
                            </div>
 
                            <div class="col-auto">
-                              <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-2 pb-2" style="margin-top: 28px;" onclick="getLogs()">
+                              <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-2 pb-2"
+                                 style="margin-top: 28px;" onclick="getLogs()">
                            </div>
                         </div>
                      </div>
 
-                     <table id="example" class="dataTable table-striped">
+                     <table id="example" class="dataTable table-striped table-hover">
                         <thead>
                            <tr role="row">
                               <th class="sorting" tabindex="0" aria-controls="example"
@@ -119,6 +121,8 @@
                                  aria-label="Applications: activate to sort column ascending">Applications</th> -->
                               <th class="sorting" tabindex="0" aria-controls="example"
                                  aria-label="Events: activate to sort column ascending">Events</th>
+                              <th class="sorting" tabindex="0" aria-controls="example"
+                                 aria-label="Key: activate to sort column ascending">Keys</th>
                            </tr>
                         </thead>
                      </table>
