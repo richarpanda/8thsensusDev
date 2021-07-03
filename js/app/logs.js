@@ -136,8 +136,7 @@
                select: true,
                pageLength: 10,
                responsive: true,
-               // dom: '<"html5buttons"B>lfrtip',
-               dom: '<"top"i>rt<"bottom"flp><"clear">',
+               dom: '<"top"i>rt<"bottom"flp><"html5buttons"B><"clear">',
                retrieve: true,
                searching: false,
                buttons: [

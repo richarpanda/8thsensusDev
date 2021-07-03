@@ -333,12 +333,24 @@ $.ajax({
 
       //$('#alerts').html(countItem);
 
-      for (i = 0; i < 100; i++) {
-         var gpsNumbers = result[i].gps;
-         var longlatArray = result[i].gps.split(",");
-         var timeStamp = result[i].stamp;
-         var userName = result[i].userid;
-         var diagcode = result[i].diagcode;
+      /** LAST 24 HOURS INSTRUSION INSIGHTS **/
+      let d = new Date();
+      let todayDateStr = `${d.getFullYear()}-${d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)}-${d.getDate().toString().length == 1 ? "0" + (d.getDate() - 1) : (d.getDate() - 1)}`;
+      
+      let last24Result = alasql(`
+         SELECT * FROM ? 
+         WHERE utc > '${todayDateStr}'
+         ORDER BY utc DESC
+      `, [result]);
+      
+      console.log(last24Result);
+
+      for (i = 0; i < last24Result.length; i++) {
+         var gpsNumbers = last24Result[i].gps;
+         var longlatArray = last24Result[i].gps.split(",");
+         var timeStamp = last24Result[i].stamp;
+         var userName = last24Result[i].userid;
+         var diagcode = last24Result[i].diagcode;
          var htmlString_1 = "";
          var htmlString_2 = "";
          var apiURL = "";

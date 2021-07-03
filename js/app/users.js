@@ -21,13 +21,6 @@ $.ajax({
       $("#userName").html(`<b>User</b>: ${ usrid }`);
 
       let tableString = "";
-      let data = alasql(`
-         SELECT customerid, devicelist, os, hardware, localip
-         FROM ?
-         WHERE userid = '${ usrid }'
-         GROUP BY customerid, devicelist, os, hardware, localip
-      `, [result]);
-
       let machines = alasql(`
          SELECT machinename
          FROM ? 
@@ -35,24 +28,7 @@ $.ajax({
          GROUP BY machinename
       `, [result]);
 
-      tableString += `
-         <tr>
-            <td><b>Customer Id: </b> ${ data[0].customerid }</td>
-         </tr>
-         <tr>
-            <td><b>Device List: </b> ${ data[0].devicelist }</td>
-         </tr>
-         <tr>
-            <td><b>OS: </b> ${ data[0].os }</td>
-         </tr>
-         <tr>
-            <td><b>Hardware: </b> ${ data[0].hardware }</td>
-         </tr>
-         <tr>
-            <td><b>Local IP: </b> ${ data[0].localip }</td>
-         </tr>
-         <tr><td class='user-machines'><b>Machine Name: </b><br/><br />
-      `;
+      tableString += `<tr><td class='user-machines'><b>Machines Names: </b><br/><br />`;
 
       machines.forEach(machine => {
          console.log(machine);

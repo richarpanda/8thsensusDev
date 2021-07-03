@@ -1,9 +1,5 @@
 let tAccountLicenses;
-
-/*********************************************************/
-
 let dataSet = null;
-
 
 $.ajax({
    url: "https://dashboard.8thsensus.com:8080/message",
@@ -19,10 +15,10 @@ $.ajax({
       $("#machine").html(`<b>Machine:</b> ${ machinename }`);
 
       let data = alasql(`
-         SELECT applications, gps
+         SELECT customerid, devicelist, os, hardware, localip, applications, gps
          FROM ?
          WHERE machinename = '${ machinename }'
-         GROUP BY applications, gps
+         GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
          `, [result]);
 
       let apps = [];
@@ -37,7 +33,24 @@ $.ajax({
          });
       });
 
-      let tableString = "<tr><td><b>Applications: </b>";
+      let tableString = `
+         <tr>
+            <td><b>Customer Id: </b> ${ data[0].customerid }</td>
+         </tr>
+         <tr>
+            <td><b>Device List: </b> ${ data[0].devicelist }</td>
+         </tr>
+         <tr>
+            <td><b>OS: </b> ${ data[0].os }</td>
+         </tr>
+         <tr>
+            <td><b>Hardware: </b> ${ data[0].hardware }</td>
+         </tr>
+         <tr>
+            <td><b>Local IP: </b> ${ data[0].localip }</td>
+         </tr>`;
+
+      tableString += "<tr><td><b>Applications: </b>";
       apps.forEach(app => {
          tableString += `
             <br />
@@ -47,7 +60,7 @@ $.ajax({
                ${ app }
                </a>
             </b>`;
-      })
+      });
 
       tableString += "</td></tr>"
       tableString += `<td><b>Geolocalization: </b>${data[0].gps}</td>`;

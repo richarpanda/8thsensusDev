@@ -9648,3 +9648,7 @@ tbody {
    color: #2f4050;
 }
 
+.dataTables_paginate .pagination li{
+   margin-top: -5px;
+   padding: 0 5px !important;
+}
