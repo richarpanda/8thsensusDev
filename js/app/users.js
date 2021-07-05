@@ -28,13 +28,12 @@ $.ajax({
          GROUP BY machinename
       `, [result]);
 
-      tableString += `<tr><td class='user-machines'><b>Machines Names: </b><br/><br />`;
+      tableString += `<tr><td class='table-list-items'><b>Machines Names: </b><br/><br />`;
 
       machines.forEach(machine => {
-         console.log(machine);
          tableString += `
             <a href='machines.html?mchname=${ machine.machinename }' 
-               class="machine">
+               class="item">
                <i class="fa fa-desktop"></i>
                <p>
                   ${ machine.machinename }

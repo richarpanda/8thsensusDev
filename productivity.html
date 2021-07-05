@@ -13,6 +13,10 @@
    <link href="css/style.css" rel="stylesheet">
    <link href="css/plugins/select2/select2.min.css" rel="stylesheet">
    <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+   <link href="css/plugins/select2/select2.min.css" rel="stylesheet">
+   <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+   <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet">
+   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
 </head>
 
 <body class="top-navigation">
@@ -49,62 +53,73 @@
          <!--CONTAINER-->
 
          <div class="wrapper wrapper-content">
-            <!--PICKERS-->
             <div class="row">
-               <div class="col-md-6">
-                  <div class="ibox card">
-                     <div class="ibox-title">
-                        <h5>User</h5>
-                     </div>
-                     <div class="ibox-content">
-                        <select class="select2_demo_3 form-control">
-                           <option></option>
-                           <option value="Bahamas">Bahamas</option>
-                           <option value="Bahrain">Bahrain</option>
-                           <option value="Bangladesh">Bangladesh</option>
-                           <option value="Barbados">Barbados</option>
-                           <option value="Belarus">Belarus</option>
-                           <option value="Belgium">Belgium</option>
-                           <option value="Belize">Belize</option>
-                           <option value="Benin">Benin</option>
-                        </select>
-                     </div>
-                  </div>
-
-               </div>
-               <div class="col-md-6">
-                  <div class="ibox card">
-                     <div class="ibox-title">
-                        <h5>Date</h5>
-                     </div>
-                     <div class="ibox-content">
-                        <div class="form-group" id="data_5">
-                           <div class="input-daterange input-group" id="datepicker">
-                              <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                              <input type="text" class="form-control-sm form-control" name="start" value="05/14/2014">
-                              <span class="input-group-addon">to</span>
-                              <input type="text" class="form-control-sm form-control" name="end" value="05/22/2014">
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-
-               </div>
-            </div>
-            <!--CHART-->
-            <div class="row">
-               <div class="col-lg-12">
+               <div class="col-md-12">
                   <div class="ibox">
                      <div class="ibox-title">
                         <h5>Productivity hours</h5>
                      </div>
+
                      <div class="ibox-content">
-                        <div><canvas id="barChart"></canvas></div>
+                        <!-- FILTERS -->
+                        <div class="p-4 logs-filters">
+                           <div class="form-row justify-content-md-center">
+                              <div class="col-md-4">
+                                 <label for="slctUserId">User ID:</label>
+                                 <select id="slctUserId" class="select_user form-control">
+                                    <option value=""></option>
+                                 </select>
+                              </div>
+
+                              <div class="col-md-2">
+                                 <label for="dateFrom">From:</label>
+                                 <input type="date" id="dateFrom" class="form-control form-control-sm"
+                                    name="inptClient" />
+                              </div>
+
+                              <div class="col-md-2">
+                                 <label for="dateTo">To:</label>
+                                 <input type="date" id="dateTo" class="form-control form-control-sm"
+                                    name="inptClient" />
+                              </div>
+
+                              <div class="col-auto">
+                                 <input type="button" id="searchButton" value="Search" class="btn btn-sm btn-primary"
+                                    style="margin-top: 28px;" onclick="getproductivityData()">
+                              </div>
+                           </div>
+                        </div>
+
+                        <!--CHART-->
+                        <div class="table-responsive">
+                           <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
+                              <table id="example" class="dataTable table-striped table-hover">
+                                 <thead>
+                                    <tr role="row">
+                                       <th class="sorting" tabindex="0" aria-controls="example"
+                                          aria-label="User ID: activate to sort column ascending">User ID</th>
+                                       <th class="sorting" tabindex="0" aria-controls="example"
+                                          aria-label="Date: activate to sort column ascending">Date</th>
+                                       <th class="sorting" tabindex="0" aria-controls="example"
+                                          aria-label="Active Hours: activate to sort column ascending">Active
+                                          Hours</th>
+                                       <th class="sorting" tabindex="0" aria-controls="example"
+                                          aria-label="Inactive Hours: activate to sort column ascending">Inactive
+                                          Hours</th>
+                                       <th class="sorting" tabindex="0" aria-controls="example"
+                                          aria-label="activeTime: activate to sort column ascending">ActiveTime
+                                       </th>
+                                    </tr>
+                                 </thead>
+                              </table>
+                           </div>
+                        </div>
+                        <!-- <div><canvas id="barChart"></canvas></div> -->
+                        <!--LIST SAMPLE-->
                      </div>
                   </div>
                </div>
             </div>
-            <!--LIST SAMPLE-->
 
          </div>
          <!--FOOTER-->
@@ -142,53 +157,13 @@
    <script src="js/plugins/select2/select2.full.min.js"></script>
    <!-- Data picker -->
    <script src="js/plugins/datapicker/bootstrap-datepicker.js"></script>
+
+   <script src="plugin/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+   <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
+   <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+   <script src="js/alasql.js"></script>
+   <script src="js/app/productivity.js"></script>
+
 </body>
-<script>
-   var mem = $('#data_1 .input-group.date').datepicker({
-      todayBtn: "linked",
-      keyboardNavigation: false,
-      forceParse: false,
-      calendarWeeks: true,
-      autoclose: true
-   });
-
-   var yearsAgo = new Date();
-   yearsAgo.setFullYear(yearsAgo.getFullYear() - 20);
-
-   $('#selector').datepicker('setDate', yearsAgo);
-
-
-   $('#data_2 .input-group.date').datepicker({
-      startView: 1,
-      todayBtn: "linked",
-      keyboardNavigation: false,
-      forceParse: false,
-      autoclose: true,
-      format: "dd/mm/yyyy"
-   });
-
-   $('#data_3 .input-group.date').datepicker({
-      startView: 2,
-      todayBtn: "linked",
-      keyboardNavigation: false,
-      forceParse: false,
-      autoclose: true
-   });
-
-   $('#data_4 .input-group.date').datepicker({
-      minViewMode: 1,
-      keyboardNavigation: false,
-      forceParse: false,
-      forceParse: false,
-      autoclose: true,
-      todayHighlight: true
-   });
-
-   $('#data_5 .input-daterange').datepicker({
-      keyboardNavigation: false,
-      forceParse: false,
-      autoclose: true
-   });
-</script>
 
 </html>

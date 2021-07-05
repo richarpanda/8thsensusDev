@@ -21,7 +21,15 @@ $.ajax({
          GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
          `, [result]);
 
+      let gpsData = alasql(`
+         SELECT gps
+         FROM ?
+         WHERE machinename = '${ machinename }'
+         GROUP BY gps
+      `, [result]);
+
       let apps = [];
+      
       data.forEach(element => {
          element.applications = element.applications.replace('{',' ');
          element.applications = element.applications.replace('}',' ');
@@ -62,8 +70,22 @@ $.ajax({
             </b>`;
       });
 
-      tableString += "</td></tr>"
-      tableString += `<td><b>Geolocalization: </b>${data[0].gps}</td>`;
+      
+      tableString += "</td></tr>";
+      tableString += `<tr><td class='table-list-items'><b>Geolocalization list: </b><br/><br />`;
+      gpsData.forEach(gpsItem => {
+         if (gpsItem.gps !== "no data presented") {
+            tableString += `
+               <a class="item" onclick="initMap('${ gpsItem.gps }')">
+                  <i class="fa fa-location-arrow"></i>
+                  <p>
+                     ${ gpsItem.gps }
+                  </p>
+               </a>
+            `;
+         }
+      });
+      tableString += `</td></tr>`;
 
       $("#machine-table tbody").append(tableString);
    },
@@ -71,3 +93,22 @@ $.ajax({
       console.error(error);
    },
 });
+
+function initMap(gps) {
+   let gpsArr = gps.split(',');
+   let lat = parseFloat(gpsArr[0].trim());
+   let long = parseFloat(gpsArr[1].trim());
+   const uluru = { lat: lat, lng: long };
+   const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 8,
+      center: uluru,
+   });
+   const marker = new google.maps.Marker({
+      position: uluru,
+      map: map,
+   });
+
+   var element = document.getElementById("map-container");
+   element.classList.remove("hide-map");
+   element.classList.add("show-map");
+}

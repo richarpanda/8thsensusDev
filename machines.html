@@ -9,7 +9,7 @@
 
    <link href="css/bootstrap.min.css" rel="stylesheet">
    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
-   <link href="css/animate.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
    <link href="css/style.css" rel="stylesheet">
 </head>
 
@@ -59,19 +59,22 @@
                                  <i class="fa fa-desktop"></i>
                               </div>
                            </div>
-
+                           
                            <div class="col-md-10">
                               <table id="machine-table" class="table table-mail">
                                  <tbody></tbody>
                               </table>
+                              <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
+                                 <div id="map"></div>
+                              </div>
                            </div>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
-
          </div>
+
          <!--FOOTER-->
          <div class="footer">
             <div>
@@ -109,6 +112,9 @@
    <script src="js/alasql.js"></script>
    <script src="js/moment.js"></script>
    <script src="js/plugins/pace/pace.min.js"></script>
+   <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfvFZs4h1SRljPG1Wt_DqdyXNikMbvsp4&callback=initMap&libraries=&v=weekly"
+      async></script>
 </body>
 
 </html>

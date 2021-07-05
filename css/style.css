@@ -9628,20 +9628,22 @@ tbody {
    font-weight: bold;
 }
 
-.user-machines > a.machine {
+.table-list-items > a.item {
    display: inline-table;
    font-weight: bold;
    cursor: pointer;
    margin: 0 5px;
    opacity: 0.9;
 }
-.user-machines > a.machine:hover p,
-.user-machines > a.machine:hover { 
-   color: #0056c4;
+
+.table-list-items > a.item:hover .fa,
+.table-list-items > a.item:hover p,
+.table-list-items > a.item:hover { 
+   color: #0056c4 !important;
    opacity: 1;
 }
 
-.user-machines > a.machine .fa{
+.table-list-items > a.item .fa{
    text-align: center;
    display: block;
    font-size: 30px;
@@ -9651,4 +9653,23 @@ tbody {
 .dataTables_paginate .pagination li{
    margin-top: -5px;
    padding: 0 5px !important;
+}
+
+.map-container {
+   text-align: center;
+}
+
+.map-container #map {
+   margin: 0 auto;
+   border-radius: 10px;
+   height: 250px;
+   width: 60%;
+}
+
+.show-map {
+   display: block;
+}
+
+.hide-map {
+   display: none;
 }
