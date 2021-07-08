@@ -64,23 +64,22 @@
                         <!-- FILTERS -->
                         <div class="p-4 logs-filters">
                            <div class="form-row justify-content-md-center">
+
+                              <div class="col-md-4">
+                                 <label for="slctDateRange">Date range:</label>
+                                 <select id="slctDateRange" class="date_range form-control">
+                                    <option value="1">Last day</option>
+                                    <option value="7">Last 7 days</option>
+                                    <option value="14">Last 14 days</option>
+                                    <option value="30">Last 30 days</option>
+                                 </select>
+                              </div>
+
                               <div class="col-md-4">
                                  <label for="slctUserId">User ID:</label>
                                  <select id="slctUserId" class="select_user form-control">
                                     <option value=""></option>
                                  </select>
-                              </div>
-
-                              <div class="col-md-2">
-                                 <label for="dateFrom">From:</label>
-                                 <input type="date" id="dateFrom" class="form-control form-control-sm"
-                                    name="inptClient" />
-                              </div>
-
-                              <div class="col-md-2">
-                                 <label for="dateTo">To:</label>
-                                 <input type="date" id="dateTo" class="form-control form-control-sm"
-                                    name="inptClient" />
                               </div>
 
                               <div class="col-auto">
@@ -90,8 +89,7 @@
                            </div>
                         </div>
 
-                        <!--CHART-->
-                        <div class="table-responsive">
+                        <!-- <div class="table-responsive">
                            <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
                               <table id="example" class="dataTable table-striped table-hover">
                                  <thead>
@@ -113,9 +111,10 @@
                                  </thead>
                               </table>
                            </div>
-                        </div>
-                        <!-- <div><canvas id="barChart"></canvas></div> -->
-                        <!--LIST SAMPLE-->
+                        </div> -->
+
+                        <!--CHART-->
+                        <div><canvas id="barChart"></canvas></div>
                      </div>
                   </div>
                </div>
@@ -148,7 +147,6 @@
    <script src="js/plugins/flot/jquery.flot.time.js"></script>
    <!-- ChartJS-->
    <script src="js/plugins/chartJs/Chart.min.js"></script>
-   <script src="js/demo/chartjs-pro.js"></script>
    <!-- Peity -->
    <script src="js/plugins/peity/jquery.peity.min.js"></script>
    <!-- Peity demo -->
@@ -161,6 +159,7 @@
    <script src="plugin/js/plugins/metisMenu/jquery.metisMenu.js"></script>
    <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
    <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+   <script src="https://momentjs.com/downloads/moment.min.js"></script>
    <script src="js/alasql.js"></script>
    <script src="js/app/productivity.js"></script>
 
