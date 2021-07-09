@@ -73,17 +73,17 @@ function getproductivityData() {
             leastActive: ""
          }
 
-         let usersData = alasql(`
+         if (selectedUsers.length == 0) {
+            let usersData = alasql(`
                SELECT userid
                FROM ?
                GROUP BY userid
-            `, [result]);
-         labelData.totalEmployes = usersData.length;
-
-         if (selectedUsers.length == 0) {
+            `, [result]);  
+            labelData.totalEmployes = selectedUsers.length;
             usersData.forEach(user => selectedUsers.push(user.userid));
             selectedUsers.forEach(user => slctUsersId += `'${user}',`);
          } else
+            labelData.totalEmployes = selectedUsers.length - 1;
             selectedUsers.forEach(user => slctUsersId += `'${user}',`);
 
          if (slctDateRange == 1) {
