@@ -24,6 +24,7 @@ $.ajax({
          SELECT userid
          FROM ?
          GROUP BY userid
+         ORDER BY userid
       `, [result]);
 
       let slctUsersHtml = `<option value=""></option>`;
@@ -112,7 +113,7 @@ function getproductivityData() {
          `, [result]);
          userData.forEach(function (d, idx) { d.rownum = idx });
 
-         // console.table(userData);
+         //console.table(userData);
 
          for (let i = 0; i < userData.length; i++) {
             let actualData = userData[i];
@@ -132,7 +133,7 @@ function getproductivityData() {
 
             if (i != arrLock.length - 1) {
                let nextData = arrLock[i + 1];
-               if (actualData.userid == nextData.userid) {
+               if (actualData.userid == nextData.userid && actualData.timeInterval.substring(0,10) == nextData.timeInterval.substring(0,10)) {
                   if (actualData.activeStatus == 1) { // ACTIVE TIME
                      arrLock[i].activeTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
                      arrLock[i].inactiveTime = 0;
@@ -195,7 +196,8 @@ function getproductivityData() {
             item.inactiveTime = msToTime(item.inactiveMs);
          });
 
-         // console.table(activeInactiveData); // FINAL RESULT
+         //console.table(activeInactiveData); // FINAL RESULT
+
          if (arrLock.length > 0) {
             let mostleastData = alasql(`SELECT COUNT(userid) [userCount], userid FROM ? GROUP BY userid`, [arrLock]);
             labelData.avgHours = msToTime(alasql(`SELECT AVG(activeMs) [avgHours] FROM ?`, [activeInactiveData])[0].avgHours);
