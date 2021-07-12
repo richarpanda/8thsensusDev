@@ -19,9 +19,10 @@
          `, [result]);
 
          let usersData = alasql(`
-            SELECT userid
+            SELECT UPPER(userid) [userid]
             FROM ?
-            GROUP BY userid
+            GROUP BY UPPER(userid)
+            ORDER BY userid
          `, [result]);
 
          let slctMachineHtml = `<option value=""></option>`;

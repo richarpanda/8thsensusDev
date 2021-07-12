@@ -21,15 +21,15 @@ $.ajax({
    },
    success: function (result) {
       let usersData = alasql(`
-         SELECT userid
+         SELECT UPPER(userid) [userid]
          FROM ?
-         GROUP BY userid
+         GROUP BY UPPER(userid)
          ORDER BY userid
       `, [result]);
 
       let slctUsersHtml = `<option value=""></option>`;
 
-      // slctUsersHtml += `<option value="ALL">Select All</option>`;
+      slctUsersHtml += `<option value="ALL">Select All</option>`;
       usersData.forEach(user => {
          slctUsersHtml += `
             <option value="${user.userid}">${user.userid.toUpperCase()}</option>
@@ -221,13 +221,34 @@ function getproductivityData() {
    });
 }
 
+var currentStatus = "ALL";
 $(".select_multiuser").select2MultiCheckboxes({
    placeholder: "Select users",
    templateSelection: function (selected, total) {
+      if (selected[1] == "ALL") {
+         console.log(currentStatus);
+         if (selected.length < total && currentStatus == "ALL") {
+            console.log(currentStatus);
+            selected[1] = "";
+            currentStatus = "NOTALL" ;
+         } else {
+            $("#slctUserId > option").prop("selected", "selected");
+            currentStatus = "ALL";
+         }
+      }
+      else if (selected.length == total - 1) {
+         currentStatus = "NOTALL";
+         selected = [""];
+         // $("#slctUserId > option").prop("selected", "false");
+      }
+      console.log(selected);
       selectedUsers = selected;
       return "Selected " + (selected.length - 1) + " of " + (total - 1);
    }
 });
+
+function multiuserSelect() {
+}
 
 function createGraph(graphData) {
    var barData = {
