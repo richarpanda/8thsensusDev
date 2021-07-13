@@ -16,6 +16,7 @@
    <link href="css/plugins/select2/select2.min.css" rel="stylesheet">
    <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
    <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet">
+   <link href="css/plugins/multiselect/multiselect.css" rel="stylesheet">
    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
 </head>
 
@@ -67,7 +68,7 @@
 
                               <div class="col-md-4">
                                  <label for="slctDateRange">Date range:</label>
-                                 <select id="slctDateRange" class="date_range form-control">
+                                 <select id="slctDateRange" class="date_range_p form-control">
                                     <option value="1">Last 24 hours</option>
                                     <option value="7">Last 7 days</option>
                                     <option value="14">Last 14 days</option>
@@ -75,11 +76,7 @@
                                  </select>
                               </div>
 
-                              <div class="col-md-4">
-                                 <label for="slctUserId">User ID:</label>
-                                 <select id="slctUserId" class="select_multiuser form-control" onchange="multiuserSelect()">
-                                 </select>
-                              </div>
+                              <div class="col-md-4" id="slctContainer"></div>
 
                               <div class="col-auto">
                                  <input type="button" id="searchButton" value="Search" class="btn btn-sm btn-primary"
@@ -160,6 +157,8 @@
    <!-- Selector -->
    <script src="js/plugins/select2/select2.full.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+   <script src="js/plugins/multiselect/multiselect.js"></script>
    
    <!-- Data picker -->
    <script src="js/plugins/datapicker/bootstrap-datepicker.js"></script>

@@ -27,25 +27,44 @@ $.ajax({
          ORDER BY userid
       `, [result]);
 
-      let slctUsersHtml = `<option value=""></option>`;
+      let slctUsersHtml = `
+         <label for="slctUserId">User ID:</label>
+         <select name="slctUserId[]" multiple id="slctUserId">`;
 
-      slctUsersHtml += `<option value="ALL">Select All</option>`;
       usersData.forEach(user => {
          slctUsersHtml += `
             <option value="${user.userid}">${user.userid.toUpperCase()}</option>
          `;
       });
+      slctUsersHtml += '</select>';
 
-      $("#slctUserId").html(slctUsersHtml);
-      $("#slctUserId > option").prop("selected", "selected");
-      $("#slctUserId").trigger("change");
+      $("#slctContainer").html(slctUsersHtml);
+      $('#slctUserId').multiselect({
+         columns: 1,
+         placeholder: 'Select Users',
+         search: true,
+         selectAll: true
+      });
+
+      $(".ms-selectall").trigger("click");
+      getproductivityData();
    },
    error: function (request, status, error) {
       console.error(error);
    }
 });
 
-getproductivityData();
+function setCheckValue(val, checked) {
+   if (checked) {
+      selectedUsers.push(val);
+   }
+   else {
+      let index = selectedUsers.indexOf(val);
+      if (index > -1) {
+         selectedUsers.splice(index, 1);
+      }
+   }
+}
 
 function getproductivityData() {
    $.ajax({
@@ -221,45 +240,10 @@ function getproductivityData() {
    });
 }
 
-var currentStatus = "ALL";
-$(".select_multiuser").select2MultiCheckboxes({
-   placeholder: "Select users",
-   templateSelection: function (selected, total) {
-      if (selected[1] == "ALL") {
-         console.log(currentStatus);
-         if (selected.length < total && currentStatus == "ALL") {
-            console.log(currentStatus);
-            selected[1] = "";
-            currentStatus = "NOTALL" ;
-         } else {
-            $("#slctUserId > option").prop("selected", "selected");
-            currentStatus = "ALL";
-         }
-      }
-      else if (selected.length == total - 1) {
-         currentStatus = "NOTALL";
-         selected = [""];
-         // $("#slctUserId > option").prop("selected", "false");
-      }
-      console.log(selected);
-      selectedUsers = selected;
-      return "Selected " + (selected.length - 1) + " of " + (total - 1);
-   }
-});
-
-function multiuserSelect() {
-}
-
 function createGraph(graphData) {
    var barData = {
       labels: getGraphLabels(graphData),
       datasets: [
-         {
-            label: "Inactive",
-            backgroundColor: "rgba(220, 220, 220, 0.5)",
-            pointBorderColor: "#fff",
-            data: getGraphLockValues(graphData),
-         },
          {
             label: "Active",
             backgroundColor: "rgba(26,179,148,0.5)",
@@ -405,7 +389,6 @@ function getTimeInterval(range) {
          break;
    }
 }
-
 
 //if (dataTable !== null)
 //    dataTable.destroy();

@@ -9698,3 +9698,40 @@ tbody {
 .select2-results__option[aria-selected=true] .wrap:before{
    content:"\f14a";
 }
+
+.jqmsLoaded .ms-options-wrap .ms-options {
+   background-color: red;
+}
+
+.ms-options-wrap > button:focus, .ms-options-wrap > button {
+   position: relative;
+   width: 100%;
+   text-align: left;
+   border: 1px solid #aaa;
+   border-radius: 3px;
+   background-color: #fff;
+   padding: 3.5px 20px 3.5px 5px !important;
+   margin-top: -.5px !important;
+   font-size: 13px !important;
+   color: #000 !important;
+   outline: none;
+   white-space: nowrap;
+}
+
+.ms-options-wrap > .ms-options > .ms-search input {
+   margin: 10px !important;
+   width: 90% !important;
+}
+
+.ms-options {
+   width: 100% !important;
+   height: 300px !important;
+   overflow-x: hidden !important;
+   overflow-y: scroll;
+}
+
+.ms-options > ul {
+   list-style-type: none;
+   position: relative;
+   padding-left: 0;
+}
