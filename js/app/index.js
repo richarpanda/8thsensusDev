@@ -1,8 +1,13 @@
 let tAccountLicenses;
-
-/*********************************************************/
-
+var ctx2 = null;
+var chart = null;
 let dataSet = null;
+
+Date.prototype.addDays = function (days) {
+   var date = new Date(this.valueOf());
+   date.setDate(date.getDate() + days);
+   return date;
+}
 
 $.ajax({
    url: "https://dashboard.8thsensus.com:8080/message",
@@ -108,8 +113,6 @@ $.ajax({
          const yesterdayHourBefore = moment(yesterday.startOf("day")).format();
          const yesterdayHourAfter = moment(yesterday.endOf("day")).format();
 
-         console.log(hourBefore + " - " + hourAfter);
-
          accountLicenses = alasql(
             "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
             [result]
@@ -136,7 +139,6 @@ $.ajax({
 
          var countLicenses = accountLicenses[0].licenses;
          var countDevices = accountDevices[0].devices;
-         console.log(countDevices);
          var countIntrusions = accountIntrusions[0].intrusions;
          var countAlerts = accountAlerts[0].alerts;
 
@@ -146,7 +148,6 @@ $.ajax({
          /*graph*/
          /*Devices*/
          let devicesAction = countLicenses;
-         console.log(countLicenses);
          var doughnutData = {
             labels: ["Active", "Inactive"],
             datasets: [
@@ -173,55 +174,9 @@ $.ajax({
             data: doughnutData,
             options: doughnutOptions,
          });
-         /*Alerts and Intrusions*/
-         var lineData = {
-            labels: [
-               "Monday",
-               "Tuesday",
-               "Wednesday",
-               "Thursday",
-               "Friday",
-               "Saturday",
-               "Sunday",
-            ],
-            datasets: [
-               {
-                  label: "Alerts",
-                  backgroundColor: "rgba(26,179,148,0.5)",
-                  borderColor: "rgba(26,179,148,0.7)",
-                  pointBackgroundColor: "rgba(26,179,148,1)",
-                  pointBorderColor: "#fff",
-                  data: [28, 48, 40, 19, 86, 27, 90],
-                  stack: "Stack 0",
-               },
-               {
-                  label: "Intrusions",
-                  backgroundColor: "rgba(220, 220, 220, 0.5)",
-                  pointBorderColor: "#fff",
-                  data: [65, 59, 80, 81, 56, 55, 40],
-                  stack: "Stack 1",
-               },
-            ],
-         };
-         var lineOptions = {
-            legend: { display: true },
-            responsive: true,
-            scales: {
-               xAxes: [{ stacked: true }],
-               yAxes: [{ stacked: true }],
-            },
-            interaction: {
-               intersect: false,
-            },
-            onClick: function (e) {
-               var day = this.getElementsAtEvent(e)[0]._model.label;
-               location.href = "logs.html?day=" + day;
-            },
-         };
 
-         var ctx = document.getElementById("lineChart").getContext("2d");
-         new Chart(ctx, { type: "bar", data: lineData, options: lineOptions });
-
+         /******************************* Alerts and Intrusions *******************************/
+         getIntrusionGraphData(result);
          /*************************************************************************************/
          $("#devices").html(countDevices);
          $("#activeDevices_24hours").html(countDevices);
@@ -252,20 +207,17 @@ $.ajax({
 
       for (i = 0; i < result.length; i++) {
          if (result[i].length > 1) {
-            //console.log(result[i].stamp);
             stamTime = new Date(result[i].stamp);
 
             oneHoursBefore = new Date(today.getTime());
             oneHoursAfter = new Date(today.getTime() - 1000 * 60 * 60);
 
             for (x = 0; x < result.length; x++) {
-               //console.log(oneHoursBefore + '    <    ' + new Date(result[x].stamp) + '    >    ' + oneHoursAfter);
                sessionTime = result[x].stamp;
                if (
                   Date.parse(oneHoursBefore) > Date.parse(sessionTime) &&
                   Date.parse(oneHoursAfter) < Date.parse(sessionTime)
                ) {
-                  //console.log(oneHoursBefore + '    <    ' + sessionTime + '    >    ' + oneHoursAfter);
                   activeUser = activeUser + 1;
                   dataMatch = true;
                }
@@ -280,8 +232,6 @@ $.ajax({
             dataMatch = false;
          }
       }
-
-      //console.log(JSON.stringify(activeUserJson));
 
       for (y = 0; y < result.length; y++) {
          //if (result[y].length > 1) {
@@ -305,7 +255,6 @@ $.ajax({
       countItem = 0;
       for (y = 0; y < uniqueNames.length; y++) {
          //alert(uniqueNames[i]);
-         //console.log('Unique Names: ' + uniqueNames[i]);
          countItem = 1 + countItem;
       }
 
@@ -336,14 +285,12 @@ $.ajax({
       /** LAST 24 HOURS INSTRUSION INSIGHTS **/
       let d = new Date();
       let todayDateStr = `${d.getFullYear()}-${d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)}-${d.getDate().toString().length == 1 ? "0" + (d.getDate() - 1) : (d.getDate() - 1)}`;
-      
+
       let last24Result = alasql(`
          SELECT * FROM ? 
          WHERE utc > '${todayDateStr}'
          ORDER BY utc DESC
       `, [result]);
-      
-      console.log(last24Result);
 
       for (i = 0; i < last24Result.length; i++) {
          var gpsNumbers = last24Result[i].gps;
@@ -527,6 +474,246 @@ $.ajax({
       //alert(error);
    },
 });
+
+function getIntrusionGraphData(resultData) {
+   let dateFrom = formatDate(new Date().addDays(-7)).toString().replace(" ", "T");
+   let dateTo = formatDate(new Date()).toString().replace(" ", "T");
+   let arrLock = [];
+   let dates = [];
+
+   for (let i = 0; i < 7; i++) {
+      let dt = formatDate(new Date().addDays(-i)).toString();
+      dates.push(dt.substring(0, 10));
+   }
+
+   let userData = alasql(`
+      SELECT
+         CASE 
+            WHEN diagcode IN ('D0003','D0004','D0007','D0008','D0015','D0012','D0009') THEN 1
+            WHEN diagcode IN ('D0001','D0002','D0014','D0006','D0011','D0005','D0010','D0013') THEN 0
+            ELSE  diagcode
+         END [activeStatus]
+         ,userid
+         ,stamp [date]
+         ,SUBSTRING(stamp, 1, 10) [timeInterval]
+      FROM ? 
+      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
+      ORDER BY userid, stamp
+   `, [resultData]);
+   userData.forEach(function (d, idx) { d.rownum = idx });
+
+   //console.table(userData);
+
+   for (let i = 0; i < userData.length; i++) {
+      let actualData = userData[i];
+
+      if (i > 0) {
+         let nextData = userData[i + 1];
+         if (nextData !== undefined && (actualData.activeStatus != nextData.activeStatus || actualData.userid != nextData.userid)) {
+            arrLock.push(nextData);
+         }
+      }
+      else
+         arrLock.push(actualData);
+   }
+
+   for (let i = 0; i < arrLock.length; i++) {
+      let actualData = arrLock[i];
+
+      if (i != arrLock.length - 1) {
+         let nextData = arrLock[i + 1];
+         if (actualData.userid == nextData.userid && actualData.timeInterval.substring(0, 10) == nextData.timeInterval.substring(0, 10)) {
+            if (actualData.activeStatus == 1) { // LOCK TIME
+               arrLock[i].activeTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
+               arrLock[i].inactiveTime = 0;
+            }
+            else { // UNLOCK TIME
+               arrLock[i].activeTime = 0
+               arrLock[i].inactiveTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
+            }
+         }
+      }
+   }
+
+   if (arrLock.length > 0) {
+      let userId = arrLock[0].userid;
+
+      for (let dt = 0; dt < dates.length; dt++) {
+         arrLock.push({
+            activeStatus: 1,
+            activeTime: 0,
+            date: dates[dt],
+            inactiveTime: 0,
+            rownum: 0,
+            timeInterval: dates[dt],
+            userid: userId
+         });
+      }
+   }
+
+   // console.table(arrLock); // TIMES
+
+   let activeInactiveData = alasql(`
+      SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
+         SUBSTRING(timeInterval, 1,10) AS [timeInterval]
+      FROM ? 
+      GROUP BY SUBSTRING(date, 1, 10), SUBSTRING(timeInterval, 1,10)
+      ORDER BY [date], [timeInterval]
+   `, [arrLock])
+
+   activeInactiveData.forEach(item => {
+      item.activeTime = msToTime(item.activeMs);
+      item.inactiveTime = msToTime(item.inactiveMs);
+   });
+
+   console.table(activeInactiveData); // FINAL RESULT
+
+   createGraph(activeInactiveData);
+}
+
+function createGraph(graphData) {
+   var barData = {
+      labels: getGraphLabels(graphData),
+      datasets: [
+         {
+            label: "Lock",
+            backgroundColor: "rgba(26,179,148,0.5)",
+            borderColor: "rgba(26,179,148,0.7)",
+            pointBackgroundColor: "rgba(26,179,148,1)",
+            pointBorderColor: "#fff",
+            data: getGraphUnlockValues(graphData),
+            stack: "Stack 0",
+         },
+         {
+            label: "Unlocked",
+            backgroundColor: "rgba(220, 220, 220, 0.5)",
+            pointBorderColor: "#fff",
+            data: getGraphLockValues(graphData),
+            stack: "Stack 1",
+         },
+      ]
+   };
+
+   var barOptions = {
+      responsive: true,
+      scales: {
+         yAxes: [
+            {
+               ticks: {
+                  beginAtZero: true,
+                  callback: function (label, index, labels) {
+                     return msToTime(label);
+                  }
+               }
+            }
+         ],
+         xAxes: [{ stacked: true }],
+      },
+      tooltips: {
+         callbacks: {
+            label: function (tooltipItem) {
+               return msToTime(tooltipItem.yLabel);
+            }
+         }
+      },
+   };
+
+   if (ctx2 !== null)
+      ctx = null;
+   if (chart !== null)
+      chart.destroy();
+
+   ctx2 = document.getElementById("lineChart").getContext("2d");
+   chart = new Chart(ctx2, { type: "bar", data: barData, options: barOptions });
+}
+
+function getGraphLabels(data) {
+   let result = [];
+   data.forEach(item => {
+      result.push(item.timeInterval);
+   });
+   return result;
+}
+
+function getGraphLockValues(data) {
+   let result = [];
+   data.forEach(item => {
+      result.push(item.inactiveMs);
+   });
+   return result;
+}
+
+function getGraphUnlockValues(data) {
+   let result = [];
+   data.forEach(item => {
+      result.push(item.activeMs);
+   });
+   return result;
+}
+
+function formatDate(utcDate) {
+   let d = new Date(utcDate);
+   let month =
+      d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+   let day =
+      d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
+   let hour =
+      d.getHours().toString().length == 1 ? "0" + d.getHours() : d.getHours();
+   let min =
+      d.getMinutes().toString().length == 1
+         ? "0" + d.getMinutes()
+         : d.getMinutes();
+   let sec =
+      d.getSeconds().toString().length == 1
+         ? "0" + d.getSeconds()
+         : d.getSeconds();
+   return (
+      d.getFullYear() +
+      "-" +
+      month +
+      "-" +
+      day +
+      " " +
+      hour +
+      ":" +
+      min +
+      ":" +
+      sec
+   );
+}
+
+function msToTime(s) {
+   function pad(n, z) {
+      z = z || 2;
+      return ('00' + n).slice(-z);
+   }
+
+   var ms = s % 1000;
+   s = (s - ms) / 1000;
+   var secs = s % 60;
+   s = (s - secs) / 60;
+   var mins = s % 60;
+   var hrs = (s - mins) / 60;
+
+   return pad(hrs) + ':' + pad(mins)
+}
+
+function msToDateTime(s) {
+   function pad(n, z) {
+      z = z || 2;
+      return ('00' + n).slice(-z);
+   }
+
+   var ms = s % 1000;
+   s = (s - ms) / 1000;
+   var secs = s % 60;
+   s = (s - secs) / 60;
+   var mins = s % 60;
+   var hrs = (s - mins) / 60;
+
+   let dateNow = new Date();
+   return new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), pad(hrs), pad(mins), pad(secs), 0);
+}
 
 function myFunction(url) {
    $(location).attr("href", url);
