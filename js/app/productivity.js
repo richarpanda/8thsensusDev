@@ -81,7 +81,7 @@ function getproductivityData() {
          let dateFrom = formatDate(new Date().addDays(-slctDateRange)).toString().replace(" ", "T");
          let dateTo = formatDate(new Date()).toString().replace(" ", "T");
          let timeInterval = getTimeInterval(slctDateRange);
-         let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ' hrs'" : "SUBSTRING(timeInterval, 1,10)";
+         let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ':00'" : "SUBSTRING(timeInterval, 1,10)";
          let slctUsersId = "";
          let arrLock = [];
          let dates = [];
@@ -165,6 +165,22 @@ function getproductivityData() {
             }
          }
 
+         let activeInactiveDatabyUser = alasql(`
+            SELECT userid, SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
+               ${timeIntervalFormat} AS [timeInterval]
+            FROM ? 
+            GROUP BY userid, SUBSTRING(date, 1, 10), ${timeIntervalFormat}
+            ORDER BY userid, [date], [timeInterval]
+         `, [arrLock])
+
+         activeInactiveDatabyUser.forEach(item => {
+            item.activeTime = msToTime(item.activeMs);
+            item.inactiveTime = msToTime(item.inactiveMs);
+         });
+
+         createTable(activeInactiveDatabyUser)
+         //console.table(activeInactiveDatabyUser);
+
          if (arrLock.length > 0) {
             let date = arrLock[0].date;
             let userId = arrLock[0].userid;
@@ -200,7 +216,7 @@ function getproductivityData() {
                }
             }
          }
-         // console.table(arrLock); // TIMES
+         //console.table(arrLock); // TIMES
 
          let activeInactiveData = alasql(`
             SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
@@ -225,18 +241,67 @@ function getproductivityData() {
          }
 
          let lableGraphHtml = `
-               <p><b>Total Number of Employees: </b>${labelData.totalEmployes}</p>
-               <p><b>Average Hous: </b>${labelData.avgHours}</p>
-               <p><b>Most Active: </b>${ labelData.mostActive == "" ? "" : labelData.mostActive.toUpperCase()}</p>
-               <p><b>Least Active: </b>${ labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
-            `;
-            $("#label-graph-info").html(lableGraphHtml);
+            <p><b>Total Number of Employees: </b>${labelData.totalEmployes}</p>
+            <p><b>Average Hous: </b>${labelData.avgHours}</p>
+            <p><b>Most Active: </b>${ labelData.mostActive == "" ? "" : labelData.mostActive.toUpperCase()}</p>
+            <p><b>Least Active: </b>${ labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
+         `;
+         $("#label-graph-info").html(lableGraphHtml);
 
          createGraph(activeInactiveData);
       },
       error: function (err) {
          console.error(err);
       }
+   });
+}
+
+function createTable(data) {
+   if (dataTable !== null)
+      dataTable.destroy();
+
+   dataTable = $('#example').DataTable({
+      data: data,
+      destroy: true,
+      columns: [
+         { data: "userid" },
+         { data: "date" },
+         { data: "timeInterval" },
+         { data: "activeTime" },
+         { data: "inactiveTime" },
+         { data: "activeMs" }
+      ],
+      columnDefs: [
+         {
+            "targets": [5],
+            "visible": false,
+            "searchable": false
+         }
+      ],
+      order: [[1, "desc"]],
+      select: true,
+      pageLength: 10,
+      responsive: true,
+      dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
+      retrieve: true,
+      searching: false,
+      buttons: [
+         { extend: 'copy' },
+         { extend: 'csv' },
+         { extend: 'excel', title: 'ExampleFile' },
+         { extend: 'pdf', title: 'ExampleFile' },
+         {
+            extend: 'print',
+            customize: function (win) {
+               $(win.document.body).addClass('white-bg');
+               $(win.document.body).css('font-size', '10px');
+
+               $(win.document.body).find('table')
+                  .addClass('compact')
+                  .css('font-size', 'inherit');
+            }
+         }
+      ]
    });
 }
 
@@ -389,49 +454,3 @@ function getTimeInterval(range) {
          break;
    }
 }
-
-//if (dataTable !== null)
-//    dataTable.destroy();
-
-// dataTable = $('#example').DataTable({
-//    data: activeInactiveData,
-//    destroy: true,
-//    columns: [
-//       { data: "userid" },
-//       { data: "date" },
-//       { data: "ActiveHours" },
-//       { data: "InactiveHours" },
-//       { data: "activeTime" },
-//    ],
-//    columnDefs: [
-//       {
-//          "targets": [4],
-//          "visible": false,
-//          "searchable": false
-//       }
-//    ],
-//    order: [[1, "desc"]],
-//    select: true,
-//    pageLength: 10,
-//    responsive: true,
-//    dom: '<"top"i>rt<"bottom"flp><"html5buttons"B><"clear">',
-//    retrieve: true,
-//    searching: false,
-//    buttons: [
-//       { extend: 'copy' },
-//       { extend: 'csv' },
-//       { extend: 'excel', title: 'ExampleFile' },
-//       { extend: 'pdf', title: 'ExampleFile' },
-//       {
-//          extend: 'print',
-//          customize: function (win) {
-//             $(win.document.body).addClass('white-bg');
-//             $(win.document.body).css('font-size', '10px');
-
-//             $(win.document.body).find('table')
-//                .addClass('compact')
-//                .css('font-size', 'inherit');
-//          }
-//       }
-//    ]
-// });

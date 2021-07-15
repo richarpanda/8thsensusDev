@@ -76,7 +76,10 @@
                                  </select>
                               </div>
 
-                              <div class="col-md-4" id="slctContainer"></div>
+                              <div class="col-md-4" id="slctContainer">
+                                 <label for="slctUserId">User ID:</label>
+                                 <select id="slctUserId" class="date_range_p form-control"></select>
+                              </div>
 
                               <div class="col-auto">
                                  <input type="button" id="searchButton" value="Search" class="btn btn-sm btn-primary"
@@ -85,39 +88,44 @@
                            </div>
                         </div>
 
-                        <!-- <div class="table-responsive">
-                           <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
-                              <table id="example" class="dataTable table-striped table-hover">
-                                 <thead>
-                                    <tr role="row">
-                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                          aria-label="User ID: activate to sort column ascending">User ID</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                          aria-label="Date: activate to sort column ascending">Date</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                          aria-label="Active Hours: activate to sort column ascending">Active
-                                          Hours</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                          aria-label="Inactive Hours: activate to sort column ascending">Inactive
-                                          Hours</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                          aria-label="activeTime: activate to sort column ascending">ActiveTime
-                                       </th>
-                                    </tr>
-                                 </thead>
-                              </table>
-                           </div>
-                        </div> -->
-
                         <div class="row">
                            <div class="col-md-3">
                               <div id="label-graph-info" class="label-graph-info"></div>
                            </div>
                         </div>
-                        
 
                         <!--CHART-->
                         <div class="mt-5"><canvas id="barChart"></canvas></div>
+
+                        <!-- TABLE -->
+                        <div class="row mt-3" style="text-align: center; font-size: 12px;">
+                           <div class="col-md-12" style="margin: 0 auto;">
+                              <div class="table-responsive">
+                                 <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
+                                    <table id="example" class="dataTable table-striped table-sm table-hover">
+                                       <thead>
+                                          <tr role="row">
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="User ID: activate to sort column ascending">User ID</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Date: activate to sort column ascending">Date</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Active Hours: activate to sort column ascending">Date / Time</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Active Time: activate to sort column ascending">Active Time</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Inactive Time
+                                             </th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="activeTime: activate to sort column ascending">Inactive Time
+                                             </th>
+                                          </tr>
+                                       </thead>
+                                    </table>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -159,7 +167,7 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
    <script src="js/plugins/multiselect/multiselect.js"></script>
-   
+
    <!-- Data picker -->
    <script src="js/plugins/datapicker/bootstrap-datepicker.js"></script>
 
