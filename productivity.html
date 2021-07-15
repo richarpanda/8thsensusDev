@@ -17,7 +17,8 @@
    <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
    <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet">
    <link href="css/plugins/multiselect/multiselect.css" rel="stylesheet">
-   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
+   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" />
+   <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
 </head>
 
 <body class="top-navigation">
@@ -68,12 +69,13 @@
 
                               <div class="col-md-4">
                                  <label for="slctDateRange">Date range:</label>
-                                 <select id="slctDateRange" class="date_range_p form-control">
+                                 <!-- <select id="slctDateRange" class="date_range_p form-control">
                                     <option value="1">Last 24 hours</option>
                                     <option value="7">Last 7 days</option>
                                     <option value="14">Last 14 days</option>
                                     <option value="30">Last 30 days</option>
-                                 </select>
+                                 </select> -->
+                                 <input type="text" name="daterange" class="form-control form-control-sm date-range" value="01/01/2018 - 01/15/2018" />
                               </div>
 
                               <div class="col-md-4" id="slctContainer">
@@ -141,7 +143,7 @@
       </div>
    </div>
    <!-- Mainly scripts -->
-   <script src="js/jquery-3.1.1.min.js"></script>
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
    <script src="js/popper.min.js"></script>
    <script src="js/bootstrap.js"></script>
    <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
@@ -169,12 +171,13 @@
    <script src="js/plugins/multiselect/multiselect.js"></script>
 
    <!-- Data picker -->
-   <script src="js/plugins/datapicker/bootstrap-datepicker.js"></script>
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
    <script src="plugin/js/plugins/metisMenu/jquery.metisMenu.js"></script>
    <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
    <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
-   <script src="https://momentjs.com/downloads/moment.min.js"></script>
+   
    <script src="js/alasql.js"></script>
    <script src="js/app/productivity.js"></script>
 

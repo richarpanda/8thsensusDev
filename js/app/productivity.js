@@ -2,12 +2,37 @@ var dataTable = null;
 var ctx2 = null;
 var chart = null;
 var selectedUsers = [];
+var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
+var dateTo = moment().add(-1, 'days').format('YYYY-MM-DDT23:59:59');
+var slctDateRange = 1;
 
 Date.prototype.addDays = function (days) {
    var date = new Date(this.valueOf());
    date.setDate(date.getDate() + days);
    return date;
 }
+
+$(function () {
+   $('input[name="daterange"]').daterangepicker({
+      autoApply: true,
+      opens: 'left',
+      minDate: new Date().addDays(-30),
+      maxDate: new Date(),
+      startDate: new Date().addDays(-1),
+      endDate: new Date(),
+   }, function (start, end, label) {
+      let startD = start.format('YYYY-MM-DD');
+      let endD = end.format('YYYY-MM-DD');
+
+      dateFrom = start.format('YYYY-MM-DDTHH:mm:ss');
+      dateTo = end.format('YYYY-MM-DDTHH:mm:ss');
+
+      if (moment(dateTo, 'YYYY-MM-DD').add(-1, 'days').format('YYYY-MM-DD') == startD || endD == startD)
+         slctDateRange = 1;
+      else 
+         slctDateRange = 7;
+   });
+});
 
 $.ajax({
    url: 'https://dashboard.8thsensus.com:8080/message',
@@ -76,10 +101,6 @@ function getproductivityData() {
       dataType: "json",
       data: {},
       success: function (result) {
-         let slctDateRange = document.getElementById("slctDateRange").value == "" ? 1
-            : document.getElementById("slctDateRange").value;
-         let dateFrom = formatDate(new Date().addDays(-slctDateRange)).toString().replace(" ", "T");
-         let dateTo = formatDate(new Date()).toString().replace(" ", "T");
          let timeInterval = getTimeInterval(slctDateRange);
          let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ':00'" : "SUBSTRING(timeInterval, 1,10)";
          let slctUsersId = "";
@@ -92,18 +113,21 @@ function getproductivityData() {
             leastActive: ""
          }
 
+         console.log({dateFrom});
+         console.log({dateTo});
+
          if (selectedUsers.length == 0) {
             let usersData = alasql(`
                SELECT userid
                FROM ?
                GROUP BY userid
-            `, [result]);  
+            `, [result]);
             labelData.totalEmployes = selectedUsers.length;
             usersData.forEach(user => selectedUsers.push(user.userid));
             selectedUsers.forEach(user => slctUsersId += `'${user}',`);
          } else
             labelData.totalEmployes = selectedUsers.length - 1;
-            selectedUsers.forEach(user => slctUsersId += `'${user}',`);
+         selectedUsers.forEach(user => slctUsersId += `'${user}',`);
 
          if (slctDateRange == 1) {
             dates.push(dateFrom.substring(0, 10));
@@ -152,7 +176,7 @@ function getproductivityData() {
 
             if (i != arrLock.length - 1) {
                let nextData = arrLock[i + 1];
-               if (actualData.userid == nextData.userid && actualData.timeInterval.substring(0,10) == nextData.timeInterval.substring(0,10)) {
+               if (actualData.userid == nextData.userid && actualData.timeInterval.substring(0, 10) == nextData.timeInterval.substring(0, 10)) {
                   if (actualData.activeStatus == 1) { // ACTIVE TIME
                      arrLock[i].activeTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
                      arrLock[i].inactiveTime = 0;
@@ -243,8 +267,8 @@ function getproductivityData() {
          let lableGraphHtml = `
             <p><b>Total Number of Employees: </b>${labelData.totalEmployes}</p>
             <p><b>Average Hous: </b>${labelData.avgHours}</p>
-            <p><b>Most Active: </b>${ labelData.mostActive == "" ? "" : labelData.mostActive.toUpperCase()}</p>
-            <p><b>Least Active: </b>${ labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
+            <p><b>Most Active: </b>${labelData.mostActive == "" ? "" : labelData.mostActive.toUpperCase()}</p>
+            <p><b>Least Active: </b>${labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
          `;
          $("#label-graph-info").html(lableGraphHtml);
 
