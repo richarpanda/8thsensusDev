@@ -196,11 +196,10 @@ function getproductivityData() {
          }
 
          let activeInactiveDatabyUser = alasql(`
-            SELECT userid, SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
-               ${timeIntervalFormat} AS [timeInterval]
+            SELECT userid, SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
             FROM ? 
-            GROUP BY userid, SUBSTRING(date, 1, 10), ${timeIntervalFormat}
-            ORDER BY userid, [date], [timeInterval]
+            GROUP BY userid
+            ORDER BY userid
          `, [arrLock])
 
          activeInactiveDatabyUser.forEach(item => {
@@ -208,7 +207,7 @@ function getproductivityData() {
             item.inactiveTime = msToTime(item.inactiveMs);
          });
 
-         createTable(activeInactiveDatabyUser)
+         createTable(activeInactiveDatabyUser);
          //console.table(activeInactiveDatabyUser);
 
          if (arrLock.length > 0) {
@@ -295,15 +294,13 @@ function createTable(data) {
       destroy: true,
       columns: [
          { data: "userid" },
-         { data: "date" },
-         { data: "timeInterval" },
          { data: "activeTime" },
          { data: "inactiveTime" },
          { data: "activeMs" }
       ],
       columnDefs: [
          {
-            "targets": [5],
+            "targets": [3],
             "visible": false,
             "searchable": false
          }
@@ -361,8 +358,20 @@ function createGraph(graphData) {
                   callback: function (label, index, labels) {
                      return msToTime(label);
                   }
+               },
+               scaleLabel: {
+                  display: true,
+                  labelString: 'Total Hours'
                }
-            }
+            },
+         ],
+         xAxes: [
+            {
+               scaleLabel: {
+                  display: true,
+                  labelString: 'Days / Hours'
+               }
+            },
          ]
       },
       tooltips: {
