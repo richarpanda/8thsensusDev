@@ -271,7 +271,7 @@ function getproductivityData() {
          }
 
          let lableGraphHtml = `
-            <p><b>Total Number of Employees: </b>${labelData.totalEmployes}</p>
+            <p><b>Total Number of Employees: </b>${labelData.totalEmployes + 1}</p>
             <p><b>Average Hous: </b>${labelData.avgHours}</p>
             <p><b>Most Active: </b>${labelData.mostActive == "" ? "" : labelData.mostActive.toUpperCase()}</p>
             <p><b>Least Active: </b>${labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>

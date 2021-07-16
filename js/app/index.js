@@ -290,9 +290,9 @@ $.ajax({
       let todayDateStr = `${d.getFullYear()}-${d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)}-${d.getDate().toString().length == 1 ? "0" + (d.getDate() - 1) : (d.getDate() - 1)}`;
 
       let last24Result = alasql(`
-         SELECT * FROM ? 
-         WHERE utc > '${todayDateStr}'
-         ORDER BY utc DESC
+         SELECT gps, stamp, userid, diagcode FROM ? 
+         WHERE stamp > '${todayDateStr}'
+         ORDER BY stamp DESC
       `, [result]);
 
       for (i = 0; i < last24Result.length; i++) {
@@ -305,7 +305,7 @@ $.ajax({
          var htmlString_2 = "";
          var apiURL = "";
          var data = "";
-
+         
          getCodeData(longlatArray, userName, formatDate(timeStamp), diagcode, i);
       }
 
@@ -353,33 +353,33 @@ $.ajax({
       }
 
       function getCodeData(longlatArray, userName, timeStamp, diagcode, count) {
-         if (longlatArray[0] !== "") {
-            apiURL = "https://api.bigdatacloud.net/data/reverse-geocode/";
-            var longlatArray = result[i].gps.split(",");
-            var latitude = longlatArray[0];
-            var longitude = longlatArray[1];
-            data = {
-               latitude: longlatArray[0],
-               longitude: longlatArray[1],
-               localityLanguage: "en",
-               key: "b0067cd12214491aa5317a26c85a007b",
-            };
-         } else {
-            apiURL =
-               "https://api.bigdatacloud.net/data/ip-geolocation-with-confidence/";
-            var ipAddress = result[i].remoteip;
-            data = {
-               ip: ipAddress,
-               localityLanguage: "en",
-               key: "d915f9ffc0134077a61239935a7673df",
-            };
-         }
+         // if (longlatArray[0] !== "") {
+         //    apiURL = "https://api.bigdatacloud.net/data/reverse-geocode/";
+         //    var longlatArray = result[i].gps.split(",");
+         //    var latitude = longlatArray[0];
+         //    var longitude = longlatArray[1];
+         //    data = {
+         //       latitude: longlatArray[0],
+         //       longitude: longlatArray[1],
+         //       localityLanguage: "en",
+         //       key: "b0067cd12214491aa5317a26c85a007b",
+         //    };
+         // } else {
+         //    apiURL =
+         //       "https://api.bigdatacloud.net/data/ip-geolocation-with-confidence/";
+         //    var ipAddress = result[i].remoteip;
+         //    data = {
+         //       ip: ipAddress,
+         //       localityLanguage: "en",
+         //       key: "d915f9ffc0134077a61239935a7673df",
+         //    };
+         // }
 
-         $.ajax({
-            type: "GET",
-            url: apiURL,
-            data: data,
-            success: function (data) {
+         // $.ajax({
+         //    type: "GET",
+         //    url: apiURL,
+         //    data: data,
+         //    success: function (data) {
                var state = "";
                var town = "";
                var postcode = "";
@@ -433,13 +433,13 @@ $.ajax({
 
                   $("#geo-loc-hotspots").html(htmlString_2);
                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-               //alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-            },
-         }).done(function (done) {
-            //alert("Ajax Done successfully");
-         });
+         //    },
+         //    error: function (xhr, ajaxOptions, thrownError) {
+         //       //alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+         //    },
+         // }).done(function (done) {
+         //    //alert("Ajax Done successfully");
+         // });
       }
 
       function formatDate(utcDate) {
@@ -568,8 +568,6 @@ function getIntrusionGraphData(resultData) {
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
-
-   console.table(activeInactiveData); // FINAL RESULT
 
    createGraph(activeInactiveData);
 }
