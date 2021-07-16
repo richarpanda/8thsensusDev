@@ -113,9 +113,6 @@ function getproductivityData() {
             leastActive: ""
          }
 
-         console.log({dateFrom});
-         console.log({dateTo});
-
          if (selectedUsers.length == 0) {
             let usersData = alasql(`
                SELECT userid

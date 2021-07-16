@@ -9686,9 +9686,16 @@ tbody {
    margin: 0;
 }
 
+.select2-selection {
+   border: 1px solid #aaa;
+   padding-bottom: 29px;
+   border-radius: 3px;
+   font-size: 13px;
+}
+
 .select2-results__option .wrap:before{
    font-family:fontAwesome;
-   color:#999;
+   color:#000;
    content:"\f096";
    width:25px;
    height:25px;
