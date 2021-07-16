@@ -15,10 +15,20 @@
    <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
    <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet">
    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
+   <link href="css/loader.min.css" rel="stylesheet" >
 </head>
 
 <body class="top-navigation">
-
+   <div id="loader">
+      <div class="loading">
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+      </div>
+   </div>
+   
    <div id="wrapper">
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
@@ -32,10 +42,10 @@
                <!--ITEMS-->
                <div class="navbar-collapse collapse" id="navbar">
                   <ul class="nav navbar-nav mr-auto">
-                     <li> <a aria-expanded="false" href="index.html"> Home</a></li>
-                     <li> <a aria-expanded="false" href="productivity.html"> Productivity</a></li>
-                     <li> <a aria-expanded="false" href="logs.html"> Logs</a></li>
-                     <li class="active"> <a aria-expanded="false" href="licenses.html"> Licenses</a></li>
+                     <li> <a aria-expanded="false" href="index.html">Enterprise Portal Home</a></li>
+                     <li> <a aria-expanded="false" href="productivity.html">Enterprise Portal Productivity</a></li>
+                     <li> <a aria-expanded="false" href="logs.html">Enterprise Portal Logs</a></li>
+                     <li class="active"> <a aria-expanded="false" href="licenses.html">Enterprise Portal Licenses</a></li>
 
                   </ul>
                   <ul class="nav navbar-top-links navbar-right">
@@ -133,6 +143,8 @@
       data: {
       },
       success: function (result) {
+         document.getElementById("loader").classList.remove("show-loader");
+         document.getElementById("loader").classList.add("hide-loader");
          assets = alasql("SELECT UPPER(userid) as userid , COUNT(DISTINCT machinename) as machinename, MAX(version) as version, MAX(customerid) as stamp FROM ? GROUP BY UPPER(userid)", [result]);
          console.log(assets);
 

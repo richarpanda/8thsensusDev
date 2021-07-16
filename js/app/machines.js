@@ -1,6 +1,7 @@
 let tAccountLicenses;
 let dataSet = null;
 
+document.getElementById("loader").classList.add("show-loader");
 $.ajax({
    url: "https://dashboard.8thsensus.com:8080/message",
    headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -8,6 +9,8 @@ $.ajax({
    dataType: "json",
    data: {},
    success: function (result) {
+      document.getElementById("loader").classList.remove("show-loader");
+      document.getElementById("loader").classList.add("hide-loader");
       const querystring = window.location.search;
       const params = new URLSearchParams(querystring);
       const machinename = params.get('mchname');

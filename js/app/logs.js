@@ -10,6 +10,8 @@ Date.prototype.addDays = function (days) {
    return date;
 }
 
+document.getElementById("loader").classList.add("show-loader");
+
 $(function () {
    $('input[name="daterange"]').daterangepicker({
       autoApply: true,
@@ -35,6 +37,9 @@ $.ajax({
    data: {
    },
    success: function (result) {
+      document.getElementById("loader").classList.remove("show-loader");
+      document.getElementById("loader").classList.add("hide-loader");
+
       let machinesData = alasql(`
          SELECT machinename
          FROM ?
@@ -82,6 +87,8 @@ $.ajax({
 });
 
 function getLogs() {
+   document.getElementById("loader").classList.add("show-loader");
+   document.getElementById("loader").classList.remove("hide-loader");
    $.ajax({
       url: 'https://dashboard.8thsensus.com:8080/message',
       headers: {
@@ -93,6 +100,8 @@ function getLogs() {
       data: {
       },
       success: function (result) {
+         document.getElementById("loader").classList.remove("show-loader");
+         document.getElementById("loader").classList.add("hide-loader");
          processData(result);
       },
       error: function (request, status, error) {
@@ -261,6 +270,8 @@ function getCode(code) {
 }
 
 $("#slctUserId").on('change', function(){
+   document.getElementById("loader").classList.add("show-loader");
+   document.getElementById("loader").classList.remove("hide-loader");
    let userid = this.value;
    $.ajax({
       url: 'https://dashboard.8thsensus.com:8080/message',
@@ -273,6 +284,9 @@ $("#slctUserId").on('change', function(){
       data: {
       },
       success: function (result) {
+         document.getElementById("loader").classList.remove("show-loader");
+         document.getElementById("loader").classList.add("hide-loader");
+         
          let machinesData = alasql(`
             SELECT machinename
             FROM ?

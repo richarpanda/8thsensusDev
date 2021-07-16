@@ -9,6 +9,7 @@ Date.prototype.addDays = function (days) {
    return date;
 }
 
+document.getElementById("loader").classList.add("show-loader");
 $.ajax({
    url: "https://dashboard.8thsensus.com:8080/message",
    headers: {
@@ -18,6 +19,8 @@ $.ajax({
    dataType: "json",
    data: {},
    success: function (result) {
+      document.getElementById("loader").classList.remove("show-loader");
+      document.getElementById("loader").classList.add("hide-loader");
       startOfWeek = "2021-04-05T01:35:35.648732Z";
       //var productData = alasql("SELECT diagcode, utc FROM ? WHERE userid='Kingpin' and utc > '" + startOfWeek + "' order by utc",[result]);
 

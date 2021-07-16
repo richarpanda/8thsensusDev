@@ -12,6 +12,7 @@ Date.prototype.addDays = function (days) {
    return date;
 }
 
+document.getElementById("loader").classList.add("show-loader");
 $(function () {
    $('input[name="daterange"]').daterangepicker({
       autoApply: true,
@@ -45,6 +46,9 @@ $.ajax({
    data: {
    },
    success: function (result) {
+      document.getElementById("loader").classList.remove("show-loader");
+      document.getElementById("loader").classList.add("hide-loader");
+
       let usersData = alasql(`
          SELECT UPPER(userid) [userid]
          FROM ?
@@ -92,6 +96,8 @@ function setCheckValue(val, checked) {
 }
 
 function getproductivityData() {
+   document.getElementById("loader").classList.add("show-loader");
+   document.getElementById("loader").classList.remove("hide-loader");
    $.ajax({
       url: "https://dashboard.8thsensus.com:8080/message",
       headers: {
@@ -101,6 +107,9 @@ function getproductivityData() {
       dataType: "json",
       data: {},
       success: function (result) {
+         document.getElementById("loader").classList.remove("show-loader");
+         document.getElementById("loader").classList.add("hide-loader");
+
          let timeInterval = getTimeInterval(slctDateRange);
          let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ':00'" : "SUBSTRING(timeInterval, 1,10)";
          let slctUsersId = "";

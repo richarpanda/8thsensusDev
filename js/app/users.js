@@ -4,7 +4,7 @@ let tAccountLicenses;
 
 let dataSet = null;
 
-
+document.getElementById("loader").classList.add("show-loader");
 $.ajax({
    url: "https://dashboard.8thsensus.com:8080/message",
    headers: {
@@ -14,6 +14,9 @@ $.ajax({
    dataType: "json",
    data: {},
    success: function (result) {
+      document.getElementById("loader").classList.remove("show-loader");
+      document.getElementById("loader").classList.add("hide-loader");
+
       const querystring = window.location.search;
       const params = new URLSearchParams(querystring);
       const usrid = params.get('usrid');

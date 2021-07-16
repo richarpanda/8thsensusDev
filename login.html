@@ -1,15 +1,70 @@
-<html>
+<!DOCTYPE html>
+<html lang="en-US">
 
 <head>
-   <title>404 Not Found</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <title>8th Sensus.</title>
+
+   <link href="css/bootstrap.min.css" rel="stylesheet">
+   <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+   <link href="css/animate.css" rel="stylesheet">
+   <link href="css/style.css" rel="stylesheet">
+   <link href="css/login.min.css" rel="stylesheet">
 </head>
 
-<body bgcolor="white">
-   <center>
-      <h1>404 Not Found</h1>
-   </center>
-   <hr>
-   <center>nginx</center>
+<body>
+   <div class="login-container mt-5">
+      <div class="row">
+         <div class="col justify-content-center">
+            <div class="logo">
+               <img src="/img/logo.png" alt="logo">
+            </div>
+            <h2 >Login</h2>
+         </div>
+      </div>
+      <div class="row">
+         <div class="col d-flex justify-content-center mt-4">
+            <form class="login-form position-relative">
+               <div class="wrap-input">
+                  <input type="text" class="input" id="userInput" />
+                  <span class="label-input" id="user-input">User Id</span>
+               </div>
+
+               <div class="wrap-input">
+                  <input type="password" class="input" id="passInput" />
+                  <span class="label-input" id="pass-input">Password</span>
+               </div>
+
+               <a class="login-form-btn mt-4" href="index.html">
+                  LOGIN
+               </a>
+            </form>
+         </div>
+      </div>
+   </div>
 </body>
+
+<script type="text/javascript">
+   const userElement = document.querySelector('#userInput');
+   const passElement = document.querySelector('#passInput');
+
+   userElement.addEventListener('change', (event) => {
+      console.log(event.target.value);
+      if(event.target.value !== "" || event.target.value !== null) {
+         console.log(123);
+         document.getElementById("user-input").classList.add("has-val");
+         document.getElementById("userInput").classList.add("input-has-value");
+      }
+   });
+
+   passElement.addEventListener('change', (event) => {
+      if(event.target.value !== "" || event.target.value !== null) {
+         document.getElementById("pass-input").classList.add("has-val");
+         document.getElementById("passInput").classList.add("input-has-value");
+      }
+   });
+</script>
 
 </html>
