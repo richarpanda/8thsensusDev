@@ -110,6 +110,7 @@ function getproductivityData() {
          document.getElementById("loader").classList.remove("show-loader");
          document.getElementById("loader").classList.add("hide-loader");
 
+         let dateRangeString = document.getElementById("inptDateRange").value;
          let timeInterval = getTimeInterval(slctDateRange);
          let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ':00'" : "SUBSTRING(timeInterval, 1,10)";
          let slctUsersId = "";
@@ -196,7 +197,7 @@ function getproductivityData() {
          }
 
          let activeInactiveDatabyUser = alasql(`
-            SELECT userid, SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
+            SELECT userid, '${dateRangeString}' [dateRange] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
             FROM ? 
             GROUP BY userid
             ORDER BY userid
@@ -286,26 +287,20 @@ function getproductivityData() {
 }
 
 function createTable(data) {
+   let dateRange = document.getElementById("inptDateRange").value;
+
    if (dataTable !== null)
       dataTable.destroy();
 
    dataTable = $('#example').DataTable({
       data: data,
-      destroy: true,
       columns: [
          { data: "userid" },
+         { data: "dateRange" },
          { data: "activeTime" },
-         { data: "inactiveTime" },
-         { data: "activeMs" }
+         { data: "inactiveTime" }
       ],
-      columnDefs: [
-         {
-            "targets": [3],
-            "visible": false,
-            "searchable": false
-         }
-      ],
-      order: [[1, "desc"]],
+      order: [0, 'asc'],
       select: true,
       pageLength: 10,
       responsive: true,
@@ -315,8 +310,8 @@ function createTable(data) {
       buttons: [
          { extend: 'copy' },
          { extend: 'csv' },
-         { extend: 'excel', title: 'ExampleFile' },
-         { extend: 'pdf', title: 'ExampleFile' },
+         { extend: 'excel', title: `Prodcutivity ${dateRange}` },
+         { extend: 'pdf', title: `Prodcutivity ${dateRange}` },
          {
             extend: 'print',
             customize: function (win) {
