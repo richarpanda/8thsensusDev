@@ -310,8 +310,8 @@ function createTable(data) {
       buttons: [
          { extend: 'copy' },
          { extend: 'csv' },
-         { extend: 'excel', title: `Prodcutivity ${dateRange}` },
-         { extend: 'pdf', title: `Prodcutivity ${dateRange}` },
+         { extend: 'excel', title: `Productivity Report ${dateRange}` },
+         { extend: 'pdf', title: `Productivity Report ${dateRange}` },
          {
             extend: 'print',
             customize: function (win) {
