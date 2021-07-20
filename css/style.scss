@@ -9603,7 +9603,7 @@ tbody {
 }
 
 #barChart {
-   height: 58.3vh !important;
+   height: 40vh !important;
 }
 
 .userid-font {
@@ -9674,16 +9674,20 @@ tbody {
    display: none;
 }
 
+.text-center { margin: 0 auto;}
+
 .label-graph-info {
-   background-color: red;
+   background-color: #FFF;
    position: absolute;
    padding: 10px;
    top: -15px;
    font-size: 12px;
    margin-left: 50px;
-}
-.label-graph-info p {
-   margin: 0;
+
+   p {
+      display: inline-block;
+      margin: 0 5px;
+   }
 }
 
 .select2-selection {
