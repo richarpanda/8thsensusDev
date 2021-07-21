@@ -10,7 +10,7 @@
    <link href="css/bootstrap.min.css" rel="stylesheet">
    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
    <link href="css/animate.css" rel="stylesheet">
-   <link href="css/style.css" rel="stylesheet">
+   <link href="css/style.min.css" rel="stylesheet">
    <link href="css/loader.min.css" rel="stylesheet" >
 </head>
 
@@ -53,8 +53,8 @@
                </div>
             </nav>
          </div>
+         
          <!--CONTAINER-->
-
          <div class="wrapper wrapper-content">
             <div class="row">
                <div class="col-md-12">
@@ -62,7 +62,7 @@
                      <div class="ibox-title">
                         <h5 id="userName"></h5>
                      </div>
-                     <div class="ibox-content">
+                     <div class="ibox-content pb-0 pt-0">
                         <div class="row">
                            <div class="col-md-2">
                               <div class="userid-font">
@@ -70,8 +70,8 @@
                               </div>
                            </div>
 
-                           <div class="col-md-10">
-                              <table id="usr-table" class="table table-mail">
+                           <div class="col-md-10 mt-2">
+                              <table id="usr-table">
                                  <tbody></tbody>
                               </table>
                            </div>
@@ -81,7 +81,46 @@
                </div>
             </div>
 
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="ibox">
+                     <div class="ibox-title">
+                        Productivity last 7 days
+                     </div>
+                     <div class="ibox-content pb-0 pt-0">
+                        <div class="row">
+                           <div class="col-md-6 mt-2">
+                              <div class="mt-3 pb-3">
+                                 <canvas id="barChart"></canvas>
+                              </div>
+                           </div>
+                           
+                           <div class="col-md-6">
+                              <div class="table-responsive">
+                                 <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
+                                    <table id="example" class="dataTable table-striped table-sm table-hover" style="width: 100% !important;">
+                                       <thead>
+                                          <tr role="row">
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="User ID: activate to sort column ascending">User ID</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Active Time: activate to sort column ascending">Active Time</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Inactive Time</th>
+                                          </tr>
+                                       </thead>
+                                    </table>
+                                 </div>
+                              </div>
+                           </div>
+
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
          </div>
+
          <!--FOOTER-->
          <div class="footer">
             <div>
@@ -114,6 +153,10 @@
    <script src="js/plugins/peity/jquery.peity.min.js"></script>
    <!-- Peity demo -->
    <script src="js/demo/peity-demo.js"></script>
+   <!-- Table -->
+   <script src="plugin/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+   <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
+   <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <!--SDK-->
    <script src="js/app/users.js"></script>
    <script src="js/alasql.js"></script>
