@@ -170,6 +170,9 @@ $.ajax({
                textAlign: "center",
                textBaseline: "middle",
             },
+            onClick: (evt, item) => {
+               window.location.href = "licenses.html";
+            },
          };
          var ctx4 = document.getElementById("doughnutChart").getContext("2d");
          new Chart(ctx4, {
@@ -303,9 +306,8 @@ $.ajax({
          var diagcode = last24Result[i].diagcode;
          var htmlString_1 = "";
          var htmlString_2 = "";
-         var apiURL = "";
          var data = "";
-         
+
          getCodeData(longlatArray, userName, formatDate(timeStamp), diagcode, i);
       }
 
@@ -353,124 +355,59 @@ $.ajax({
       }
 
       function getCodeData(longlatArray, userName, timeStamp, diagcode, count) {
-         // if (longlatArray[0] !== "") {
-         //    apiURL = "https://api.bigdatacloud.net/data/reverse-geocode/";
-         //    var longlatArray = result[i].gps.split(",");
-         //    var latitude = longlatArray[0];
-         //    var longitude = longlatArray[1];
-         //    data = {
-         //       latitude: longlatArray[0],
-         //       longitude: longlatArray[1],
-         //       localityLanguage: "en",
-         //       key: "b0067cd12214491aa5317a26c85a007b",
-         //    };
-         // } else {
-         //    apiURL =
-         //       "https://api.bigdatacloud.net/data/ip-geolocation-with-confidence/";
-         //    var ipAddress = result[i].remoteip;
-         //    data = {
-         //       ip: ipAddress,
-         //       localityLanguage: "en",
-         //       key: "d915f9ffc0134077a61239935a7673df",
-         //    };
-         // }
+         var state = "";
+         var town = "";
+         var postcode = "";
 
-         // $.ajax({
-         //    type: "GET",
-         //    url: apiURL,
-         //    data: data,
-         //    success: function (data) {
-               var state = "";
-               var town = "";
-               var postcode = "";
+         if (gpsNumbers !== "") {
+            state = data.principalSubdivision;
+            town = data.locality;
+            postcode = data.postcode;
+         } else {
+            state = data.location.isoPrincipalSubdivision;
+            town = data.location.localityName;
+            postcode = data.location.postcode;
+         }
 
-               if (gpsNumbers !== "") {
-                  state = data.principalSubdivision;
-                  town = data.locality;
-                  postcode = data.postcode;
-               } else {
-                  state = data.location.isoPrincipalSubdivision;
-                  town = data.location.localityName;
-                  postcode = data.location.postcode;
-               }
+         var address = town + " " + postcode + ", " + state;
 
-               var address = town + " " + postcode + ", " + state;
+         var geoCodeInfo = getCode(diagcode);
 
-               var geoCodeInfo = getCode(diagcode);
+         var url = "../activity_logs/devices/?usrid=" + userName;
 
-               var url = "../activity_logs/devices/?usrid=" + userName;
+         htmlString_1 = htmlString_1 + "<tr>";
+         htmlString_1 = htmlString_1 + "<td><i class='fa fa-clock-o'></i> " + timeStamp + "</td>";
+         htmlString_1 = htmlString_1 + "<td><a href='users.html?usrid=" + userName + "'>" + userName + "</td>";
+         /*htmlString_1 = htmlString_1 + "<td>" + address + "</td>";*/
 
-               htmlString_1 = htmlString_1 + "<tr /*onclick=myFunction('" + url + "')*/>";
-               htmlString_1 = htmlString_1 + "<td><i class='fa fa-clock-o'></i> " + timeStamp + "</td>";
-               htmlString_1 = htmlString_1 + "<td><a href='users.html?usrid=" + userName + "'>" + userName + "</td>";
-               /*htmlString_1 = htmlString_1 + "<td>" + address + "</td>";*/
+         htmlString_1 =
+            htmlString_1 +
+            "<td class='text-navy'> <i class='fa fa-level-up'></i>" +
+            geoCodeInfo +
+            "</td>";
+         htmlString_1 = htmlString_1 + "</tr>";
 
-               htmlString_1 =
-                  htmlString_1 +
-                  "<td class='text-navy'> <i class='fa fa-level-up'></i>" +
-                  geoCodeInfo +
-                  "</td>";
-               htmlString_1 = htmlString_1 + "</tr>";
+         $("#intrusion-insights tbody").append(htmlString_1);
+         htmlString_1 = "";
 
-               $("#intrusion-insights tbody").append(htmlString_1);
-               htmlString_1 = "";
+         if (count < 4) {
+            htmlString_2 = htmlString_2 + "<div class='feed-element'>";
+            htmlString_2 = htmlString_2 + "<div>";
+            htmlString_2 =
+               htmlString_2 +
+               "<small class='float-right text-navy'>1m ago</small>";
+            htmlString_2 = htmlString_2 + "<strong>" + address + "</strong>";
+            htmlString_2 = htmlString_2 + "<div>" + geoCodeInfo + "</div>";
+            htmlString_2 =
+               htmlString_2 +
+               "<small class='text-muted'>" +
+               timeStamp +
+               "</small>";
+            htmlString_2 = htmlString_2 + "</div>";
+            htmlString_2 = htmlString_2 + "</div>";
 
-               if (count < 4) {
-                  htmlString_2 = htmlString_2 + "<div class='feed-element'>";
-                  htmlString_2 = htmlString_2 + "<div>";
-                  htmlString_2 =
-                     htmlString_2 +
-                     "<small class='float-right text-navy'>1m ago</small>";
-                  htmlString_2 = htmlString_2 + "<strong>" + address + "</strong>";
-                  htmlString_2 = htmlString_2 + "<div>" + geoCodeInfo + "</div>";
-                  htmlString_2 =
-                     htmlString_2 +
-                     "<small class='text-muted'>" +
-                     timeStamp +
-                     "</small>";
-                  htmlString_2 = htmlString_2 + "</div>";
-                  htmlString_2 = htmlString_2 + "</div>";
-
-                  $("#geo-loc-hotspots").html(htmlString_2);
-               }
-         //    },
-         //    error: function (xhr, ajaxOptions, thrownError) {
-         //       //alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-         //    },
-         // }).done(function (done) {
-         //    //alert("Ajax Done successfully");
-         // });
-      }
-
-      function formatDate(utcDate) {
-         let d = new Date(utcDate);
-         let month =
-            d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
-         let day =
-            d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
-         let hour =
-            d.getHours().toString().length == 1 ? "0" + d.getHours() : d.getHours();
-         let min =
-            d.getMinutes().toString().length == 1
-               ? "0" + d.getMinutes()
-               : d.getMinutes();
-         let sec =
-            d.getSeconds().toString().length == 1
-               ? "0" + d.getSeconds()
-               : d.getSeconds();
-         return (
-            month +
-            "-" +
-            day +
-            "-" +
-            d.getFullYear() +
-            " " +
-            hour +
-            ":" +
-            min +
-            ":" +
-            sec
-         );
+            $("#geo-loc-hotspots").html(htmlString_2);
+         }
       }
    },
    error: function (xhr, status, error) {
