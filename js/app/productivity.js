@@ -305,9 +305,10 @@ function createTable(data) {
          $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
       },
       select: true,
-      pageLength: 10,
+      pageLength: 500,
       responsive: true,
-      dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
+      // dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
       retrieve: true,
       searching: false,
       buttons: [

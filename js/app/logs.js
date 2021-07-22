@@ -183,9 +183,10 @@ function processData(result) {
          $(row).find('td:eq(7)').html(getCode(data['diagcode']));
       },
       select: true,
-      pageLength: 10,
+      pageLength: 500,
       responsive: true,
-      dom: '<"top"i>rt<"bottom"flp><"html5buttons"B><"clear">',
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
+      //dom: '<"top"i>rt<"bottom"flp><"html5buttons"B><"clear">',
       retrieve: true,
       searching: false,
       buttons: [
