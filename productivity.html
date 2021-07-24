@@ -19,7 +19,7 @@
    <link href="css/plugins/multiselect/multiselect.css" rel="stylesheet">
    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" />
    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
-   <link href="css/loader.min.css" rel="stylesheet" >
+   <link href="css/loader.min.css" rel="stylesheet">
 </head>
 
 <body class="top-navigation">
@@ -32,7 +32,7 @@
          <div class="dot"></div>
       </div>
    </div>
-   
+
    <div id="wrapper">
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
@@ -79,7 +79,8 @@
 
                               <div class="col-md-4">
                                  <label for="slctDateRange">Date range:</label>
-                                 <input id="inptDateRange" type="text" name="daterange" class="form-control form-control-sm date-range" value="01/01/2018 - 01/15/2018" />
+                                 <input id="inptDateRange" type="text" name="daterange"
+                                    class="form-control form-control-sm date-range" />
                               </div>
 
                               <div class="col-md-4" id="slctContainer">
@@ -113,18 +114,57 @@
                            <div class="col-md-12" style="margin: 0 auto;">
                               <div class="table-responsive">
                                  <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
-                                    <table id="example" class="dataTable table-striped table-sm table-hover">
+                                    <table id="productivityReport" class="dataTable table-striped table-sm table-hover">
                                        <thead>
                                           <tr role="row">
                                              <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="User ID: activate to sort column ascending">User ID</th>
+                                                aria-label="User ID: activate to sort column ascending">User Id</th>
                                              <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Date Range: activate to sort column ascending">Date Range</th>   
+                                                aria-label="Date Range: activate to sort column ascending">From</th>
                                              <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Active Time: activate to sort column ascending">Active Time</th>
+                                                aria-label="Date Range: activate to sort column ascending">To</th>
                                              <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Inactive Time: activate to sort column ascending">Inactive Time
+                                                aria-label="Active Time: activate to sort column ascending">Active Time
                                              </th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Inactive
+                                                Time
+                                             </th>
+                                          </tr>
+                                       </thead>
+                                    </table>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div class="row mt-1" style="text-align: center; font-size: 12px;">
+                           <div class="col-md-12" style="margin: 0 auto;">
+                              <div class="table-responsive">
+                                 <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
+                                    <table id="weekDataTable" class="dataTable table-striped table-sm table-hover">
+                                       <thead>
+                                          <tr role="row">
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="UserId">User Id</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="WeekFrom">Week From</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="WeekTo">Week To</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Sunday">Sunday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Monday">Monday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Tuesday">Tuesday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Wednesday">Wednesday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Thursday">Thursday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Friday">Friday</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Saturday">Saturday</th>
                                           </tr>
                                        </thead>
                                     </table>
