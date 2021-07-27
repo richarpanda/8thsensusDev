@@ -112,7 +112,7 @@
                         <!-- TABLE -->
                         <div class="row mt-3" style="text-align: center; font-size: 12px;">
                            <div class="col-md-12" style="margin: 0 auto;">
-                              <div class="table-responsive">
+                              <div class="table-responsive position-relative">
                                  <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
                                     <table id="productivityReport" class="dataTable table-striped table-sm table-hover">
                                        <thead>
@@ -134,49 +134,70 @@
                                        </thead>
                                     </table>
                                  </div>
+
+                                 <button type="button" class="btn btn-outline btn-sm btn-outline-secondary position-absolute" data-toggle="modal" data-target="#exampleModal"
+                                    style="bottom: 31px; left: 22px;">
+                                    Timesheet generator
+                                 </button>
                               </div>
                            </div>
                         </div>
+                     </div>
 
-                        <div class="row mt-1" style="text-align: center; font-size: 12px;">
-                           <div class="col-md-12" style="margin: 0 auto;">
-                              <div class="table-responsive">
-                                 <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
-                                    <table id="weekDataTable" class="dataTable table-striped table-sm table-hover">
-                                       <thead>
-                                          <tr role="row">
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="UserId">User Id</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="WeekFrom">Week From</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="WeekTo">Week To</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Sunday">Sunday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Monday">Monday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Tuesday">Tuesday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Wednesday">Wednesday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Thursday">Thursday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Friday">Friday</th>
-                                             <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Saturday">Saturday</th>
-                                          </tr>
-                                       </thead>
-                                    </table>
+                     <!-- Modal -->
+                     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable mw-100 w-75">
+                           <div class="modal-content">
+                              <div class="modal-header">
+                                 <h5 class="modal-title" id="exampleModalLabel">Week Timesheet</h5>
+                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                 </button>
+                              </div>
+                              <div class="modal-body" style="margin-bottom: 0 !important; padding-bottom: 0 !important;">
+                                 <div class="row" style="text-align: center; font-size: 12px;">
+                                    <div class="col-md-12">
+                                       <div class="table-responsive">
+                                          <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
+                                             <table id="weekDataTable" class="dataTable table-striped table-sm table-hover w-100">
+                                                <thead>
+                                                   <tr role="row">
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="UserId">User Id</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="WeekFrom">Week From</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="WeekTo">Week To</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Sunday">Sunday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Monday">Monday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Tuesday">Tuesday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Wednesday">Wednesday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Thursday">Thursday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Friday">Friday</th>
+                                                      <th class="sorting" tabindex="0" aria-controls="example"
+                                                         aria-label="Saturday">Saturday</th>
+                                                   </tr>
+                                                </thead>
+                                             </table>
+                                          </div>
+                                       </div>
+                                    </div>
                                  </div>
                               </div>
                            </div>
                         </div>
                      </div>
+
                   </div>
                </div>
             </div>
-
          </div>
          <!--FOOTER-->
          <div class="footer">
