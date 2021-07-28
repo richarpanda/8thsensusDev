@@ -547,8 +547,8 @@ function createWeekTable(data) {
       buttons: [
          { extend: 'copy' },
          { extend: 'csv' },
-         { extend: 'excel', title: `Week Timesheet Report` },
-         { extend: 'pdf', title: `Week Timesheet Report` },
+         { extend: 'excel', title: `Timesheet Report` },
+         { extend: 'pdf', title: `Timesheet Report` },
          {
             extend: 'print',
             customize: function (win) {
