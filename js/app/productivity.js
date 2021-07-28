@@ -505,8 +505,8 @@ function getTableReportData(data) {
    });
 
    week.forEach(weekItem => {
-      weekItem.weekFrom = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber).startOf('week').format('YYYY-MM-DD')
-      weekItem.weekTo = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber).endOf('week').format('YYYY-MM-DD')
+      weekItem.weekFrom = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).startOf('week').format('YYYY-MM-DD')
+      weekItem.weekTo = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).endOf('week').format('YYYY-MM-DD')
    })
    
    let weekdata = alasql(`SELECT userid, weeknumber, weekFrom, weekTo, sunday, monday, tuesday, wednesday, thursday, friday, saturday, total FROM ? ORDER BY weeknumber`, [week]);

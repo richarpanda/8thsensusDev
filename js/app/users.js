@@ -32,23 +32,22 @@ $.ajax({
          <div class="userid-font">
             <img src="img/Circle-icons-profile.svg" alt="user-image">
          </div>
-         <h3>${usrid}</h3>
-      `);
+         <h3>${usrid}</h3>`);
 
-      let machinesTabString = '';
+      let machinestabString = '';
       let machinesTabContentString = '';
 
       let machines = alasql(`
-         SELECT TOP 5 machinename
+         SELECT  machinename
          FROM ? 
+         WHERE userid = '${usrid}'
          GROUP BY machinename
          `, [result]);
          
-         // WHERE userid = '${usrid}'
       for (let i = 0; i < machines.length; i++) {
          let navId = `${machines[i].machinename}`;
 
-         machinesTabString += `
+         machinestabString += `
             <a class="nav-item nav-link user-nav ${i == 0 ? 'active' : ''}" 
                id="nav-${navId + '-tab'}"
                data-toggle="tab"
@@ -74,7 +73,7 @@ $.ajax({
                   <div class="col-md-12">
                      <table id="machine-table" class="table table-sm table-mail">
                         <tbody>
-                           ${ getMachineData(navId, result) }
+                        ${ getMachineData(navId, result) }
                         </tbody>
                      </table>
                      <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
@@ -87,7 +86,34 @@ $.ajax({
          `;
       }
 
-      $("#nav-tab").append(machinesTabString);
+      let data = alasql(`
+         SELECT customerid, devicelist, os, hardware, localip, applications, gps
+         FROM ?
+         WHERE userid = '${usrid}'
+         GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
+      `, [result]);
+
+      userDetailString = `
+         <thead>
+            <tr>  
+               <td><b>Department: </b> Not defined</td>
+            </tr>
+            <tr>
+               <td><b>Customer Id: </b>${ data[0].customerid }</td>
+            </tr>
+            <tr>
+               <td><b>Name: </b> Not defined</td>
+            </tr>
+            <tr>
+               <td><b>Address: </b> Not defined</td>
+            </tr>
+            <tr>
+               <td><b>Phone number: </b> Not defined</td>
+            </tr>
+         </thead>`;
+
+      $("#user-detail").append(userDetailString);
+      $("#nav-tab").append(machinestabString);
       $("#nav-tabContent").append(machinesTabContentString);
 
       getproductivityData(result);
@@ -99,10 +125,10 @@ $.ajax({
 
 function getMachineData(machinename, result) {
    let data = alasql(`
-      SELECT customerid, devicelist, os, hardware, localip, applications, gps
+      SELECT customerid, devicelist, os, hardware, localip, applications, gps, stamp
       FROM ?
       WHERE machinename = '${ machinename }'
-      GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
+      GROUP BY customerid, devicelist, os, hardware, localip, applications, gps, stamp
       `, [result]);
 
    let gpsData = alasql(`
@@ -111,24 +137,8 @@ function getMachineData(machinename, result) {
       WHERE machinename = '${ machinename }'
       GROUP BY gps
    `, [result]);
-
-   let apps = [];
    
-   data.forEach(element => {
-      element.applications = element.applications.replace('{',' ');
-      element.applications = element.applications.replace('}',' ');
-
-      let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
-      elementApps.forEach(app => {
-         if (apps.indexOf(app) === -1)
-            apps.push(app);
-      });
-   });
-
    let tableString = `
-      <tr>
-         <td><b>Customer Id: </b> ${ data[0].customerid }</td>
-      </tr>
       <tr>
          <td><b>Device List: </b> ${ data[0].devicelist }</td>
       </tr>
@@ -142,36 +152,178 @@ function getMachineData(machinename, result) {
          <td><b>Local IP: </b> ${ data[0].localip }</td>
       </tr>`;
 
-   tableString += "<tr><td><b>Applications: </b>";
-   apps.forEach(app => {
-      tableString += `
-         <br />
-         &nbsp;&nbsp;&nbsp;&nbsp;
-         <b>
-            <a href='logs.html?mchname=${ machinename }&application=${ app }'>
-            ${ app }
-            </a>
-         </b>`;
-   });
-
-   
-   tableString += "</td></tr>";
-   tableString += `<tr><td class='table-list-items'><b>Geolocalization list: </b><br/><br />`;
-   gpsData.forEach(gpsItem => {
-      if (gpsItem.gps !== "no data presented") {
-         tableString += `
-            <a class="item" onclick="initMap('${ gpsItem.gps }')">
-               <i class="fa fa-location-arrow"></i>
-               <p>
-                  ${ gpsItem.gps }
-               </p>
-            </a>
-         `;
-      }
-   });
-   tableString += `</td></tr>`;
+   createTabs(data, machinename);
 
    return tableString;
+}
+
+function createTabs(dataArr, machineName) {
+   for (let i = 0; i < 4; i++) {
+      let tabType = '';
+      let tabString = '';
+      let tabContentString = '';
+
+      switch (i) {
+         case 0:
+            tabType = "Applications";
+            break;
+         case 1:
+            tabType = "Browser_History";
+            break;
+         case 2:
+            tabType = "Plugins";
+            break;
+         case 3:
+            tabType = "Gps";
+            break;
+      }
+
+      let navId = machineName + '-' + tabType;
+      
+      tabString +=`
+         <a class="nav-item nav-link user-nav ${i == 0 ? 'active' : ''}" 
+            id="nav-${navId + '-tab'}"
+            data-toggle="tab"
+            href="#nav-${navId}"
+            role="tab"
+            aria-controls="nav-${navId}"
+            aria-selected="${i == 0 ? 'true' : 'false'}">
+
+            <p>
+               ${tabType}
+            </p>
+         </a>
+      `;
+
+      tabContentString += `
+         <div class="tab-pane fade ${i == 0 ? 'show active' : ''}"
+               id="nav-${navId}"
+               role="tabpanel"
+               aria-labelledby="nav-${navId + '-tab'}">
+
+            <div class="row mt-2 p-2">
+               <div class="col-md-12">
+                  ${getContentData(dataArr, i)}
+               </div>
+            </div>
+            
+         </div>
+      `;
+
+      $("#nav-apps-tab").append(tabString);
+      $("#nav-apps-tab-content").append(tabContentString);
+   }  
+}
+
+function getContentData(data, i) {
+   let apps = [];
+   switch (i) {
+      case 0:
+         let tableString = 
+            `<table class="table table-responsive table-hover">
+               <thead>
+                  <tr>
+                     <th>Application Name </th>
+                     <th>Last Used Date </th>
+                     <th>Average </th>
+                     <th>CPU </th>
+                     <th>Memory </th>
+                  </tr>
+               </thead>
+               <tbody>`
+
+         data.forEach(element => {
+            element.applications = element.applications.replace('{',' ');
+            element.applications = element.applications.replace('}',' ');
+      
+            let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
+            elementApps.forEach(app => {
+               if (apps[0] == undefined) {
+                  tableString += `
+                     <tr>
+                        <td>${app.trim()}</td>
+                        <td>${element.stamp}</td>
+                     </tr>`
+               }
+               else {
+                  if (apps.find(x => x.appName == app.trim()) == undefined)
+                  {
+                     tableString += `
+                        <tr>
+                           <td>${app.trim()}</td>
+                           <td>${element.stamp}</td>
+                        </tr>`
+                  }
+               }
+            });
+         });
+
+         tableString += `</tbody></table>`
+
+         return tableString
+      case 1:
+      case 2:
+         return 'NO DATA'
+         break;
+      case 3:
+
+         
+   // tableString += "</td></tr>";
+   // tableString += `<tr><td class='table-list-items'><b>Geolocalization list: </b><br/><br />`;
+   // gpsData.forEach(gpsItem => {
+   //    if (gpsItem.gps !== "no data presented") {
+   //       tableString += `
+   //          <a class="item" onclick="initMap('${ gpsItem.gps }')">
+   //             <i class="fa fa-location-arrow"></i>
+   //             <p>
+   //                ${ gpsItem.gps }
+   //             </p>
+   //          </a>
+   //       `;
+   //    }
+   // });
+   // tableString += `</td></tr>`;
+         let gpsArr = [];
+         let tableGpsString = 
+            `<table class="table table-responsive table-hover">
+               <thead>
+                  <tr>
+                     <th>GPS: </th>
+                     <th>Date: </th>
+                  </tr>
+               </thead>
+               <tbody>`
+
+         data.forEach(element => {
+            console.log(element.gps);
+   
+            if (gpsArr[0] == undefined) {
+               gpsArr.push(element.gps);
+
+               tableGpsString += `
+                  <tr>
+                     <td>${element.gps}</td>
+                     <td>${element.stamp}</td>
+                  </tr>`
+            }
+            else {
+               if (gpsArr.indexOf(element.gps) === -1) {
+                  gpsArr.push(element.gps);
+
+                  tableGpsString += `
+                     <tr>
+                        <td>${element.gps}</td>
+                        <td>${element.stamp}</td>
+                     </tr>`;
+               }
+            }
+         })
+            
+         tableGpsString += `</tbody></table>`;
+
+         return tableGpsString;
+   }
+   
 }
 
 function getproductivityData(result) {
@@ -481,20 +633,22 @@ function msToDateTime(s) {
 }
 
 function initMap(gps) {
-   let gpsArr = gps.split(',');
-   let lat = parseFloat(gpsArr[0].trim());
-   let long = parseFloat(gpsArr[1].trim());
-   const uluru = { lat: lat, lng: long };
-   const map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 8,
-      center: uluru,
-   });
-   const marker = new google.maps.Marker({
-      position: uluru,
-      map: map,
-   });
+   if(gps !== undefined) {
+      let gpsArr = gps.split(',');
+      let lat = parseFloat(gpsArr[0].trim());
+      let long = parseFloat(gpsArr[1].trim());
+      const uluru = { lat: lat, lng: long };
+      const map = new google.maps.Map(document.getElementById("map"), {
+         zoom: 8,
+         center: uluru,
+      });
+      const marker = new google.maps.Marker({
+         position: uluru,
+         map: map,
+      });
 
-   var element = document.getElementById("map-container");
-   element.classList.remove("hide-map");
-   element.classList.add("show-map");
+      var element = document.getElementById("map-container");
+      element.classList.remove("hide-map");
+      element.classList.add("show-map");
+   }
 }
