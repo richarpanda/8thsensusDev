@@ -4875,10 +4875,64 @@ code {
    padding: 2px 4px;
    white-space: nowrap;
 }
+.user-ibox {
+   clear: both;
+   background-color: green;
+   margin-bottom: 0 !important;
+   padding: 0 !important;
+
+   .ibox-title {
+      -moz-border-bottom-colors: none;
+      -moz-border-left-colors: none;
+      -moz-border-right-colors: none;
+      -moz-border-top-colors: none;
+      background-color: #ffffff;
+      border-color: #e7eaec;
+      border-image: none;
+      border-style: solid solid none;
+      border-width: 2px 0 0;
+      color: inherit;
+      margin-bottom: 0;
+      padding: 15px 90px 8px 15px;
+      height: 45px !important;
+      clear: both;
+   }
+
+   >.ibox-title + .ibox-content {
+      background-color: #FFFFFF;
+      color: inherit;
+      padding: 15px 20px 20px 20px;
+      border-color: #e7eaec;
+      border-image: none;
+      border-style: solid solid none;
+      border-width: 1px 0;
+      height: 250px;
+
+      .user-chart {
+         height: 97%;
+      }
+      #userBarChart {
+         margin: 0 !important;
+         padding: 0 !important;
+      }
+   }
+   
+   >.ibox-content {
+      background-color: #FFFFFF;
+      color: inherit;
+      padding: 15px 20px 20px 20px;
+      border-color: #e7eaec;
+      border-image: none;
+      border-style: solid solid none;
+      border-width: 1px 0;
+      height: 298px;
+   }
+}
+
 .ibox {
    clear: both;
-   margin-bottom: 25px;
-   margin-top: 0;
+   background-color: green;
+   margin-bottom: 0px !important;
    padding: 0;
 }
 .ibox.collapsed .ibox-content {
@@ -9610,9 +9664,8 @@ tbody {
    text-align: center;
    font-size: 150px;
    color: #445362;
-   padding: 15px 0 !important;
+   padding: 0 25px !important;
 }
-
 
 .logs-filters {
    background: rgba(241,241,241,1);
@@ -9742,4 +9795,22 @@ tbody {
    border: 1px solid #b4b4b4;
    color: #000;
    border-radius: 3px;
+}
+
+.user-nav {
+   padding: 5px;
+   i {
+      font-size: 28px;
+      padding: 5px;
+   }
+   p {
+      vertical-align: center !important;
+      display: inline-block;
+      margin: auto;
+      padding-right: 5px;
+   }
+}
+
+.ibox-content h3 {
+   text-align: center;
 }

@@ -28,33 +28,67 @@ $.ajax({
       const params = new URLSearchParams(querystring);
       usrid = params.get('usrid');
 
-      $("#userName").html(`<b>User</b>: ${usrid}`);
+      $("#user-name").html(`
+         <div class="userid-font">
+            <img src="img/Circle-icons-profile.svg" alt="user-image">
+         </div>
+         <h3>${usrid}</h3>
+      `);
 
-      let tableString = "";
+      let machinesTabString = '';
+      let machinesTabContentString = '';
+
       let machines = alasql(`
-         SELECT machinename
+         SELECT TOP 5 machinename
          FROM ? 
-         WHERE userid = '${usrid}'
          GROUP BY machinename
-      `, [result]);
+         `, [result]);
+         
+         // WHERE userid = '${usrid}'
+      for (let i = 0; i < machines.length; i++) {
+         let navId = `${machines[i].machinename}`;
 
-      tableString += `<tr><td class='table-list-items'><b>Machines Names: </b><br/><br />`;
-
-      machines.forEach(machine => {
-         tableString += `
-            <a href='machines.html?mchname=${machine.machinename}' 
-               class="item">
+         machinesTabString += `
+            <a class="nav-item nav-link user-nav ${i == 0 ? 'active' : ''}" 
+               id="nav-${navId + '-tab'}"
+               data-toggle="tab"
+               href="#nav-${navId}"
+               role="tab"
+               aria-controls="nav-${navId}"
+               aria-selected="${i == 0 ? 'true' : 'false'}"
+            >
                <i class="fa fa-desktop"></i>
                <p>
-                  ${machine.machinename}
+                  ${machines[i].machinename}
                </p>
             </a>
          `;
-      });
 
-      tableString += `</td></tr>`;
+         machinesTabContentString += `
+            <div class="tab-pane fade ${i == 0 ? 'show active' : ''}"
+               id="nav-${navId}"
+               role="tabpanel"
+               aria-labelledby="nav-${navId + '-tab'}">
 
-      $("#usr-table tbody").append(tableString);
+               <div class="row mt-2 p-2">
+                  <div class="col-md-12">
+                     <table id="machine-table" class="table table-sm table-mail">
+                        <tbody>
+                           ${ getMachineData(navId, result) }
+                        </tbody>
+                     </table>
+                     <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
+                        <div id="map"></div>
+                     </div>
+                  </div>
+               </div>
+               
+            </div>
+         `;
+      }
+
+      $("#nav-tab").append(machinesTabString);
+      $("#nav-tabContent").append(machinesTabContentString);
 
       getproductivityData(result);
    },
@@ -62,6 +96,83 @@ $.ajax({
       console.error(error);
    },
 });
+
+function getMachineData(machinename, result) {
+   let data = alasql(`
+      SELECT customerid, devicelist, os, hardware, localip, applications, gps
+      FROM ?
+      WHERE machinename = '${ machinename }'
+      GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
+      `, [result]);
+
+   let gpsData = alasql(`
+      SELECT gps
+      FROM ?
+      WHERE machinename = '${ machinename }'
+      GROUP BY gps
+   `, [result]);
+
+   let apps = [];
+   
+   data.forEach(element => {
+      element.applications = element.applications.replace('{',' ');
+      element.applications = element.applications.replace('}',' ');
+
+      let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
+      elementApps.forEach(app => {
+         if (apps.indexOf(app) === -1)
+            apps.push(app);
+      });
+   });
+
+   let tableString = `
+      <tr>
+         <td><b>Customer Id: </b> ${ data[0].customerid }</td>
+      </tr>
+      <tr>
+         <td><b>Device List: </b> ${ data[0].devicelist }</td>
+      </tr>
+      <tr>
+         <td><b>OS: </b> ${ data[0].os }</td>
+      </tr>
+      <tr>
+         <td><b>Hardware: </b> ${ data[0].hardware }</td>
+      </tr>
+      <tr>
+         <td><b>Local IP: </b> ${ data[0].localip }</td>
+      </tr>`;
+
+   tableString += "<tr><td><b>Applications: </b>";
+   apps.forEach(app => {
+      tableString += `
+         <br />
+         &nbsp;&nbsp;&nbsp;&nbsp;
+         <b>
+            <a href='logs.html?mchname=${ machinename }&application=${ app }'>
+            ${ app }
+            </a>
+         </b>`;
+   });
+
+   
+   tableString += "</td></tr>";
+   tableString += `<tr><td class='table-list-items'><b>Geolocalization list: </b><br/><br />`;
+   gpsData.forEach(gpsItem => {
+      if (gpsItem.gps !== "no data presented") {
+         tableString += `
+            <a class="item" onclick="initMap('${ gpsItem.gps }')">
+               <i class="fa fa-location-arrow"></i>
+               <p>
+                  ${ gpsItem.gps }
+               </p>
+            </a>
+         `;
+      }
+   });
+   tableString += `</td></tr>`;
+
+   return tableString;
+}
 
 function getproductivityData(result) {
    let timeInterval = ",SUBSTRING(stamp, 1, 10) [timeInterval]";
@@ -261,7 +372,7 @@ function createGraph(graphData) {
    if (chart !== null)
       chart.destroy();
 
-   ctx2 = document.getElementById("barChart").getContext("2d");
+   ctx2 = document.getElementById("userBarChart").getContext("2d");
    chart = new Chart(ctx2, { type: "bar", data: barData, options: barOptions });
 }
 
@@ -367,4 +478,23 @@ function msToDateTime(s) {
 
    let dateNow = new Date();
    return new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), pad(hrs), pad(mins), pad(secs), 0);
+}
+
+function initMap(gps) {
+   let gpsArr = gps.split(',');
+   let lat = parseFloat(gpsArr[0].trim());
+   let long = parseFloat(gpsArr[1].trim());
+   const uluru = { lat: lat, lng: long };
+   const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 8,
+      center: uluru,
+   });
+   const marker = new google.maps.Marker({
+      position: uluru,
+      map: map,
+   });
+
+   var element = document.getElementById("map-container");
+   element.classList.remove("hide-map");
+   element.classList.add("show-map");
 }
