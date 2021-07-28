@@ -95,20 +95,20 @@ $.ajax({
 
       userDetailString = `
          <thead>
-            <tr>  
-               <td><b>Department: </b> Not defined</td>
-            </tr>
             <tr>
                <td><b>Customer Id: </b>${ data[0].customerid }</td>
             </tr>
             <tr>
-               <td><b>Name: </b> Not defined</td>
+            <td><b>Name: </b> Not defined</td>
             </tr>
             <tr>
-               <td><b>Address: </b> Not defined</td>
+            <td><b>Address: </b> Not defined</td>
             </tr>
             <tr>
-               <td><b>Phone number: </b> Not defined</td>
+            <td><b>Phone number: </b> Not defined</td>
+            </tr>
+            <tr>  
+               <td><b>Department: </b> Not defined</td>
             </tr>
          </thead>`;
 
@@ -150,7 +150,11 @@ function getMachineData(machinename, result) {
       </tr>
       <tr>
          <td><b>Local IP: </b> ${ data[0].localip }</td>
-      </tr>`;
+      </tr>
+      <tr>
+         <td><b>Last Update: </b> ${ data[0].stamp }</td>
+      </tr>
+      `;
 
    createTabs(data, machinename);
 
@@ -228,6 +232,7 @@ function getContentData(data, i) {
                      <th>Average </th>
                      <th>CPU </th>
                      <th>Memory </th>
+                     <th>Status </th>
                   </tr>
                </thead>
                <tbody>`
@@ -239,19 +244,37 @@ function getContentData(data, i) {
             let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
             elementApps.forEach(app => {
                if (apps[0] == undefined) {
+                  apps.push({
+                     appName: app.trim(),
+                     lastUsed: element.stamp
+                  });
+
                   tableString += `
                      <tr>
                         <td>${app.trim()}</td>
-                        <td>${element.stamp}</td>
+                        <td>${formatDate(element.stamp)}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>Normal</td>
                      </tr>`
                }
                else {
                   if (apps.find(x => x.appName == app.trim()) == undefined)
                   {
+                     apps.push({
+                        appName: app.trim(),
+                        lastUsed: element.stamp
+                     });
+   
                      tableString += `
                         <tr>
                            <td>${app.trim()}</td>
-                           <td>${element.stamp}</td>
+                           <td>${formatDate(element.stamp)}</td>
+                           <td></td>
+                           <td></td>
+                           <td></td>
+                           <td>Normal</td>
                         </tr>`
                   }
                }
@@ -266,23 +289,6 @@ function getContentData(data, i) {
          return 'NO DATA'
          break;
       case 3:
-
-         
-   // tableString += "</td></tr>";
-   // tableString += `<tr><td class='table-list-items'><b>Geolocalization list: </b><br/><br />`;
-   // gpsData.forEach(gpsItem => {
-   //    if (gpsItem.gps !== "no data presented") {
-   //       tableString += `
-   //          <a class="item" onclick="initMap('${ gpsItem.gps }')">
-   //             <i class="fa fa-location-arrow"></i>
-   //             <p>
-   //                ${ gpsItem.gps }
-   //             </p>
-   //          </a>
-   //       `;
-   //    }
-   // });
-   // tableString += `</td></tr>`;
          let gpsArr = [];
          let tableGpsString = 
             `<table class="table table-responsive table-hover">
