@@ -129,14 +129,8 @@ function getMachineData(machinename, result) {
       FROM ?
       WHERE machinename = '${ machinename }'
       GROUP BY customerid, devicelist, os, hardware, localip, applications, gps, stamp
+      ORDER BY stamp DESC
       `, [result]);
-
-   let gpsData = alasql(`
-      SELECT gps
-      FROM ?
-      WHERE machinename = '${ machinename }'
-      GROUP BY gps
-   `, [result]);
    
    let tableString = `
       <tr>
@@ -221,6 +215,7 @@ function createTabs(dataArr, machineName) {
 
 function getContentData(data, i) {
    let apps = [];
+
    switch (i) {
       case 0:
          let tableString = 
@@ -248,16 +243,6 @@ function getContentData(data, i) {
                      appName: app.trim(),
                      lastUsed: element.stamp
                   });
-
-                  tableString += `
-                     <tr>
-                        <td>${app.trim()}</td>
-                        <td>${formatDate(element.stamp)}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>Normal</td>
-                     </tr>`
                }
                else {
                   if (apps.find(x => x.appName == app.trim()) == undefined)
@@ -266,20 +251,24 @@ function getContentData(data, i) {
                         appName: app.trim(),
                         lastUsed: element.stamp
                      });
-   
-                     tableString += `
-                        <tr>
-                           <td>${app.trim()}</td>
-                           <td>${formatDate(element.stamp)}</td>
-                           <td></td>
-                           <td></td>
-                           <td></td>
-                           <td>Normal</td>
-                        </tr>`
                   }
                }
             });
          });
+
+         var appssql = alasql(`SELECT * FROM ? ORDER BY appName`, [apps]);
+
+         appssql.forEach(app => {
+            tableString += `
+               <tr>
+                  <td>${app.appName}</td>
+                  <td>${app.lastUsed}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>Normal</td>
+               </tr>`;
+         })
 
          tableString += `</tbody></table>`
 
@@ -300,9 +289,7 @@ function getContentData(data, i) {
                </thead>
                <tbody>`
 
-         data.forEach(element => {
-            console.log(element.gps);
-   
+         data.forEach(element => {   
             if (gpsArr[0] == undefined) {
                gpsArr.push(element.gps);
 

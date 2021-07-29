@@ -30,7 +30,7 @@ $(function () {
       dateFrom = start.format('YYYY-MM-DDTHH:mm:ss');
       dateTo = end.format('YYYY-MM-DDTHH:mm:ss');
 
-      slctDateRange = moment(endD, 'YYYY-MM-DD').diff( moment(startD, 'YYYY-MM-DD'), 'days') + 1;
+      slctDateRange = moment(endD, 'YYYY-MM-DD').diff(moment(startD, 'YYYY-MM-DD'), 'days') + 1;
    });
 });
 
@@ -113,7 +113,7 @@ function getproductivityData(result = null) {
          error: function (err) {
             console.error(err);
          }
-      });   
+      });
    }
    else {
       ProcessData(result);
@@ -228,8 +228,7 @@ function ProcessData(result) {
    });
 
    createTable(activeInactiveDatabyUser);
-   //console.table(activeInactiveDatabyUser);
-   getTableReportData(arrLock);
+   getTableReportData(arrLock, result);
 
    if (arrLock.length > 0) {
       let date = arrLock[0].date;
@@ -301,7 +300,37 @@ function ProcessData(result) {
    createGraph(activeInactiveData);
 }
 
-function getTableReportData(data) {
+function getTableReportData(data, result) {
+   let week = [];
+   let usersData = alasql(`
+      SELECT DISTINCT(UPPER(userid)) userid
+      FROM ?
+      GROUP BY userid
+      ORDER BY userid
+   `, [result]);
+
+   let weekNumber = alasql(`
+      SELECT weeknumber
+      FROM ? GROUP BY weeknumber
+   `, [data]);
+
+   weekNumber.forEach(weekElement => {
+      usersData.forEach(user => {
+         week.push({
+            weeknumber: weekElement.weeknumber,
+            userid: user.userid.trim().toUpperCase(),
+            monday: "00:00",
+            tuesday: "00:00",
+            wednesday: "00:00",
+            thursday: "00:00",
+            friday: "00:00",
+            saturday: "00:00",
+            sunday: "00:00",
+            total: "00:00"
+         });
+      });
+   })
+
    let sundayData = alasql(`
       SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
       FROM ? WHERE weekday = 'Sunday' GROUP BY userid, weekday, weeknumber
@@ -335,7 +364,6 @@ function getTableReportData(data) {
       FROM ? GROUP BY userid, weeknumber
    `, [data])
 
-   let week = [];
    sundayData.forEach(element => {
       let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
       if (indx == -1) {
@@ -350,7 +378,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: msToTime(element.activeTime),
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].sunday = msToTime(element.activeTime);
@@ -371,7 +399,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].monday = msToTime(element.activeTime);
@@ -392,7 +420,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].tuesday = msToTime(element.activeTime);
@@ -401,6 +429,7 @@ function getTableReportData(data) {
 
    wednesdayData.forEach(element => {
       let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
+
       if (indx == -1) {
          week.push({
             weeknumber: element.weeknumber,
@@ -413,7 +442,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].wednesday = msToTime(element.activeTime);
@@ -434,7 +463,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].thursday = msToTime(element.activeTime);
@@ -455,7 +484,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].friday = msToTime(element.activeTime);
@@ -476,7 +505,7 @@ function getTableReportData(data) {
             saturday: msToTime(element.activeTime),
             sunday: "00:00",
             total: "00:00"
-         });   
+         });
       }
       else {
          week[indx].saturday = msToTime(element.activeTime);
@@ -497,7 +526,7 @@ function getTableReportData(data) {
             saturday: "00:00",
             sunday: "00:00",
             total: msToTime(element.activeTime),
-         });   
+         });
       }
       else {
          week[indx].total = msToTime(element.activeTime);
@@ -508,9 +537,9 @@ function getTableReportData(data) {
       weekItem.weekFrom = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).startOf('week').format('YYYY-MM-DD')
       weekItem.weekTo = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).endOf('week').format('YYYY-MM-DD')
    })
-   
+
    let weekdata = alasql(`SELECT userid, weeknumber, weekFrom, weekTo, sunday, monday, tuesday, wednesday, thursday, friday, saturday, total FROM ? ORDER BY weeknumber`, [week]);
-   
+
    createWeekTable(weekdata)
 }
 
@@ -778,7 +807,7 @@ function getTimeInterval(range) {
    if (parseInt(range) == 1) {
       return ",SUBSTRING(stamp, 1, 13) [timeInterval]";
    }
-   else  {
+   else {
       return ",SUBSTRING(stamp, 1, 10) [timeInterval]";
    }
 }
