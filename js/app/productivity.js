@@ -4,7 +4,7 @@ var ctx2 = null;
 var chart = null;
 var selectedUsers = [];
 var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
-var dateTo = moment().add(-1, 'days').format('YYYY-MM-DDT23:59:59');
+var dateTo = moment().format('YYYY-MM-DDT23:59:59');
 var slctDateRange = 1;
 
 Date.prototype.addDays = function (days) {
@@ -159,7 +159,7 @@ function ProcessData(result) {
          let dt = formatDate(new Date().addDays(-i)).toString();
          dates.push(dt.substring(0, 10));
       }
-
+      
    let userData = alasql(`
       SELECT
          CASE 
