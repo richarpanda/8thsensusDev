@@ -10,6 +10,7 @@
    <link href="css/bootstrap.min.css" rel="stylesheet">
    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
    <link href="css/animate.css" rel="stylesheet">
+   <link href="css/menu.min.css" rel="stylesheet">
    <link href="css/style.min.css" rel="stylesheet">
    <link href="css/loader.min.css" rel="stylesheet">
 </head>
@@ -29,33 +30,16 @@
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
          <div class="row border-bottom gray-bg">
-            <nav class="navbar navbar-expand-lg navbar-static-top" role="navigation">
+            <nav class="menu-nav navbar navbar-expand-lg navbar-static-top" role="navigation">
                <a href="indexMain.html" class="navbar-brand "><img src="img/logo.png"></a>
                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
                   aria-expanded="false" aria-label="Toggle navigation">
                   <i class="fa fa-reorder"></i>
                </button>
-               <!--ITEMS-->
-               <div class="navbar-collapse collapse" id="navbar">
-                  <ul class="nav navbar-nav mr-auto">
-                     <li> <a aria-expanded="false" href="indexMain.html">Home</a></li>
-                     <li> <a aria-expanded="false" href="productivity.html">Productivity</a></li>
-                     <li class="active"> <a aria-expanded="false" href="logs.html">Logs</a></li>
-                     <li> <a aria-expanded="false" href="licenses.html">Licenses</a></li>
-                  </ul>
-                  <ul class="nav navbar-top-links navbar-right">
-                     <li>
-                        <a href="login.html">
-                           <i class="fa fa-sign-out"></i> Log out
-                        </a>
-                     </li>
-                  </ul>
-               </div>
+               <div class="navbar-collapse collapse dinamyc-nav-menu" id="navbar"></div>
             </nav>
          </div>
 
-
-         <!--CONTAINER-->
          <div class="wrapper wrapper-content">
             <div class="row">
                <div class="col-md-2 pr-1">
@@ -175,13 +159,15 @@
    <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
    <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <!--SDK-->
-   <script src="js/app/users.js"></script>
    <script src="js/alasql.js"></script>
    <script src="js/moment.js"></script>
    <script src="js/plugins/pace/pace.min.js"></script>
    <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfvFZs4h1SRljPG1Wt_DqdyXNikMbvsp4&callback=initMap&libraries=&v=weekly"
       async></script>
+   <!-- APP -->
+   <script src="js/app/general.js"></script>
+   <script src="js/app/users.js"></script>
 </body>
 
 </html>

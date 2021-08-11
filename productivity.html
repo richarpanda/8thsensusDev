@@ -10,6 +10,7 @@
    <link href="css/bootstrap.min.css" rel="stylesheet">
    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
    <link href="css/animate.css" rel="stylesheet">
+   <link href="css/menu.min.css" rel="stylesheet">
    <link href="css/style.min.css" rel="stylesheet">
    <link href="css/plugins/select2/select2.min.css" rel="stylesheet">
    <link href="css/plugins/datapicker/datepicker3.css" rel="stylesheet">
@@ -37,32 +38,15 @@
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
          <div class="row border-bottom gray-bg">
-            <nav class="navbar navbar-expand-lg navbar-static-top" role="navigation">
-               <a href="indexMain.html" class="navbar-brand"><img src="img/logo.png"></a>
+            <nav class="menu-nav navbar navbar-expand-lg navbar-static-top" role="navigation">
+               <a href="indexMain.html" class="navbar-brand "><img src="img/logo.png"></a>
                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
                   aria-expanded="false" aria-label="Toggle navigation">
                   <i class="fa fa-reorder"></i>
                </button>
-               <!--ITEMS-->
-               <div class="navbar-collapse collapse" id="navbar">
-                  <ul class="nav navbar-nav mr-auto">
-                     <li> <a aria-expanded="false" href="indexMain.html">Home</a></li>
-                     <li class="active"> <a aria-expanded="false" href="productivity.html">Productivity</a></li>
-                     <li> <a aria-expanded="false" href="logs.html">Logs</a></li>
-                     <li> <a aria-expanded="false" href="licenses.html">Licenses</a></li>
-
-                  </ul>
-                  <ul class="nav navbar-top-links navbar-right">
-                     <li>
-                        <a href="login.html">
-                           <i class="fa fa-sign-out"></i> Log out
-                        </a>
-                     </li>
-                  </ul>
-               </div>
+               <div class="navbar-collapse collapse dinamyc-nav-menu" id="navbar"></div>
             </nav>
          </div>
-         <!--CONTAINER-->
 
          <div class="wrapper wrapper-content">
             <div class="row">
@@ -135,8 +119,9 @@
                                     </table>
                                  </div>
 
-                                 <button type="button" class="btn btn-outline btn-sm btn-outline-secondary position-absolute" data-toggle="modal" data-target="#exampleModal"
-                                    style="bottom: 31px; left: 22px;">
+                                 <button type="button"
+                                    class="btn btn-outline btn-sm btn-outline-secondary position-absolute"
+                                    data-toggle="modal" data-target="#exampleModal" style="bottom: 31px; left: 22px;">
                                     Timesheet generator
                                  </button>
                               </div>
@@ -155,12 +140,15 @@
                                     <span aria-hidden="true">&times;</span>
                                  </button>
                               </div>
-                              <div class="modal-body" style="margin-bottom: 0 !important; padding-bottom: 0 !important;">
+                              <div class="modal-body"
+                                 style="margin-bottom: 0 !important; padding-bottom: 0 !important;">
                                  <div class="row" style="text-align: center; font-size: 12px;">
                                     <div class="col-md-12">
                                        <div class="table-responsive">
-                                          <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
-                                             <table id="weekDataTable" class="dataTable table-striped table-sm table-hover w-100">
+                                          <div id="example_wrapper"
+                                             class="dataTables_wrapper container-fluid dt-bootstrap4">
+                                             <table id="weekDataTable"
+                                                class="dataTable table-striped table-sm table-hover w-100">
                                                 <thead>
                                                    <tr role="row">
                                                       <th class="sorting" tabindex="0" aria-controls="example"
@@ -241,6 +229,8 @@
    <script src="plugin/js/plugins/dataTables/datatables.min.js"></script>
    <script src="plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <script src="js/alasql.js"></script>
+   <!-- APP -->
+   <script src="js/app/general.js"></script>
    <script src="js/app/productivity.js"></script>
 </body>
 
