@@ -3,6 +3,13 @@ $(document).ready(function () {
 
    function createMenu() {
       const path = window.location.pathname.substring(1);
+      const pathArr = window.location.pathname.split('/');
+      let pathName = '';
+
+      for (let i = 0; i < pathArr.length - 1; i++) {
+         pathName += pathArr[i] + '/';
+      }
+
       pathLen = path.split("/");
 
       let navMenu = `
@@ -35,7 +42,7 @@ $(document).ready(function () {
             <ul>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "reports/"
+            ? pathName + "reports/"
             : pathLen[0] !== "reports"
                ? "../reports/"
                : "") + "application.html"
@@ -45,7 +52,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "reports/"
+            ? pathName +"reports/"
             : pathLen[0] !== "reports"
                ? "../reports/"
                : "") + "userMachine.html"
@@ -55,7 +62,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "reports/"
+            ? pathName +"reports/"
             : pathLen[0] !== "reports"
                ? "../reports/"
                : "") + "accessLogs.html"
@@ -65,7 +72,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "reports/"
+            ? pathName +"reports/"
             : pathLen[0] !== "reports"
                ? "../reports/"
                : "") + "gpsLocations.html"
@@ -84,7 +91,7 @@ $(document).ready(function () {
             <ul>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "admin/"
+            ? pathName + "admin/"
             : pathLen[0] !== "admin"
                ? "../admin/"
                : "") + "userAccessManagement.html"
@@ -94,7 +101,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "admin/"
+            ? pathName + "admin/"
             : pathLen[0] !== "admin"
                ? "../admin/"
                : "") + "securityLogs.html"
@@ -104,7 +111,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "admin/"
+            ? pathName + "admin/"
             : pathLen[0] !== "admin"
                ? "../admin/"
                : "") + "userMachineManagement.html"
@@ -114,7 +121,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "admin/"
+            ? pathName + "admin/"
             : pathLen[0] !== "admin"
                ? "../admin/"
                : "") + "reportAdmin.html"
@@ -124,7 +131,7 @@ $(document).ready(function () {
                </li>
                <li>
                   <a href='${(pathLen.length == 1
-            ? "admin/"
+            ? pathName + "admin/"
             : pathLen[0] !== "admin"
                ? "../admin/"
                : "") + "locationProfiles.html"
