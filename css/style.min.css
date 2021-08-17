@@ -11348,14 +11348,14 @@ tbody {
   padding: 0 25px !important;
 }
 
-.logs-filters {
+.filters {
   background: #f1f1f1;
   background: -webkit-gradient(left top, left bottom, color-stop(0%, #f1f1f1), color-stop(100%, white));
   background: linear-gradient(to bottom, #f1f1f1 0%, white 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f1f1f1', endColorstr='#ffffff', GradientType=0 );
 }
 
-.logs-filters label {
+.filters label {
   font-weight: bold;
 }
 
