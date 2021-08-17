@@ -4,32 +4,34 @@ $(document).ready(function () {
    function createMenu() {
       const path = window.location.pathname.substring(1);
       const pathArr = window.location.pathname.split('/');
+      let isSubMenuItem = pathArr.find(item => item === 'reports') === "reports" || pathArr.find(item => item === 'admin') === "admin";
+      let isReport = pathArr.find(item => item === 'reports') === "reports";
+      let isAdmin = pathArr.find(item => item === 'admin') === "admin";
       let pathName = '';
 
-      for (let i = 0; i < pathArr.length - 1; i++) {
+      for (let i = 0; i < pathArr.length - 1; i++)
          pathName += pathArr[i] + '/';
-      }
 
-      pathLen = path.split("/");
+      let pathLen = path.length;
+      console.log(isSubMenuItem);
+      console.log(pathName);
 
       let navMenu = `
       <ul class="nav navbar-nav mr-auto">
          <li class="sub-menu ${path == "indexMain.html" ? "active" : ""}">
-            <a href='${(pathName.length > 1 ? "../" : "") + "indexMain.html"
-         }'>
+            <a href='${ (isSubMenuItem ? "../" : "") + "indexMain.html" }'>
                <span>Home</span>
             </a>
          </li>
 
          <li class="sub-menu ${path == "productivity.html" ? "active" : ""}">
-            <a href='${(pathName.length > 1 ? "../" : "") + "productivity.html"
-         }'>
+            <a href='${ (isSubMenuItem ? "../" : "") + "productivity.html" }'>
                <span>Productivity</span>
             </a>
          </li>
 
          <li class="sub-menu ${path == "logs.html" ? "active" : ""}">
-            <a href='${(pathName.length > 1 ? "../" : "") + "logs.html"}'>
+            <a href='${ (isSubMenuItem ? "../" : "") + "logs.html" }'>
                <span>Logs</span>
             </a>
          </li>
@@ -41,42 +43,22 @@ $(document).ready(function () {
             </a>
             <ul>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "reports/"
-            : pathArr.find(item => item === 'reports') !== "reports"
-               ? "../reports/"
-               : "") + "application.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "application.html" }'>
                      Application
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName +"reports/"
-            : pathArr.find(item => item === 'reports') !== "reports"
-               ? "../reports/"
-               : "") + "userMachine.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "userMachine.html" }'>
                      User Machine
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName +"reports/"
-            : pathArr.find(item => item === 'reports') !== "reports"
-               ? "../reports/"
-               : "") + "accessLogs.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "accessLogs.html" }'>
                      Access Logs
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName +"reports/"
-            : pathArr.find(item => item === 'reports') !== "reports"
-               ? "../reports/"
-               : "") + "gpsLocations.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "gpsLocations.html" }'>
                      Gps Locations
                   </a>
                </li>
@@ -90,52 +72,27 @@ $(document).ready(function () {
             </a>
             <ul>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "admin/"
-            : pathArr.find(item => item === 'admin') !== "admin"
-               ? "../admin/"
-               : "") + "userAccessManagement.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "userAccessManagement.html" }'>
                      User Access Management
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "admin/"
-            : pathArr.find(item => item === 'admin') !== "admin"
-               ? "../admin/"
-               : "") + "securityLogs.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "securityLogs.html" }'>
                      Security Logs
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "admin/"
-            : pathArr.find(item => item === 'admin') !== "admin"
-               ? "../admin/"
-               : "") + "userMachineManagement.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "userMachineManagement.html" }'>
                      User / Machine Management
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "admin/"
-            : pathArr.find(item => item === 'admin') !== "admin"
-               ? "../admin/"
-               : "") + "reportAdmin.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "reportAdmin.html" }'>
                      Report Admin
                   </a>
                </li>
                <li>
-                  <a href='${(pathLen.length == 1
-            ? pathName + "admin/"
-            : pathArr.find(item => item === 'admin') !== "admin"
-               ? "../admin/"
-               : "") + "locationProfiles.html"
-         }'>
+                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "locationProfiles.html" }'>
                      Location Profiles MGMT
                   </a>
                </li>
