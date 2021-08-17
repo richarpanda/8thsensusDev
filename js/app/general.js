@@ -15,21 +15,21 @@ $(document).ready(function () {
       let navMenu = `
       <ul class="nav navbar-nav mr-auto">
          <li class="sub-menu ${path == "indexMain.html" ? "active" : ""}">
-            <a href='${(pathLen.length > 1 ? "../" : "") + "indexMain.html"
+            <a href='${(pathName.length > 1 ? "../" : "") + "indexMain.html"
          }'>
                <span>Home</span>
             </a>
          </li>
 
          <li class="sub-menu ${path == "productivity.html" ? "active" : ""}">
-            <a href='${(pathLen.length > 1 ? "../" : "") + "productivity.html"
+            <a href='${(pathName.length > 1 ? "../" : "") + "productivity.html"
          }'>
                <span>Productivity</span>
             </a>
          </li>
 
          <li class="sub-menu ${path == "logs.html" ? "active" : ""}">
-            <a href='${(pathLen.length > 1 ? "../" : "") + "logs.html"}'>
+            <a href='${(pathName.length > 1 ? "../" : "") + "logs.html"}'>
                <span>Logs</span>
             </a>
          </li>
@@ -43,7 +43,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "reports/"
-            : pathLen[0] !== "reports"
+            : pathArr.find(item => item === 'reports') !== "reports"
                ? "../reports/"
                : "") + "application.html"
          }'>
@@ -53,7 +53,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName +"reports/"
-            : pathLen[0] !== "reports"
+            : pathArr.find(item => item === 'reports') !== "reports"
                ? "../reports/"
                : "") + "userMachine.html"
          }'>
@@ -63,7 +63,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName +"reports/"
-            : pathLen[0] !== "reports"
+            : pathArr.find(item => item === 'reports') !== "reports"
                ? "../reports/"
                : "") + "accessLogs.html"
          }'>
@@ -73,7 +73,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName +"reports/"
-            : pathLen[0] !== "reports"
+            : pathArr.find(item => item === 'reports') !== "reports"
                ? "../reports/"
                : "") + "gpsLocations.html"
          }'>
@@ -92,7 +92,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "admin/"
-            : pathLen[0] !== "admin"
+            : pathArr.find(item => item === 'admin') !== "admin"
                ? "../admin/"
                : "") + "userAccessManagement.html"
          }'>
@@ -102,7 +102,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "admin/"
-            : pathLen[0] !== "admin"
+            : pathArr.find(item => item === 'admin') !== "admin"
                ? "../admin/"
                : "") + "securityLogs.html"
          }'>
@@ -112,7 +112,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "admin/"
-            : pathLen[0] !== "admin"
+            : pathArr.find(item => item === 'admin') !== "admin"
                ? "../admin/"
                : "") + "userMachineManagement.html"
          }'>
@@ -122,7 +122,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "admin/"
-            : pathLen[0] !== "admin"
+            : pathArr.find(item => item === 'admin') !== "admin"
                ? "../admin/"
                : "") + "reportAdmin.html"
          }'>
@@ -132,7 +132,7 @@ $(document).ready(function () {
                <li>
                   <a href='${(pathLen.length == 1
             ? pathName + "admin/"
-            : pathLen[0] !== "admin"
+            : pathArr.find(item => item === 'admin') !== "admin"
                ? "../admin/"
                : "") + "locationProfiles.html"
          }'>
