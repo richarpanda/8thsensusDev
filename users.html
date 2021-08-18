@@ -54,11 +54,19 @@
                </div>
                <div class="col-md-4 pl-1 pr-1">
                   <div class="user-ibox">
-                     <div class="ibox-title">
+                     <div class="ibox-title pr-3">
                         User Detail
+                        <div class="ibox-title-button" onclick="showEdit()">
+                           <i class="fa fa-edit"></i>
+                        </div>
                      </div>
-                     <div class="ibox-content pb-0 pt-0">
-                        <table id="user-detail" class="table table-striped table-hover w-100"></table>
+                     <div class="ibox-content pb-0 pt-0 position-relative">
+                        <table id="user-detail" class="table table-hover w-100"></table>
+                        <div id="edit-buttons" class="hide">
+                           <button class="btn btn-sm btn-success">Save changes</button>
+                           <button class="btn btn-sm btn-success">Lock / Unlock</button>
+                        </div>
+                        
                      </div>
                   </div>
                </div>

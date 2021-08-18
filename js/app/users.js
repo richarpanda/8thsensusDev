@@ -2,6 +2,9 @@ var dataTable = null;
 let tAccountLicenses;
 let dataSet = null;
 let usrid = null;
+let userDetailString = null;
+var editUser = false;
+var userData = [];
 var ctx2 = null;
 var chart = null;
 
@@ -60,8 +63,7 @@ $.ajax({
                <p>
                   ${machines[i].machinename}
                </p>
-            </a>
-         `;
+            </a>`;
 
          machinesTabContentString += `
             <div class="tab-pane fade ${i == 0 ? 'show active' : ''}"
@@ -80,10 +82,8 @@ $.ajax({
                         <div id="map"></div>
                      </div>
                   </div>
-               </div>
-               
-            </div>
-         `;
+               </div>               
+            </div>`;
       }
 
       let data = alasql(`
@@ -93,10 +93,63 @@ $.ajax({
          GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
       `, [result]);
 
+      userData = data[0];
+
+      createUserDetail();
+      
+      $("#nav-tab").append(machinestabString);
+      $("#nav-tabContent").append(machinesTabContentString);
+
+      getproductivityData(result);
+   },
+   error: function (xhr, status, error) {
+      console.error(error);
+   },
+});
+
+function createUserDetail(editUser = false) {
+   if (editUser) {
+      userDetailString = `
+         <thead class="edit-table">
+            <tr>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Customer Id: </b></p>
+                  <input type="text" class="form-control form-control-sm" value="${ userData.customerid }" />
+               </td>
+            </tr>
+            <tr>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Name: </b></p>
+                  <input type="text" class="form-control form-control-sm" value="Not defined" />
+               </td>
+            </tr>
+            <tr>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Address: </b></p>
+                  <input type="text" class="form-control form-control-sm" value="Not defined" />
+               </td>
+            </tr>
+            <tr>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Phone number: </b></p>
+                  <input type="text" class="form-control form-control-sm" value="Not defined" />
+               </td>
+            </tr>
+            <tr>  
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Department: </b></p>
+                  <input type="text" class="form-control form-control-sm" value="Not defined" />
+               </td>
+            </tr>
+         </thead>`;   
+
+      document.getElementById("edit-buttons").className = '';
+   }
+   else {
       userDetailString = `
          <thead>
             <tr>
-               <td><b>Customer Id: </b>${ data[0].customerid }</td>
+               <td><b>Customer Id: </b>${ userData.customerid }</td>
             </tr>
             <tr>
             <td><b>Name: </b> Not defined</td>
@@ -111,17 +164,16 @@ $.ajax({
                <td><b>Department: </b> Not defined</td>
             </tr>
          </thead>`;
+      document.getElementById("edit-buttons").className = 'hide';
+   }
 
-      $("#user-detail").append(userDetailString);
-      $("#nav-tab").append(machinestabString);
-      $("#nav-tabContent").append(machinesTabContentString);
+   $("#user-detail").html(userDetailString);
+}
 
-      getproductivityData(result);
-   },
-   error: function (xhr, status, error) {
-      console.error(error);
-   },
-});
+function showEdit() {
+   editUser = !editUser;
+   createUserDetail(editUser);
+}
 
 function getMachineData(machinename, result) {
    let data = alasql(`

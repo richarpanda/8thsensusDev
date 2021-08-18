@@ -9806,11 +9806,51 @@ tbody {
    p {
       vertical-align: center !important;
       display: inline-block;
-      margin: auto;
       padding-right: 5px;
+      margin: auto;
    }
 }
 
 .ibox-content h3 {
    text-align: center;
 }
+
+.ibox-title-button {
+   float: right !important;
+   margin-top: -4px;
+   font-size: 20px;
+   cursor: pointer;
+   color: #0056c4;
+}
+
+.edit-table {
+   td {
+      padding-top: 6px !important;
+   }
+   input {
+      margin-top: -10px;
+      margin-bottom: 0 !important;
+      font-size: 12px;
+      height: 22px;
+   }
+}
+
+#edit-buttons {
+   position: absolute;
+   right: 10px;
+   bottom: 10px;
+   button {
+      display: inline-block;
+   }
+}
+
+.show {
+   display: block;
+}
+
+.hide {
+   display: none;
+
+   color: #ff9494
+}
+
