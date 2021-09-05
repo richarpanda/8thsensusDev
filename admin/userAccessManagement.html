@@ -5,7 +5,7 @@
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-   <title>8th Sensus.</title>
+   <title>Enterprise Portal</title>
 
    <link href="../css/bootstrap.min.css" rel="stylesheet">
    <link href="../font-awesome/css/font-awesome.css" rel="stylesheet">
@@ -14,12 +14,25 @@
    <link href="../css/style.min.css" rel="stylesheet">
    <link href="../css/plugins/select2/select2.min.css" rel="stylesheet">
    <link href="../css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+   <link href="../css/plugins/select2/select2.min.css" rel="stylesheet">
+   <link href="../css/plugins/datapicker/datepicker3.css" rel="stylesheet">
    <link href="../css/plugins/dataTables/datatables.min.css" rel="stylesheet">
-   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
+   <link href="../css/plugins/multiselect/multiselect.css" rel="stylesheet">
+   <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" />
+   <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
    <link href="../css/loader.min.css" rel="stylesheet">
 </head>
 
 <body class="top-navigation">
+   <div id="loader">
+      <div class="loading">
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+      </div>
+   </div>
 
    <div id="wrapper">
       <div id="page-wrapper" class="dark-bg">
@@ -36,15 +49,45 @@
          </div>
 
          <div class="wrapper wrapper-content">
-            <div class="row">
-               <div class="col-md-12">
-                  <div class="ibox">
-                     <div class="ibox-title">
-                        <h5>USER ACCESS MANAGEMENT</h5>
+            <div class="ibox-title">
+               <h5>User Access Management</h5>
+            </div>
+            <!--PICKERS-->
+            <div class="ibox-content">
+               <div class="table-responsive">
+                  <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
+                     
+                     <div class="p-4 logs-filters">
+                        <div class="form-row justify-content-md-center">
+                           <div class="col-md-6">
+                              <label for="slctUserId">User ID:</label>
+                              <select id="slctUserId" class="select_user form-control select-control"
+                                 onclick="selectUser()"">
+                                 <option value=""></option>
+                              </select>
+                           </div>
+
+                           <div class="col-auto">
+                              <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-1 pb-1"
+                                 style="margin-top: 28px;" onclick="getLogs()">
+                           </div>
+                        </div>
                      </div>
-                     <div class="ibox-content">
-                        
-                     </div>
+
+
+                     <table id="example" class="display dataTable table-striped" width="100%"
+                        aria-describedby="example_info" role="grid" style="width: 100%;">
+                        <thead>
+                           <tr role="row">
+                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-label="UserID: activate to sort column ascending" style="width: 40px;">User ID
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                                 aria-label="Permission: activate to sort column ascending" style="width: 56px;">
+                                 Permission</th>
+                           </tr>
+                        </thead>
+                     </table>
                   </div>
                </div>
             </div>
@@ -58,7 +101,6 @@
          </div>
       </div>
    </div>
-
    <!-- Mainly scripts -->
    <script src="../js/jquery-3.1.1.min.js"></script>
    <script src="../js/popper.min.js"></script>
@@ -77,17 +119,24 @@
    <script src="../js/plugins/flot/jquery.flot.time.js"></script>
    <!-- ChartJS-->
    <script src="../js/plugins/chartJs/Chart.min.js"></script>
+   <script src="../js/demo/chartjs-pro.js"></script>
    <!-- Peity -->
    <script src="../js/plugins/peity/jquery.peity.min.js"></script>
    <!-- Peity demo -->
    <script src="../js/demo/peity-demo.js"></script>
-   <!--SDK-->
+   <!-- Selector -->
+   <script src="../js/plugins/select2/select2.full.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+   <script src="../js/plugins/multiselect/multiselect.js"></script>
+   <!-- Data picker -->
+   <script src="../js/plugins/datapicker/bootstrap-datepicker.js"></script>
+   <!-- data table -->
+   <script src="../js/plugins/dataTables/datatables.min.js"></script>
+   <script src="../plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <script src="../js/alasql.js"></script>
-   <script src="../js/moment.js"></script>
-   <script src="../js/plugins/pace/pace.min.js"></script>
    <!-- APP -->
    <script src="../js/app/general.js"></script>
-   <script src="../js/app/utils.js"></script>
+   <script src="../js/app/admin/userAccessManagement.js"></script>
 </body>
 
 </html>
