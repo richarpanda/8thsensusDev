@@ -52,28 +52,32 @@
             <div class="ibox-title">
                <h5>User Access Management</h5>
             </div>
-            <!--PICKERS-->
+
             <div class="ibox-content">
                <div class="table-responsive">
                   <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
-                     
+
                      <div class="p-4 logs-filters">
                         <div class="form-row justify-content-md-center">
                            <div class="col-md-6">
                               <label for="slctUserId">User ID:</label>
-                              <select id="slctUserId" class="select_user form-control select-control"
+                              <select id="slctUserId" class="select_user form-control form-control-sm select-control"
                                  onclick="selectUser()"">
                                  <option value=""></option>
                               </select>
                            </div>
 
-                           <div class="col-auto">
-                              <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-1 pb-1"
-                                 style="margin-top: 28px;" onclick="getLogs()">
+                           <div class=" col-auto">
+                                 <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-1 pb-1"
+                                    style="margin-top: 28px;" onclick="getLogs()">
                            </div>
                         </div>
-                     </div>
 
+                        <button class="btn btn-primary pt-1 pb-1 float-right" data-toggle="modal"
+                           data-target="#addUserModal" style="margin-top: -30px;">Add User
+                           <i class="fa fa-user-plus"></i>
+                        </button>
+                     </div>
 
                      <table id="example" class="display dataTable table-striped" width="100%"
                         aria-describedby="example_info" role="grid" style="width: 100%;">
@@ -97,6 +101,91 @@
          <div class="footer">
             <div>
                <strong>Copyright</strong> 8th Sensus 2021.
+            </div>
+         </div>
+
+         <!-- MODALS -->
+         <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h5 class="modal-title" id="exampleModalLabel">Add User</h5>
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                     </button>
+                  </div>
+                  <form id="addUserForm">
+                     <div class="modal-body">
+
+                        <div class="form-row">
+                           <div class="form-group col">
+                              <label for="inptId">Id</label>
+                              <input type="text" class="form-control form-control-sm" id="inptId">
+                           </div>
+
+                           <div class="form-group col">
+                              <label for="inptKey">Key</label>
+                              <input type="text" class="form-control form-control-sm" id="inptKey">
+                           </div>
+                        </div>
+
+                        <div class="form-row">
+                           <div class="form-group col-md-6">
+                              <label for="inptFirstName">First Name</label>
+                              <input type="text" class="form-control form-control-sm" id="inptFirstName">
+                           </div>
+
+                           <div class="form-group col-md-6">
+                              <label for="inptLastName">Last Name</label>
+                              <input type="text" class="form-control form-control-sm" id="inptLastName">
+                           </div>
+
+                           <div class="form-group col-md-4">
+                              <label for="inptUserId">User Id</label>
+                              <input type="text" class="form-control form-control-sm" id="inptUserId">
+                           </div>
+
+                           <div class="form-group col-md-4">
+                              <label for="inptRole">Role</label>
+                              <input type="text" class="form-control form-control-sm" id="inptRole">
+                           </div>
+
+                           <div class="form-group col-md-4">
+                              <div class="form-group">
+                                 <label for="inptTelephone">Telephone</label>
+                                 <input type="text" class="form-control form-control-sm" id="inptTelephone">
+                              </div>
+                           </div>
+                        </div>
+
+                        <div class="form-group">
+                           <label for="inptAnchorAddress">Anchor Address</label>
+                           <input type="text" class="form-control form-control-sm" id="inptAnchorAddress">
+                        </div>
+
+                        <div class="form-group">
+                           <label for="inptAnchorGPS">Anchor GPS</label>
+                           <input type="text" class="form-control form-control-sm" id="inptAnchorGPS">
+                        </div>
+
+                        <div class="form-row">
+                           <div class="form-group col">
+                              <label for="inptCustomerId">CustomerId</label>
+                              <input type="text" class="form-control form-control-sm" id="inptCustomerId">
+                           </div>
+
+                           <div class="form-group col">
+                              <label for="inptDepartment">Department</label>
+                              <input type="text" class="form-control form-control-sm" id="inptDepartment">
+                           </div>
+                        </div>
+                     </div>
+                     <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                     </div>
+                  </form>
+               </div>
             </div>
          </div>
       </div>

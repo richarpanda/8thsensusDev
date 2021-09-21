@@ -56,7 +56,7 @@
             <div class="ibox-content">
                <div class="table-responsive">
                   <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
-                     
+
                      <div class="p-4 logs-filters">
                         <div class="form-row justify-content-md-center">
                            <div class="col-md-2">
@@ -114,12 +114,55 @@
                </div>
             </div>
             <!--LIST SAMPLE-->
-
          </div>
+
          <!--FOOTER-->
          <div class="footer">
             <div>
                <strong>Copyright</strong> 8th Sensus 2021.
+            </div>
+         </div>
+         
+         <!-- MODALS -->
+         <!-- Delete Modal -->
+         <div class="modal fade" id="deleteWarn" tabindex="-1" aria-labelledby="deleteWarnLabel" aria-hidden="true">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h5 class="modal-title" id="deleteWarnLabel">Delete User</h5>
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                     </button>
+                  </div>
+                  <div class="modal-body">
+                     Are you sure you want to delete this user?
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                     <button type="button" class="btn btn-danger">Delete</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- Lock Modal -->
+         <div class="modal fade" id="lockWarn" tabindex="-1" aria-labelledby="lockWarnLabel" aria-hidden="true">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h5 class="modal-title" id="lockWarnLabel">Delete User</h5>
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                     </button>
+                  </div>
+                  <div class="modal-body">
+                     Are you sure you want to lock this user?
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                     <button type="button" class="btn btn-danger">Lock7</button>
+                  </div>
+               </div>
             </div>
          </div>
       </div>

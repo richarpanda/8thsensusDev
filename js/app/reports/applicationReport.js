@@ -14,89 +14,45 @@ $.ajax({
       document.getElementById("loader").classList.remove("show-loader");
       document.getElementById("loader").classList.add("hide-loader");
 
-      let machinesData = alasql(`
-         SELECT machinename
+      let apps = [];
+      let data = alasql(`
+         SELECT customerid, applications
          FROM ?
-         GROUP BY machinename
+         GROUP BY customerid, applications
+         ORDER BY stamp DESC
       `, [result]);
 
-      let usersData = alasql(`
-         SELECT UPPER(userid) [userid]
-         FROM ?
-         GROUP BY UPPER(userid)
-         ORDER BY userid
-      `, [result]);
-
-      let slctUsersHtml = `<option value=""></option>`;
-
-      let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-         <select name="slctMachine[]" multiple id="slctMachine">`;
-
-      machinesData.forEach(machine => {
-         slctMachineHtml += `
-            <option value="${machine.machinename}">${machine.machinename}</option>
-         `;
+      data.forEach(element => {
+         element.applications = element.applications.replace('{',' ');
+         element.applications = element.applications.replace('}',' ');
+   
+         let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
+         elementApps.forEach(app => {
+            if (apps[0] == undefined) {
+               apps.push({
+                  appName: app.trim()
+               });
+            }
+            else {
+               if (apps.find(x => x.appName == app.trim()) == undefined)
+               {
+                  apps.push({
+                     appName: app.trim()
+                  });
+               }
+            }
+         });
       });
 
-      usersData.forEach(user => {
-         slctUsersHtml += `
-            <option value="${user.userid}">${user.userid}</option>
-         `;
-      });
-
-      $("#slctUserId").html(slctUsersHtml);
-      $("#slctMachineContainer").html(slctMachineHtml);
-      $('#slctMachine').multiselect({
-         columns: 1,
-         placeholder: 'Select Machines',
-         selectAll: true
-      });
-      $(".ms-selectall").trigger("click");
-      assets = alasql(`
-         SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
-         MAX(stamp) stamp
-         FROM ?
-         GROUP BY UPPER(userid)`
-         , [result]);
-
-      var matrix = result.length;
+      var appssql = alasql(`SELECT * FROM ? ORDER BY appName`, [apps]);
+      // console.table(appssql);
 
       var table = $('#example').DataTable({
-         data: assets,
+         data: appssql,
          columns: [
-            { data: "userid" },
-            { data: "assets" }, // Number of assets
-            { data: "version" },
-            { data: "license" },
-            { data: null },
-            { data: null },
-            { data: null }
+            { data: "appName" }
          ],
          order: [[0, "asc"]],
-         rowCallback: function (row, data, index) {
-            let userMachines = alasql(`SELECT DISTINCT machinename FROM ? WHERE UPPER(userid) = '${data.userid}'`, [result])
-            let machinesHtml = '';
-
-            userMachines.forEach(item => {
-               machinesHtml += `<a class="d-block" href="../users.html?usrid=${data.userid}">${item.machinename}</a>`;
-            });
-
-            $(row).find('td:eq(1)').html(machinesHtml);
-            $(row).find('td:eq(4)').html(`<a href="../logs.html?usrid=${data.userid}">See Logs</a>`);
-            $(row).find('td:eq(5)').html(formatDate(data.stamp));
-            $(row).find('td:eq(6)').html(
-            `
-               <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#lockWarn" >
-                  <i class="fa fa-lock"></i>
-               </button>
-               <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#deleteWarn" >
-                  <i class="fa fa-trash"></i>
-               </button>
-               <button class="btn btn-outline-primary d-inline">
-                  <i class="fa fa-edit"></i>
-               </button>`
-            );
-         },
          select: true,
          pageLength: 25,
          responsive: true,
@@ -106,7 +62,6 @@ $.ajax({
             { extend: 'csv' },
             { extend: 'excel', title: 'ExampleFile' },
             { extend: 'pdf', title: 'ExampleFile' },
-
             {
                extend: 'print',
                customize: function (win) {
