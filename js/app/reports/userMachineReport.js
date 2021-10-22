@@ -11,40 +11,18 @@ $.ajax({
       document.getElementById("loader").classList.remove("show-loader");
       document.getElementById("loader").classList.add("hide-loader");
 
-      let data = [];
-      let users = alasql(`SELECT userid FROM ? GROUP BY userid`, [result]);
+      let data = alasql(`SELECT userid, machinename, devicelist, os, hardware FROM ?
+         GROUP BY userid, machinename, devicelist, os, hardware
+         ORDER BY userid`, [result]);
 
-      users.forEach(user => {
-         var apps = '';
-         let userApps = alasql(`SELECT applications FROM ? WHERE userid = '${ user.userid }' GROUP BY applications`, [result]);
-
-         userApps.forEach(element => {
-            element.applications = element.applications.replace('{',' ');
-            element.applications = element.applications.replace('}',' ');
-      
-            let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
-            elementApps.forEach(app => {
-               if (apps == '') {
-                  apps += "<a href='#' class='apps-link'>" + app.trim();
-               }
-               else {
-                  if (!apps.includes(app.trim()))
-                     apps += ", <a href='#' class='apps-link'>" + app.trim()
-               }
-            });
-         });
-
-         data.push({
-            userid: user.userid,
-            apps: apps
-         })
-      });
-      
       var table = $('#example').DataTable({
          data: data,
          columns: [
             { data: "userid" },
-            { data: "apps" }
+            { data: "machinename" },
+            { data: "devicelist" },
+            { data: "os" },
+            { data: "hardware" }
          ],
          order: [[0, "asc"]],
          select: true,

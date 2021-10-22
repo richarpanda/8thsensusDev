@@ -1,17 +1,85 @@
+const dataLakeUrl = "https://dashboard.8thsensus.com:8181";
+const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
+
+var dataTable = null;
+var slctMachine = [];
+var selectedUsers = [];
+var sessionData = {
+   customerId: "TestCustomer",
+   department: "TestDepartment",
+   userId: "LoggedTestUser"
+};
+
+toastr.options = {
+   "closeButton": true,
+   "progressBar": true,
+   "timeOut": "2000",
+   "extendedTimeOut": "1000"
+}
+
 $(document).ready(function () {
-   let dataSet = null;
-   var slctMachine = [];
+   $("#addUserForm").on("submit", function (e) {
+      e.preventDefault();
+      let userRequest = {
+         anchorAddress: document.getElementById("inptAnchorAddress").value,
+         anchorGPS: document.getElementById("inptAnchorGPS").value,
+         customerId: sessionData.customerId,
+         department: sessionData.department,
+         firstName: document.getElementById("inptFirstName").value,
+         key: key,
+         lastName: document.getElementById("inptLastName").value,
+         role: document.getElementById("inptRole").value,
+         telephone: document.getElementById("inptTelephone").value,
+         userId: document.getElementById("inptUserId").value
+      };
+      saveUser(userRequest);
+   });
+
+   getAllUsers();
 
    function getAllUsers() {
       $.ajax({
-         url: "https://dashboard.8thsensus.com:8181/employee/all",
+         url: dataLakeUrl + "/employee/all",
          headers: {
             "Content-Type": "application/x-www-form-urlencoded",
          },
          type: "GET",
          dataType: "json",
          data: {},
-         success: function (result) { },
+         success: function (result) {
+            document.getElementById("loader").classList.remove("show-loader");
+            document.getElementById("loader").classList.add("hide-loader");
+
+            let usersData = alasql(`
+                  SELECT UPPER(userId) [userId], 'View' [permission]
+                  FROM ?
+                  GROUP BY UPPER(userId)
+                  ORDER BY userId
+               `, [result]);
+
+            let slctUsersHtml = `
+                  <label for="slctuserId">User ID:</label>
+                  <select name="slctuserId[]" multiple id="slctuserId">`;
+
+            usersData.forEach(user => {
+               slctUsersHtml += `
+                     <option value="${user.userId}">${user.userId.toUpperCase()}</option>
+                  `;
+            });
+            slctUsersHtml += '</select>';
+
+            $("#slctContainer").html(slctUsersHtml);
+            $('#slctuserId').multiselect({
+               columns: 1,
+               placeholder: 'Select Users',
+               search: true,
+               selectAll: true
+            });
+
+            $(".ms-selectall").trigger("click");
+
+            generateTable(usersData);
+         },
          error: function () {
             console.log("error");
          },
@@ -20,7 +88,7 @@ $(document).ready(function () {
 
    function getUserById() {
       $.ajax({
-         url: "https://dashboard.8thsensus.com:8181/employee/all",
+         url: dataLakeUrl + "/employee/all",
          headers: {
             "Content-Type": "application/x-www-form-urlencoded",
          },
@@ -34,36 +102,20 @@ $(document).ready(function () {
       });
    }
 
-   $('#addUserForm').on('submit', function (e) { //use on if jQuery 1.7+
-      e.preventDefault();  //prevent form from submitting
-      let userRequest = {
-         "anchorAddress": document.getElementById("inptAnchorAddress").value,
-         "anchorGPS": document.getElementById("inptAnchorGPS").value,
-         "customerId": document.getElementById("inptCustomerId").value,
-         "department": document.getElementById("inptDepartment").value,
-         "firstName": document.getElementById("inptFirstName").value,
-         "id": document.getElementById("inptId").value,
-         "key": document.getElementById("inptKey").value,
-         "lastName": document.getElementById("inptLastName").value,
-         "role": document.getElementById("inptRole").value,
-         "telephone": document.getElementById("inptTelephone").value,
-         "userId": document.getElementById("inptUserId").value,
-         "utc": Date().now
-      }
-      saveUser(userRequest);
-   });
-
    function saveUser(userRequest) {
       $.ajax({
-         url: "https://dashboard.8thsensus.com:8181/employee/save",
+         url: dataLakeUrl + "/employee/save",
          headers: {
             "Content-Type": "application/json",
          },
          type: "POST",
-         dataType: "json",
-         data: userRequest,
+         data: JSON.stringify(userRequest),
          success: function (result) {
-            console.log(result);
+            toastr.success('User saved successfully', 'Success');
+            saveLog(userRequest);
+            getAllUsers();
+            cleanForm();
+            $('#addUserModal').modal('hide');
          },
          error: function (err) {
             console.log("Error:");
@@ -72,98 +124,36 @@ $(document).ready(function () {
       });
    }
 
-   function deleteUser() {
+   function saveLog(userRequest) {
+      let request = {
+         accessId: "string",
+         customerId: sessionData.customerId,
+         eventType: "User Creation",
+         key: key,
+         logEntry: `User: ${ userRequest.userId } created`,
+         userId: sessionData.userId,
+      };
+
       $.ajax({
-         url: "https://dashboard.8thsensus.com:8181/employee/all",
+         url: dataLakeUrl + "/log/save",
          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
          },
-         type: "DELETE",
-         dataType: "json",
-         data: {},
-         success: function (result) { },
+         type: "POST",
+         data: JSON.stringify(request),
+         success: function (result) {
+            console.log(result);
+         },
          error: function () {
             console.log("error");
          },
       });
    }
 
-   $.ajax({
-      url: "https://dashboard.8thsensus.com:8080/message",
-      headers: {
-         "Content-Type": "application/x-www-form-urlencoded",
-      },
-      type: "GET",
-      dataType: "json",
-      data: {},
-      success: function (result) {
-         document.getElementById("loader").classList.remove("show-loader");
-         document.getElementById("loader").classList.add("hide-loader");
-
-         let usersData = alasql(
-            `
-           SELECT UPPER(userid) [userid], 'View' [permission]
-           FROM ?
-           GROUP BY UPPER(userid)
-           ORDER BY userid
-        `,
-            [result]
-         );
-
-         let slctUsersHtml = `<option value=""></option>`;
-
-         usersData.forEach((user) => {
-            slctUsersHtml += `
-              <option value="${user.userid}">${user.userid}</option>
-           `;
-         });
-
-         $("#slctUserId").html(slctUsersHtml);
-         $(".ms-selectall").trigger("click");
-
-         var table = $("#example").DataTable({
-            data: usersData,
-            columns: [{ data: "userid" }, { data: "permission" }],
-            order: [[0, "asc"]],
-            select: true,
-            pageLength: 25,
-            responsive: true,
-            dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
-            buttons: [
-               { extend: "copy" },
-               { extend: "csv" },
-               { extend: "excel", title: "ExampleFile" },
-               { extend: "pdf", title: "ExampleFile" },
-
-               {
-                  extend: "print",
-                  customize: function (win) {
-                     $(win.document.body).addClass("white-bg");
-                     $(win.document.body).css("font-size", "10px");
-
-                     $(win.document.body)
-                        .find("table")
-                        .addClass("compact")
-                        .css("font-size", "inherit");
-                  },
-               },
-            ],
-         });
-
-         table.column(1).data().unique();
-         $("#example tr").css("cursor", "hand");
-      },
-      error: function () {
-         console.log("error");
-      },
-   });
-
    function formatDate(utcDate) {
       let d = new Date(utcDate);
       let month =
-         d.getMonth().toString().length == 1
-            ? "0" + (d.getMonth() + 1)
-            : d.getMonth() + 1;
+         (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
       let day =
          d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
       let hour =
@@ -191,14 +181,101 @@ $(document).ready(function () {
       );
    }
 
-   function setCheckValue(val, checked) {
-      if (checked) {
-         slctMachine.push(val);
-      } else {
-         let index = slctMachine.indexOf(val);
-         if (index > -1) {
-            slctMachine.splice(index, 1);
-         }
-      }
+   function cleanForm() {
+      document.getElementById("inptAnchorAddress").value = '';
+      document.getElementById("inptAnchorGPS").value = '';
+      document.getElementById("inptFirstName").value = '';
+      document.getElementById("inptLastName").value = '';
+      document.getElementById("inptRole").value = '';
+      document.getElementById("inptTelephone").value = '';
+      document.getElementById("inptUserId").value = '';
    }
 });
+
+function selectUser() {
+   $.ajax({
+      url: dataLakeUrl + "/employee/all",
+      headers: {
+         "Content-Type": "application/x-www-form-urlencoded",
+      },
+      type: "GET",
+      dataType: "json",
+      data: {},
+      success: function (result) {
+         let slctUsersId = "";
+         document.getElementById("loader").classList.remove("show-loader");
+         document.getElementById("loader").classList.add("hide-loader");
+
+         if (selectedUsers.length == 0) {
+            let usersData = alasql(`
+               SELECT UPPER(userid)
+               FROM ?
+               WHERE userId IN (${slctUsersId}'')
+               GROUP BY userId`, [result]);
+
+            usersData.forEach((user) => selectedUsers.push(user.userId));
+         }
+         selectedUsers.forEach((user) => (slctUsersId += `'${user}',`));
+
+         let usersData = alasql(`
+            SELECT UPPER(userId) [userId], 'View' [permission]
+            FROM ?
+            WHERE UPPER(userId) IN (${slctUsersId}'')
+            ORDER BY UPPER(userid)`, [result]);
+
+         generateTable(usersData);
+      },
+      error: function () {
+         console.log("error");
+      },
+   });
+}
+
+function generateTable(data) {
+   if (dataTable !== null)
+      dataTable.destroy();
+
+   dataTable = $("#example").DataTable({
+      data: data,
+      columns: [{ data: "userId" }, { data: "permission" }],
+      order: [[0, "asc"]],
+      select: true,
+      pageLength: 25,
+      responsive: true,
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
+      buttons: [
+         { extend: "copy" },
+         { extend: "csv" },
+         { extend: "excel", title: "ExampleFile" },
+         { extend: "pdf", title: "ExampleFile" },
+
+         {
+            extend: "print",
+            customize: function (win) {
+               $(win.document.body).addClass("white-bg");
+               $(win.document.body).css("font-size", "10px");
+
+               $(win.document.body)
+                  .find("table")
+                  .addClass("compact")
+                  .css("font-size", "inherit");
+            },
+         },
+      ],
+   });
+
+   dataTable.column(1).data().unique();
+   $("#example tr").css("cursor", "hand");
+}
+
+function setCheckValue(val, checked) {
+   if (checked) {
+      selectedUsers.push(val);
+   }
+   else {
+      let index = selectedUsers.indexOf(val);
+      if (index > -1) {
+         selectedUsers.splice(index, 1);
+      }
+   }
+}

@@ -76,35 +76,34 @@
 
                            <div class="col-auto">
                               <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-2 pb-2"
-                                 style="margin-top: 28px;" onclick="getLogs()">
+                                 style="margin-top: 28px;" onclick="getUsers()">
                            </div>
                         </div>
                      </div>
-
 
                      <table id="example" class="display dataTable table-striped" width="100%"
                         aria-describedby="example_info" role="grid" style="width: 100%;">
                         <thead>
                            <tr role="row">
-                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-label="UserID: activate to sort column ascending" style="width: 40px;">User ID
                               </th>
-                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-label="Assets: activate to sort column ascending" style="width: 56px;">
                                  Number of Assets</th>
-                              <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-label="Version: activate to sort column ascending" style="width: 63px;">
                                  Version</th>
-                              <th class="sorting_desc" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting_desc text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-sort="descending" aria-label="License: activate to sort column ascending"
                                  style="width: 102px;">License</th>
-                              <th class="sorting_desc" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting_desc text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-sort="descending" aria-label="LogsRecords: activate to sort column ascending"
                                  style="width: 102px;">Logs Records</th>
-                              <th class="sorting_desc" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting_desc text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-sort="descending" aria-label="LastUpdate: activate to sort column ascending"
                                  style="width: 102px;">Last Update</th>
-                              <th class="sorting_desc" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
+                              <th class="sorting_desc text-center" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                  aria-sort="descending" aria-label="AccessStatus: activate to sort column ascending"
                                  style="width: 102px;">Actions</th>
                            </tr>
@@ -122,7 +121,7 @@
                <strong>Copyright</strong> 8th Sensus 2021.
             </div>
          </div>
-         
+
          <!-- MODALS -->
          <!-- Delete Modal -->
          <div class="modal fade" id="deleteWarn" tabindex="-1" aria-labelledby="deleteWarnLabel" aria-hidden="true">
@@ -139,7 +138,7 @@
                   </div>
                   <div class="modal-footer">
                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                     <button type="button" class="btn btn-danger">Delete</button>
+                     <button type="button" class="btn btn-danger" onclick="saveAction('DELETE')">Delete</button>
                   </div>
                </div>
             </div>
@@ -150,7 +149,7 @@
             <div class="modal-dialog">
                <div class="modal-content">
                   <div class="modal-header">
-                     <h5 class="modal-title" id="lockWarnLabel">Delete User</h5>
+                     <h5 class="modal-title" id="lockWarnLabel">Lock User</h5>
                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                      </button>
@@ -160,7 +159,7 @@
                   </div>
                   <div class="modal-footer">
                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                     <button type="button" class="btn btn-danger">Lock7</button>
+                     <button type="button" class="btn btn-danger" onclick="saveAction('LOCK')">Lock</button>
                   </div>
                </div>
             </div>
@@ -200,6 +199,8 @@
    <script src="../js/plugins/dataTables/datatables.min.js"></script>
    <script src="../plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <script src="../js/alasql.js"></script>
+   <!-- Toastr -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
    <!-- APP -->
    <script src="../js/app/general.js"></script>
    <script src="../js/app/admin/userMachineManagement.js"></script>

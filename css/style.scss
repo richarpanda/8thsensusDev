@@ -9854,3 +9854,11 @@ tbody {
    color: #ff9494
 }
 
+.apps-link {
+   color: #000000;
+   
+   &:hover {
+      color: #0056c4;
+      font-size: bolder !important;
+   }
+}

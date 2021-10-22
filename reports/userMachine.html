@@ -20,6 +20,15 @@
 </head>
 
 <body class="top-navigation">
+   <div id="loader">
+      <div class="loading">
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+         <div class="dot"></div>
+      </div>
+   </div>
 
    <div id="wrapper">
       <div id="page-wrapper" class="dark-bg">
@@ -43,7 +52,18 @@
                         <h5>USER MACHINE</h5>
                      </div>
                      <div class="ibox-content">
-                        
+                        <table id="example" class=" table-striped" width="100%" aria-describedby="example_info"
+                           role="grid" style="width: 100%;">
+                           <thead>
+                              <tr role="row">
+                                 <th class="sorting">User Id</th>
+                                 <th class="sorting">Machine Name</th>
+                                 <th class="sorting">Device List</th>
+                                 <th class="sorting">Os</th>
+                                 <th class="sorting">Hardware</th>
+                              </tr>
+                           </thead>
+                        </table>
                      </div>
                   </div>
                </div>
@@ -77,16 +97,24 @@
    <script src="../js/plugins/flot/jquery.flot.time.js"></script>
    <!-- ChartJS-->
    <script src="../js/plugins/chartJs/Chart.min.js"></script>
+   <script src="../js/demo/chartjs-pro.js"></script>
    <!-- Peity -->
    <script src="../js/plugins/peity/jquery.peity.min.js"></script>
    <!-- Peity demo -->
    <script src="../js/demo/peity-demo.js"></script>
-   <!--SDK-->
+   <!-- Selector -->
+   <script src="../js/plugins/select2/select2.full.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+   <script src="../js/plugins/multiselect/multiselect.js"></script>
+   <!-- Data picker -->
+   <script src="../js/plugins/datapicker/bootstrap-datepicker.js"></script>
+   <!-- data table -->
+   <script src="../js/plugins/dataTables/datatables.min.js"></script>
+   <script src="../plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <script src="../js/alasql.js"></script>
-   <script src="../js/moment.js"></script>
-   <script src="../js/plugins/pace/pace.min.js"></script>
    <!-- APP -->
    <script src="../js/app/general.js"></script>
+   <script src="../js/app/reports/userMachineReport.js"></script>
 </body>
 
 </html>

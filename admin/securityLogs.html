@@ -22,6 +22,16 @@
 <body class="top-navigation">
 
    <div id="wrapper">
+      <div id="loader">
+         <div class="loading">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+         </div>
+      </div>
+
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
          <div class="row border-bottom gray-bg">
@@ -46,32 +56,6 @@
                         <div class="table-responsive">
                            <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
 
-                              <div class="p-4 logs-filters">
-                                 <div class="form-row justify-content-md-center">
-                                    <div class="col-md-2">
-                                       <label for="slctUserId">User ID:</label>
-                                       <select id="slctUserId" class="select_user form-control select-control"
-                                          onclick="selectUser()"">
-                                          <option value=""></option>
-                                       </select>
-                                    </div>
-         
-                                    <div class=" col-md-2" id="slctMachineContainer">
-                                          <label for="slctMachine">Machine Name:</label>
-                                          <select id="slctMachine" class="select_machine form-control">
-                                             <option value=""></option>
-                                          </select>
-                                    </div>
-
-                                    <div class="col-auto">
-                                       <input type="button" id="searchButton" value="Search"
-                                          class="btn btn-primary pt-2 pb-2" style="margin-top: 28px;"
-                                          onclick="getLogs()">
-                                    </div>
-                                 </div>
-                              </div>
-
-
                               <table id="example" class="display dataTable table-striped" width="100%"
                                  aria-describedby="example_info" role="grid" style="width: 100%;">
                                  <thead>
@@ -84,19 +68,11 @@
                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                           aria-label="EventType">EventType</th>
                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
-                                          aria-label="Id">Id</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
-                                          aria-label="Key">Key</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                           aria-label="LogEntry">LogEntry</th>
                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                           aria-label="UserId">UserId</th>
                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
                                           aria-label="Utc">Utc</th>
-                                       <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1"
-                                          aria-label="UserID: activate to sort column ascending" style="width: 40px;">
-                                          User ID
-                                       </th>
                                     </tr>
                                  </thead>
                               </table>
@@ -133,9 +109,7 @@
    <script src="../js/plugins/flot/jquery.flot.resize.js"></script>
    <script src="../js/plugins/flot/jquery.flot.pie.js"></script>
    <script src="../js/plugins/flot/jquery.flot.time.js"></script>
-   <!-- ChartJS-->
-   <script src="../js/plugins/chartJs/Chart.min.js"></script>
-   <script src="../js/demo/chartjs-pro.js"></script>
+
    <!-- Peity -->
    <script src="../js/plugins/peity/jquery.peity.min.js"></script>
    <!-- Peity demo -->

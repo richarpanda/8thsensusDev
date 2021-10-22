@@ -20,6 +20,7 @@
    <link href="../css/plugins/multiselect/multiselect.css" rel="stylesheet">
    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" />
    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
    <link href="../css/loader.min.css" rel="stylesheet">
 </head>
 
@@ -59,17 +60,14 @@
 
                      <div class="p-4 logs-filters">
                         <div class="form-row justify-content-md-center">
-                           <div class="col-md-6">
+                           <div class="col-md-6" id="slctContainer">
                               <label for="slctUserId">User ID:</label>
-                              <select id="slctUserId" class="select_user form-control form-control-sm select-control"
-                                 onclick="selectUser()"">
-                                 <option value=""></option>
-                              </select>
+                              <select id="slctUserId" class="date_range_p form-control"></select>
                            </div>
 
                            <div class=" col-auto">
                                  <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-1 pb-1"
-                                    style="margin-top: 28px;" onclick="getLogs()">
+                                    style="margin-top: 28px;" onclick="selectUser()">
                            </div>
                         </div>
 
@@ -118,18 +116,6 @@
                      <div class="modal-body">
 
                         <div class="form-row">
-                           <div class="form-group col">
-                              <label for="inptId">Id</label>
-                              <input type="text" class="form-control form-control-sm" id="inptId">
-                           </div>
-
-                           <div class="form-group col">
-                              <label for="inptKey">Key</label>
-                              <input type="text" class="form-control form-control-sm" id="inptKey">
-                           </div>
-                        </div>
-
-                        <div class="form-row">
                            <div class="form-group col-md-6">
                               <label for="inptFirstName">First Name</label>
                               <input type="text" class="form-control form-control-sm" id="inptFirstName">
@@ -166,18 +152,6 @@
                         <div class="form-group">
                            <label for="inptAnchorGPS">Anchor GPS</label>
                            <input type="text" class="form-control form-control-sm" id="inptAnchorGPS">
-                        </div>
-
-                        <div class="form-row">
-                           <div class="form-group col">
-                              <label for="inptCustomerId">CustomerId</label>
-                              <input type="text" class="form-control form-control-sm" id="inptCustomerId">
-                           </div>
-
-                           <div class="form-group col">
-                              <label for="inptDepartment">Department</label>
-                              <input type="text" class="form-control form-control-sm" id="inptDepartment">
-                           </div>
                         </div>
                      </div>
                      <div class="modal-footer">
@@ -223,6 +197,8 @@
    <script src="../js/plugins/dataTables/datatables.min.js"></script>
    <script src="../plugin/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
    <script src="../js/alasql.js"></script>
+   <!-- Toastr -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
    <!-- APP -->
    <script src="../js/app/general.js"></script>
    <script src="../js/app/admin/userAccessManagement.js"></script>

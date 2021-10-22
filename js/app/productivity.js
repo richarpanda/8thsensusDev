@@ -145,7 +145,6 @@ function ProcessData(result) {
       `, [result]);
       labelData.totalEmployes = selectedUsers.length;
       usersData.forEach(user => selectedUsers.push(user.userid));
-      selectedUsers.forEach(user => slctUsersId += `'${user}',`);
    } else
       labelData.totalEmployes = selectedUsers.length - 1;
    selectedUsers.forEach(user => slctUsersId += `'${user}',`);
@@ -726,7 +725,7 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-      d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+      (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =

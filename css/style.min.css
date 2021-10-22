@@ -11535,3 +11535,12 @@ tbody {
   display: none;
   color: #ff9494;
 }
+
+.apps-link {
+  color: #000000;
+}
+
+.apps-link:hover {
+  color: #0056c4;
+  font-size: bolder !important;
+}
