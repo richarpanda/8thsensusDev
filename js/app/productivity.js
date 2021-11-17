@@ -1,3 +1,5 @@
+let customerFilter = 'eve6512Sd2';
+
 var dataTable = null;
 var weekDataTable = null;
 var ctx2 = null;
@@ -51,6 +53,7 @@ $.ajax({
       let usersData = alasql(`
          SELECT UPPER(userid) [userid]
          FROM ?
+         WHERE customerid = '${customerFilter}'
          GROUP BY UPPER(userid)
          ORDER BY userid
       `, [result]);
@@ -141,10 +144,12 @@ function ProcessData(result) {
       let usersData = alasql(`
          SELECT userid
          FROM ?
+         WHERE customerid = '${customerFilter}'
          GROUP BY userid
       `, [result]);
       labelData.totalEmployes = selectedUsers.length;
       usersData.forEach(user => selectedUsers.push(user.userid));
+      selectedUsers.forEach(user => slctUsersId += `'${user}',`);
    } else
       labelData.totalEmployes = selectedUsers.length - 1;
    selectedUsers.forEach(user => slctUsersId += `'${user}',`);
@@ -158,7 +163,7 @@ function ProcessData(result) {
          let dt = formatDate(new Date().addDays(-i)).toString();
          dates.push(dt.substring(0, 10));
       }
-      
+
    let userData = alasql(`
       SELECT
          CASE 
@@ -172,7 +177,7 @@ function ProcessData(result) {
          ${timeInterval}
       FROM ? 
       WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
-      AND userid IN (${slctUsersId}'')
+      AND userid IN (${slctUsersId}'') AND customerid = '${customerFilter}'
       ORDER BY userid, stamp
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
@@ -304,6 +309,7 @@ function getTableReportData(data, result) {
    let usersData = alasql(`
       SELECT DISTINCT(UPPER(userid)) userid
       FROM ?
+      WHERE  customerid = '${customerFilter}'
       GROUP BY userid
       ORDER BY userid
    `, [result]);

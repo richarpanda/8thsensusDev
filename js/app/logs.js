@@ -1,3 +1,5 @@
+let customerFilter = 'eve6512Sd2';
+
 let dataSet = null;
 var dataTable = null;
 var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
@@ -43,12 +45,14 @@ $.ajax({
       let machinesData = alasql(`
          SELECT machinename
          FROM ?
+	      WHERE customerid = '${customerFilter}'
          GROUP BY machinename
       `, [result]);
 
       let usersData = alasql(`
          SELECT UPPER(userid) [userid]
          FROM ?
+	      WHERE customerid = '${customerFilter}'
          GROUP BY UPPER(userid)
          ORDER BY userid
       `, [result]);
@@ -141,6 +145,7 @@ function processData(result) {
       SELECT *
       FROM ?
       WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
+      AND customerid = '${customerFilter}'
       ${inEventsString}
       ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
       AND machinename IN (${slctMachineStr}'')
@@ -210,6 +215,7 @@ function processData(result) {
 
    $("#example tr").css('cursor', 'hand');
 }
+
 
 function formatDate(utcDate) {
    let d = new Date(utcDate);
@@ -292,6 +298,7 @@ $("#slctUserId").on('change', function(){
             SELECT machinename
             FROM ?
             WHERE UPPER(userid) = '${userid}'
+            AND customerid = '${customerFilter}'
             GROUP BY machinename
          `, [result]);
 

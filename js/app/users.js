@@ -1,3 +1,5 @@
+let customerFilter = 'eve6512Sd2';
+
 var dataTable = null;
 let tAccountLicenses;
 let dataSet = null;
@@ -43,7 +45,7 @@ $.ajax({
       let machines = alasql(`
          SELECT  machinename
          FROM ? 
-         WHERE userid = '${usrid}'
+         WHERE userid = '${usrid}' AND customerid = '${customerFilter}'
          GROUP BY machinename
          `, [result]);
          
@@ -89,7 +91,7 @@ $.ajax({
       let data = alasql(`
          SELECT customerid, devicelist, os, hardware, localip, applications, gps
          FROM ?
-         WHERE userid = '${usrid}'
+         WHERE userid = '${usrid}' AND customerid = '${customerFilter}'
          GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
       `, [result]);
 
@@ -179,7 +181,7 @@ function getMachineData(machinename, result) {
    let data = alasql(`
       SELECT customerid, devicelist, os, hardware, localip, applications, gps, stamp
       FROM ?
-      WHERE machinename = '${ machinename }'
+      WHERE machinename = '${ machinename }' AND customerid = '${customerFilter}'
       GROUP BY customerid, devicelist, os, hardware, localip, applications, gps, stamp
       ORDER BY stamp DESC
       `, [result]);
@@ -398,7 +400,7 @@ function getproductivityData(result) {
          ,stamp [date]
          ${timeInterval}
       FROM ? 
-      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
+      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}'  AND customerid = '${customerFilter}'
       AND userid = '${slctUsersId}'
       ORDER BY userid, stamp
    `, [result]);

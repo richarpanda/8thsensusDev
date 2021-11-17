@@ -1,3 +1,5 @@
+let customerFilter = 'eve6512Sd2';
+
 let tAccountLicenses;
 var ctx2 = null;
 var chart = null;
@@ -24,7 +26,7 @@ $.ajax({
       startOfWeek = "2021-04-05T01:35:35.648732Z";
       //var productData = alasql("SELECT diagcode, utc FROM ? WHERE userid='Kingpin' and utc > '" + startOfWeek + "' order by utc",[result]);
 
-      var productData = alasql("SELECT COUNT(diagcode) FROM ? order by utc", [
+      var productData = alasql(`SELECT COUNT(diagcode) FROM ? WHERE customerid = ${ customerFilter } order by utc`, [
          result,
       ]);
 
@@ -56,7 +58,7 @@ $.ajax({
          hourAfter = moment(end.setHours(end.getHours() + i + 1)).format();
 
          accountLicenses = alasql(
-            "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE utc >= '" +
+            "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE customerid = '" + customerFilter + "' AND  utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -64,7 +66,7 @@ $.ajax({
             [result]
          );
          accountDevices = alasql(
-            "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE utc >= '" +
+            "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -72,7 +74,7 @@ $.ajax({
             [result]
          );
          accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
+            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -80,7 +82,7 @@ $.ajax({
             [result]
          );
          accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
+            "SELECT COUNT(userid) alerts FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -89,7 +91,7 @@ $.ajax({
          );
 
          accountDevicesTest = alasql(
-            "SELECT utc FROM ? WHERE utc >= '" +
+            "SELECT utc FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -117,14 +119,14 @@ $.ajax({
          const yesterdayHourAfter = moment(yesterday.endOf("day")).format();
 
          accountLicenses = alasql(
-            "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
+            "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ? WHERE customerid = '" + customerFilter + "'",
             [result]
          );
-         accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ?", [
+         accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? WHERE customerid = '" + customerFilter + "'", [
             result,
          ]);
          accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
+            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -132,7 +134,7 @@ $.ajax({
             [result]
          );
          accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
+            "SELECT COUNT(userid) alerts FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -295,6 +297,7 @@ $.ajax({
       let last24Result = alasql(`
          SELECT gps, stamp, userid, diagcode FROM ? 
          WHERE stamp > '${todayDateStr}'
+         AND customerid = '${customerFilter}'
          ORDER BY stamp DESC
       `, [result]);
 
@@ -438,6 +441,7 @@ function getIntrusionGraphData(resultData) {
          ,SUBSTRING(stamp, 1, 10) [timeInterval]
       FROM ? 
       WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
+      AND customerid = '${customerFilter}'
       ORDER BY userid, stamp
    `, [resultData]);
    userData.forEach(function (d, idx) { d.rownum = idx });
@@ -592,7 +596,7 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-      (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+   (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =

@@ -1,6 +1,7 @@
-
 const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
+
+let customerFilter = 'eve6512Sd2';
 
 var dataTable = null;
 var slctMachine = [];
@@ -46,6 +47,7 @@ function getUsers() {
             SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
             FROM ?
+            WHERE customerid = '${customerFilter}'
             `
          , [result]);
          let tableData = alasql(`
@@ -53,6 +55,7 @@ function getUsers() {
             MAX(stamp) stamp
             FROM ?
             WHERE machinename IN (${slctMachineStr}'')
+            AND customerid = '${customerFilter}'
             ${slctUserId !== "" ? "AND userid = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`, [result]);
 
          dataTable = $('#example').DataTable({
@@ -136,12 +139,14 @@ $.ajax({
       let machinesData = alasql(`
             SELECT machinename
             FROM ?
+            WHERE customerid = '${customerFilter}'
             GROUP BY machinename
          `, [result]);
 
       let usersData = alasql(`
             SELECT UPPER(userid) [userid]
             FROM ?
+            WHERE customerid = '${customerFilter}'
             GROUP BY UPPER(userid)
             ORDER BY userid
          `, [result]);
@@ -175,6 +180,7 @@ $.ajax({
             SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
             FROM ?
+            WHERE customerid = '${customerFilter}'
             GROUP BY UPPER(userid)`
          , [result]);
 
@@ -373,6 +379,7 @@ $("#slctUserId").on('change', function () {
             SELECT machinename
             FROM ?
             WHERE UPPER(userid) = '${userid}'
+            AND customerid = '${customerFilter}'
             GROUP BY machinename
          `, [result]);
 
