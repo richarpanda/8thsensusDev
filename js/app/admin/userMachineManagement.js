@@ -1,6 +1,5 @@
 const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
-
 let customerFilter = 'eve6512Sd2';
 
 var dataTable = null;
@@ -23,7 +22,7 @@ function getUsers() {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
    $.ajax({
-      url: 'https://dashboard.8thsensus.com:8080/message',
+      url: dataLakeUrl + '/message',
       headers: {
          'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -50,13 +49,17 @@ function getUsers() {
             WHERE customerid = '${customerFilter}'
             `
          , [result]);
-         let tableData = alasql(`
-            SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
+
+         let filterQuery = `SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
             FROM ?
             WHERE machinename IN (${slctMachineStr}'')
             AND customerid = '${customerFilter}'
-            ${slctUserId !== "" ? "AND userid = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`, [result]);
+            ${slctUserId !== "" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
+
+         let tableData = alasql(filterQuery, [result]);
+
+         console.table(tableData);
 
          dataTable = $('#example').DataTable({
             data: tableData,
@@ -75,7 +78,7 @@ function getUsers() {
                let machinesHtml = '';
 
                userMachines.forEach(item => {
-                  machinesHtml += `<a class="d-block" href="../users.html?usrid=${data.userid}">${item.machinename}</a>`;
+                  machinesHtml += ` ${item.machinename}`;
                });
 
                $(row).find('td:eq(1)').html(machinesHtml);
@@ -205,7 +208,7 @@ $.ajax({
             let machinesHtml = '';
 
             userMachines.forEach(item => {
-               machinesHtml += `<a class="d-block" href="../users.html?usrid=${data.userid}">${item.machinename}</a>`;
+               machinesHtml += ` ${item.machinename}`;
             });
 
             $(row).find('td:eq(1)').html(machinesHtml);

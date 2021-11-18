@@ -183,7 +183,6 @@ function processData(result) {
       },
       rowCallback: function (row, data, index) {
          $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
-         $(row).find('td:eq(1)').html(`<a href="machines.html?mchname=${data['machinename']}">${data['machinename']}</a>`);
          $(row).find('td:eq(6)').html(formatDate(data['stamp']));
          $(row).find('td:eq(7)').html(getCode(data['diagcode']));
       },

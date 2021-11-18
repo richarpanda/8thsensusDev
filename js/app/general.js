@@ -12,10 +12,6 @@ $(document).ready(function () {
       for (let i = 0; i < pathArr.length - 1; i++)
          pathName += pathArr[i] + '/';
 
-      let pathLen = path.length;
-      console.log(isSubMenuItem);
-      console.log(pathName);
-
       let navMenu = `
       <ul class="nav navbar-nav mr-auto">
          <li class="sub-menu ${path == "indexMain.html" ? "active" : ""}">
@@ -52,7 +48,7 @@ $(document).ready(function () {
                      User Machine
                   </a>
                </li>
-               <li>
+               <!-- <li>
                   <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "accessLogs.html" }'>
                      Access Logs
                   </a>
@@ -61,7 +57,7 @@ $(document).ready(function () {
                   <a href='${ (!isSubMenuItem ? "reports/" : !isReport ? "../reports/" : "") + "gpsLocations.html" }'>
                      Gps Locations
                   </a>
-               </li>
+               </li> -->
             </ul>
          </li>
 
@@ -86,7 +82,7 @@ $(document).ready(function () {
                      User / Machine Management
                   </a>
                </li>
-               <li>
+               <!-- <li>
                   <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "reportAdmin.html" }'>
                      Report Admin
                   </a>
@@ -95,7 +91,7 @@ $(document).ready(function () {
                   <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "locationProfiles.html" }'>
                      Location Profiles MGMT
                   </a>
-               </li>
+               </li> -->
             </ul>
          </li>        
       </ul>

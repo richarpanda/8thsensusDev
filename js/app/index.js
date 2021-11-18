@@ -173,7 +173,7 @@ $.ajax({
                textBaseline: "middle",
             },
             onClick: (evt, item) => {
-               window.location.href = "licenses.html";
+               window.location.href = "admin/userMachineManagement.html";
             },
          };
          var ctx4 = document.getElementById("doughnutChart").getContext("2d");

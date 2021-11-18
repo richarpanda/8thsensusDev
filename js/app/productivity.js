@@ -171,18 +171,18 @@ function ProcessData(result) {
             WHEN diagcode IN ('D0003','D0004','D0005','D0007','D0008','D0009','D0012','D0015') THEN 0
             ELSE  diagcode
          END [activeStatus]
-         ,userid
+         ,UPPER(userid) [userid]
          ,stamp [date]
          ,WEEKDAY(stamp) [weekday]
          ${timeInterval}
       FROM ? 
       WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
-      AND userid IN (${slctUsersId}'') AND customerid = '${customerFilter}'
+      AND UPPER(userid) IN (${slctUsersId}'') AND customerid = '${customerFilter}'
       ORDER BY userid, stamp
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
 
-   //console.table(userData);
+   // console.table(userData);
 
    for (let i = 0; i < userData.length; i++) {
       let actualData = userData[i];
