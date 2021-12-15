@@ -1,6 +1,5 @@
-const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
-let customerFilter = 'eve6512Sd2';
 
 $.ajax({
    url: dataLakeUrl + '/message',
@@ -16,11 +15,11 @@ $.ajax({
       document.getElementById("loader").classList.add("hide-loader");
 
       let data = [];
-      let users = alasql(`SELECT userid FROM ? WHERE customerid = '${customerFilter}' GROUP BY userid`, [result]);
+      let users = alasql(`SELECT userid FROM ? GROUP BY userid`, [result]);
 
       users.forEach(user => {
          var apps = '';
-         let userApps = alasql(`SELECT applications FROM ? WHERE userid = '${ user.userid }' AND customerid = '${customerFilter}' GROUP BY applications`, [result]);
+         let userApps = alasql(`SELECT applications FROM ? WHERE userid = '${ user.userid }' GROUP BY applications`, [result]);
 
          userApps.forEach(element => {
             element.applications = element.applications.replace('{',' ');

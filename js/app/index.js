@@ -1,4 +1,4 @@
-let customerFilter = 'eve6512Sd2';
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 
 let tAccountLicenses;
 var ctx2 = null;
@@ -13,7 +13,7 @@ Date.prototype.addDays = function (days) {
 
 document.getElementById("loader").classList.add("show-loader");
 $.ajax({
-   url: "https://dashboard.8thsensus.com:8080/message",
+   url: dataLakeUrl + "/message",
    headers: {
       "Content-Type": "application/x-www-form-urlencoded",
    },
@@ -26,7 +26,7 @@ $.ajax({
       startOfWeek = "2021-04-05T01:35:35.648732Z";
       //var productData = alasql("SELECT diagcode, utc FROM ? WHERE userid='Kingpin' and utc > '" + startOfWeek + "' order by utc",[result]);
 
-      var productData = alasql(`SELECT COUNT(diagcode) FROM ? WHERE customerid = ${ customerFilter } order by utc`, [
+      var productData = alasql(`SELECT COUNT(diagcode) FROM ? order by utc`, [
          result,
       ]);
 
@@ -58,7 +58,7 @@ $.ajax({
          hourAfter = moment(end.setHours(end.getHours() + i + 1)).format();
 
          accountLicenses = alasql(
-            "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE customerid = '" + customerFilter + "' AND  utc >= '" +
+            "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -66,7 +66,7 @@ $.ajax({
             [result]
          );
          accountDevices = alasql(
-            "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -74,7 +74,7 @@ $.ajax({
             [result]
          );
          accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -82,7 +82,7 @@ $.ajax({
             [result]
          );
          accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -91,7 +91,7 @@ $.ajax({
          );
 
          accountDevicesTest = alasql(
-            "SELECT utc FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT utc FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -119,14 +119,14 @@ $.ajax({
          const yesterdayHourAfter = moment(yesterday.endOf("day")).format();
 
          accountLicenses = alasql(
-            "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ? WHERE customerid = '" + customerFilter + "'",
+            "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
             [result]
          );
-         accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? WHERE customerid = '" + customerFilter + "'", [
+         accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? ", [
             result,
          ]);
          accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -134,7 +134,7 @@ $.ajax({
             [result]
          );
          accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE customerid = '" + customerFilter + "' AND utc >= '" +
+            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
             hourBefore +
             "' and utc < '" +
             hourAfter +
@@ -297,7 +297,6 @@ $.ajax({
       let last24Result = alasql(`
          SELECT gps, stamp, userid, diagcode FROM ? 
          WHERE stamp > '${todayDateStr}'
-         AND customerid = '${customerFilter}'
          ORDER BY stamp DESC
       `, [result]);
 
@@ -420,7 +419,6 @@ $.ajax({
 
 function getIntrusionGraphData(resultData) {
    let dateFrom = formatDate(new Date().addDays(-7)).toString().replace(" ", "T");
-   let dateTo = formatDate(new Date()).toString().replace(" ", "T");
    let arrLock = [];
    let dates = [];
 
@@ -440,13 +438,12 @@ function getIntrusionGraphData(resultData) {
          ,stamp [date]
          ,SUBSTRING(stamp, 1, 10) [timeInterval]
       FROM ? 
-      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
-      AND customerid = '${customerFilter}'
+      WHERE stamp >= '${dateFrom}'
       ORDER BY userid, stamp
    `, [resultData]);
    userData.forEach(function (d, idx) { d.rownum = idx });
 
-   //console.table(userData);
+   // console.table(userData);
 
    for (let i = 0; i < userData.length; i++) {
       let actualData = userData[i];

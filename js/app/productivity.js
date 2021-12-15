@@ -1,4 +1,4 @@
-let customerFilter = 'eve6512Sd2';
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 
 var dataTable = null;
 var weekDataTable = null;
@@ -37,7 +37,7 @@ $(function () {
 });
 
 $.ajax({
-   url: 'https://dashboard.8thsensus.com:8080/message',
+   url: dataLakeUrl + '/message',
    headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
    },
@@ -53,7 +53,6 @@ $.ajax({
       let usersData = alasql(`
          SELECT UPPER(userid) [userid]
          FROM ?
-         WHERE customerid = '${customerFilter}'
          GROUP BY UPPER(userid)
          ORDER BY userid
       `, [result]);
@@ -103,7 +102,7 @@ function getproductivityData(result = null) {
 
    if (result == null) {
       $.ajax({
-         url: "https://dashboard.8thsensus.com:8080/message",
+         url: dataLakeUrl + '/message',
          headers: {
             "Content-Type": "application/x-www-form-urlencoded",
          },
@@ -144,7 +143,6 @@ function ProcessData(result) {
       let usersData = alasql(`
          SELECT userid
          FROM ?
-         WHERE customerid = '${customerFilter}'
          GROUP BY userid
       `, [result]);
       labelData.totalEmployes = selectedUsers.length;
@@ -177,7 +175,7 @@ function ProcessData(result) {
          ${timeInterval}
       FROM ? 
       WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
-      AND UPPER(userid) IN (${slctUsersId}'') AND customerid = '${customerFilter}'
+      AND UPPER(userid) IN (${slctUsersId}'') 
       ORDER BY userid, stamp
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
@@ -309,7 +307,6 @@ function getTableReportData(data, result) {
    let usersData = alasql(`
       SELECT DISTINCT(UPPER(userid)) userid
       FROM ?
-      WHERE  customerid = '${customerFilter}'
       GROUP BY userid
       ORDER BY userid
    `, [result]);

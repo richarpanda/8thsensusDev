@@ -1,4 +1,4 @@
-const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
 let customerFilter = 'eve6512Sd2';
 
@@ -45,16 +45,13 @@ function getUsers() {
             assets = alasql(`
             SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
-            FROM ?
-            WHERE customerid = '${customerFilter}'
-            `
+            FROM ?`
          , [result]);
 
          let filterQuery = `SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
             FROM ?
             WHERE machinename IN (${slctMachineStr}'')
-            AND customerid = '${customerFilter}'
             ${slctUserId !== "" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
 
          let tableData = alasql(filterQuery, [result]);
@@ -142,14 +139,12 @@ $.ajax({
       let machinesData = alasql(`
             SELECT machinename
             FROM ?
-            WHERE customerid = '${customerFilter}'
             GROUP BY machinename
          `, [result]);
 
       let usersData = alasql(`
             SELECT UPPER(userid) [userid]
             FROM ?
-            WHERE customerid = '${customerFilter}'
             GROUP BY UPPER(userid)
             ORDER BY userid
          `, [result]);
@@ -183,7 +178,6 @@ $.ajax({
             SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
             MAX(stamp) stamp
             FROM ?
-            WHERE customerid = '${customerFilter}'
             GROUP BY UPPER(userid)`
          , [result]);
 
@@ -381,8 +375,7 @@ $("#slctUserId").on('change', function () {
          let machinesData = alasql(`
             SELECT machinename
             FROM ?
-            WHERE UPPER(userid) = '${userid}'
-            AND customerid = '${customerFilter}'
+            WHERE UPPER(userid) = '${userid}' OR userid = '${userid}'
             GROUP BY machinename
          `, [result]);
 

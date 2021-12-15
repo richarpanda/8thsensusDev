@@ -1,4 +1,4 @@
-let customerFilter = 'eve6512Sd2';
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 
 let dataSet = null;
 var dataTable = null;
@@ -29,7 +29,7 @@ $(function () {
 });
 
 $.ajax({
-   url: 'https://dashboard.8thsensus.com:8080/message',
+   url: dataLakeUrl + '/message',
    headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
    },
@@ -45,14 +45,12 @@ $.ajax({
       let machinesData = alasql(`
          SELECT machinename
          FROM ?
-	      WHERE customerid = '${customerFilter}'
          GROUP BY machinename
       `, [result]);
 
       let usersData = alasql(`
          SELECT UPPER(userid) [userid]
          FROM ?
-	      WHERE customerid = '${customerFilter}'
          GROUP BY UPPER(userid)
          ORDER BY userid
       `, [result]);
@@ -94,7 +92,7 @@ function getLogs() {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
    $.ajax({
-      url: 'https://dashboard.8thsensus.com:8080/message',
+      url: dataLakeUrl + '/message',
       headers: {
          'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -145,7 +143,6 @@ function processData(result) {
       SELECT *
       FROM ?
       WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
-      AND customerid = '${customerFilter}'
       ${inEventsString}
       ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
       AND machinename IN (${slctMachineStr}'')
@@ -280,7 +277,7 @@ $("#slctUserId").on('change', function(){
    document.getElementById("loader").classList.remove("hide-loader");
    let userid = this.value;
    $.ajax({
-      url: 'https://dashboard.8thsensus.com:8080/message',
+      url: dataLakeUrl + '/message',
       headers: {
          'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -297,7 +294,6 @@ $("#slctUserId").on('change', function(){
             SELECT machinename
             FROM ?
             WHERE UPPER(userid) = '${userid}'
-            AND customerid = '${customerFilter}'
             GROUP BY machinename
          `, [result]);
 

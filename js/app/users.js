@@ -1,4 +1,4 @@
-let customerFilter = 'eve6512Sd2';
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 
 var dataTable = null;
 let tAccountLicenses;
@@ -18,7 +18,7 @@ Date.prototype.addDays = function (days) {
 
 document.getElementById("loader").classList.add("show-loader");
 $.ajax({
-   url: "https://dashboard.8thsensus.com:8080/message",
+   url: dataLakeUrl + "/message",
    headers: {
       "Content-Type": "application/x-www-form-urlencoded",
    },
@@ -45,7 +45,7 @@ $.ajax({
       let machines = alasql(`
          SELECT  machinename
          FROM ? 
-         WHERE userid = '${usrid}' AND customerid = '${customerFilter}'
+         WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
          GROUP BY machinename
          `, [result]);
          
@@ -59,8 +59,8 @@ $.ajax({
                href="#nav-${navId}"
                role="tab"
                aria-controls="nav-${navId}"
-               aria-selected="${i == 0 ? 'true' : 'false'}"
-            >
+               aria-selected="${i == 0 ? 'true' : 'false'}">
+               
                <i class="fa fa-desktop"></i>
                <p>
                   ${machines[i].machinename}
@@ -91,12 +91,11 @@ $.ajax({
       let data = alasql(`
          SELECT customerid, devicelist, os, hardware, localip, applications, gps
          FROM ?
-         WHERE userid = '${usrid}' AND customerid = '${customerFilter}'
+         WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
          GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
       `, [result]);
 
       userData = data[0];
-
       createUserDetail();
       
       $("#nav-tab").append(machinestabString);
@@ -177,11 +176,19 @@ function showEdit() {
    createUserDetail(editUser);
 }
 
+function saveUserDetails() {
+
+}
+
+function lockUnlockUser() {
+
+}
+
 function getMachineData(machinename, result) {
    let data = alasql(`
       SELECT customerid, devicelist, os, hardware, localip, applications, gps, stamp
       FROM ?
-      WHERE machinename = '${ machinename }' AND customerid = '${customerFilter}'
+      WHERE machinename = '${ machinename }'
       GROUP BY customerid, devicelist, os, hardware, localip, applications, gps, stamp
       ORDER BY stamp DESC
       `, [result]);
@@ -380,7 +387,6 @@ function getproductivityData(result) {
    let arrLock = [];
 
    let dateFrom = moment().add(-7, 'days').format('YYYY-MM-DDT00:00:00');
-   let dateTo = moment().format('YYYY-MM-DDT23:59:59');
 
    let dates = [];
 
@@ -400,13 +406,11 @@ function getproductivityData(result) {
          ,stamp [date]
          ${timeInterval}
       FROM ? 
-      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}'  AND customerid = '${customerFilter}'
-      AND userid = '${slctUsersId}'
+      WHERE stamp >= '${dateFrom}'
+      AND userid = '${slctUsersId}' OR UPPER(userid) = '${usrid}'
       ORDER BY userid, stamp
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
-
-   //console.table(userData);
 
    for (let i = 0; i < userData.length; i++) {
       let actualData = userData[i];
@@ -438,6 +442,8 @@ function getproductivityData(result) {
          }
       }
    }
+
+   // console.table(arrLock);
 
    let activeInactiveDatabyUser = alasql(`
       SELECT userid, SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs

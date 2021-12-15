@@ -1,6 +1,5 @@
-const dataLakeUrl = "https://dashboard.8thsensus.com:8181";
+const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
-let customerFilter = 'eve6512Sd2';
 
 var dataTable = null;
 var slctMachine = [];
