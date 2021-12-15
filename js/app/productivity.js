@@ -30,7 +30,7 @@ $(function () {
       let endD = end.format('YYYY-MM-DD');
 
       dateFrom = start.format('YYYY-MM-DDTHH:mm:ss');
-      dateTo = end.format('YYYY-MM-DDTHH:mm:ss');
+      dateTo = end.format('YYYY-MM-DDT23:59:59');
 
       slctDateRange = moment(endD, 'YYYY-MM-DD').diff(moment(startD, 'YYYY-MM-DD'), 'days') + 1;
    });
