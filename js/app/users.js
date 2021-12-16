@@ -1,4 +1,6 @@
+
 const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
+const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
 
 var dataTable = null;
 let tAccountLicenses;
@@ -9,12 +11,23 @@ var editUser = false;
 var userData = [];
 var ctx2 = null;
 var chart = null;
+var customerId = null;
+var machineName = null;
+var userId = null;
+
+
+toastr.options = {
+   closeButton: true,
+   progressBar: true,
+   timeOut: "2000",
+   extendedTimeOut: "1000",
+};
 
 Date.prototype.addDays = function (days) {
    var date = new Date(this.valueOf());
    date.setDate(date.getDate() + days);
    return date;
-}
+};
 
 document.getElementById("loader").classList.add("show-loader");
 $.ajax({
@@ -31,7 +44,7 @@ $.ajax({
 
       const querystring = window.location.search;
       const params = new URLSearchParams(querystring);
-      usrid = params.get('usrid');
+      usrid = params.get("usrid");
 
       $("#user-name").html(`
          <div class="userid-font">
@@ -39,27 +52,31 @@ $.ajax({
          </div>
          <h3>${usrid}</h3>`);
 
-      let machinestabString = '';
-      let machinesTabContentString = '';
+      let machinestabString = "";
+      let machinesTabContentString = "";
 
-      let machines = alasql(`
+      let machines = alasql(
+         `
          SELECT  machinename
          FROM ? 
          WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
          GROUP BY machinename
-         `, [result]);
-         
+         `,
+         [result]
+      );
+
       for (let i = 0; i < machines.length; i++) {
          let navId = `${machines[i].machinename}`;
+         machineName = machines[i].machinename;
 
          machinestabString += `
-            <a class="nav-item nav-link user-nav ${i == 0 ? 'active' : ''}" 
-               id="nav-${navId + '-tab'}"
+            <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}" 
+               id="nav-${navId + "-tab"}"
                data-toggle="tab"
                href="#nav-${navId}"
                role="tab"
                aria-controls="nav-${navId}"
-               aria-selected="${i == 0 ? 'true' : 'false'}">
+               aria-selected="${i == 0 ? "true" : "false"}">
                
                <i class="fa fa-desktop"></i>
                <p>
@@ -68,16 +85,16 @@ $.ajax({
             </a>`;
 
          machinesTabContentString += `
-            <div class="tab-pane fade ${i == 0 ? 'show active' : ''}"
+            <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
                id="nav-${navId}"
                role="tabpanel"
-               aria-labelledby="nav-${navId + '-tab'}">
+               aria-labelledby="nav-${navId + "-tab"}">
 
                <div class="row mt-2 p-2">
                   <div class="col-md-12">
                      <table id="machine-table" class="table table-sm table-mail">
                         <tbody>
-                        ${ getMachineData(navId, result) }
+                        ${getMachineData(navId, result)}
                         </tbody>
                      </table>
                      <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
@@ -88,16 +105,19 @@ $.ajax({
             </div>`;
       }
 
-      let data = alasql(`
+      let data = alasql(
+         `
          SELECT customerid, devicelist, os, hardware, localip, applications, gps
          FROM ?
          WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
          GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
-      `, [result]);
-
+      `,
+         [result]
+      );
+      
       userData = data[0];
       createUserDetail();
-      
+
       $("#nav-tab").append(machinestabString);
       $("#nav-tabContent").append(machinesTabContentString);
 
@@ -109,63 +129,52 @@ $.ajax({
 });
 
 function createUserDetail(editUser = false) {
+   customerId = userData.customerid;
+
    if (editUser) {
       userDetailString = `
          <thead class="edit-table">
             <tr>
-               <td class="form-inline pb-0">
-                  <p class="mr-2"><b>Customer Id: </b></p>
-                  <input type="text" class="form-control form-control-sm" value="${ userData.customerid }" />
-               </td>
+               <td><b>Customer Id: </b>${userData.customerid}</td>
             </tr>
             <tr>
                <td class="form-inline pb-0">
-                  <p class="mr-2"><b>Name: </b></p>
-                  <input type="text" class="form-control form-control-sm" value="Not defined" />
+                  <p class="mr-2"><b>User Id: </b></p>
+                  <input type="text" id="inptUserId" class="form-control form-control-sm" value="Not defined" />
                </td>
             </tr>
             <tr>
-               <td class="form-inline pb-0">
-                  <p class="mr-2"><b>Address: </b></p>
-                  <input type="text" class="form-control form-control-sm" value="Not defined" />
-               </td>
+               <td><b>Address: </b> Not defined</td>
             </tr>
             <tr>
-               <td class="form-inline pb-0">
-                  <p class="mr-2"><b>Phone number: </b></p>
-                  <input type="text" class="form-control form-control-sm" value="Not defined" />
-               </td>
-            </tr>
-            <tr>  
-               <td class="form-inline pb-0">
-                  <p class="mr-2"><b>Department: </b></p>
-                  <input type="text" class="form-control form-control-sm" value="Not defined" />
-               </td>
-            </tr>
-         </thead>`;   
-
-      document.getElementById("edit-buttons").className = '';
-   }
-   else {
-      userDetailString = `
-         <thead>
-            <tr>
-               <td><b>Customer Id: </b>${ userData.customerid }</td>
-            </tr>
-            <tr>
-            <td><b>Name: </b> Not defined</td>
-            </tr>
-            <tr>
-            <td><b>Address: </b> Not defined</td>
-            </tr>
-            <tr>
-            <td><b>Phone number: </b> Not defined</td>
+               <td><b>Phone number: </b> Not defined</td>
             </tr>
             <tr>  
                <td><b>Department: </b> Not defined</td>
             </tr>
          </thead>`;
-      document.getElementById("edit-buttons").className = 'hide';
+
+      document.getElementById("edit-buttons").className = "";
+   } else {
+      userDetailString = `
+         <thead>
+            <tr>
+               <td><b>Customer Id: </b>${userData.customerid}</td>
+            </tr>
+            <tr>
+               <td><b>Name: </b> Not defined</td>
+            </tr>
+            <tr>
+               <td><b>Address: </b> Not defined</td>
+            </tr>
+            <tr>
+               <td><b>Phone number: </b> Not defined</td>
+            </tr>
+            <tr>  
+               <td><b>Department: </b> Not defined</td>
+            </tr>
+         </thead>`;
+      document.getElementById("edit-buttons").className = "hide";
    }
 
    $("#user-detail").html(userDetailString);
@@ -177,37 +186,88 @@ function showEdit() {
 }
 
 function saveUserDetails() {
-
+   userRequest = {
+      actionType: "changeUserId",
+      customerId: customerId,
+      key: key,
+      machineName: machineName,
+      userId: document.getElementById("inptUserId").value,
+      accessId: "000000",
+      verified: "true",
+   };
+   console.log(userRequest);
+   $.ajax({
+      url: dataLakeUrl + "/actions/save",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      type: "POST",
+      data: userRequest,
+      success: function (result) {
+         toastr.success('User saved successfully', 'Success');
+         saveLog(userRequest);
+         $('#addUserModal').modal('hide');
+      },
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
+      },
+   });
 }
 
-function lockUnlockUser() {
+function saveLog(userRequest) {
+   let request = {
+      accessId: "string",
+      customerId: sessionData.customerId,
+      eventType: "UserId Update",
+      key: key,
+      logEntry: `User: ${userRequest.userId} created`,
+      userId: sessionData.userId,
+   };
 
+   $.ajax({
+      url: dataLakeUrl + "/log/save",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      type: "POST",
+      data: JSON.stringify(request),
+      success: function (result) {
+         console.log(result);
+      },
+      error: function () {
+         console.log("error");
+      },
+   });
 }
 
 function getMachineData(machinename, result) {
-   let data = alasql(`
+   let data = alasql(
+      `
       SELECT customerid, devicelist, os, hardware, localip, applications, gps, stamp
       FROM ?
-      WHERE machinename = '${ machinename }'
+      WHERE machinename = '${machinename}'
       GROUP BY customerid, devicelist, os, hardware, localip, applications, gps, stamp
       ORDER BY stamp DESC
-      `, [result]);
-   
+      `,
+      [result]
+   );
+
    let tableString = `
       <tr>
-         <td><b>Device List: </b> ${ data[0].devicelist }</td>
+         <td><b>Device List: </b> ${data[0].devicelist}</td>
       </tr>
       <tr>
-         <td><b>OS: </b> ${ data[0].os }</td>
+         <td><b>OS: </b> ${data[0].os}</td>
       </tr>
       <tr>
-         <td><b>Hardware: </b> ${ data[0].hardware }</td>
+         <td><b>Hardware: </b> ${data[0].hardware}</td>
       </tr>
       <tr>
-         <td><b>Local IP: </b> ${ data[0].localip }</td>
+         <td><b>Local IP: </b> ${data[0].localip}</td>
       </tr>
       <tr>
-         <td><b>Last Update: </b> ${ data[0].stamp }</td>
+         <td><b>Last Update: </b> ${data[0].stamp}</td>
       </tr>
       `;
 
@@ -218,9 +278,9 @@ function getMachineData(machinename, result) {
 
 function createTabs(dataArr, machineName) {
    for (let i = 0; i < 4; i++) {
-      let tabType = '';
-      let tabString = '';
-      let tabContentString = '';
+      let tabType = "";
+      let tabString = "";
+      let tabContentString = "";
 
       switch (i) {
          case 0:
@@ -237,16 +297,16 @@ function createTabs(dataArr, machineName) {
             break;
       }
 
-      let navId = machineName + '-' + tabType;
-      
-      tabString +=`
-         <a class="nav-item nav-link user-nav ${i == 0 ? 'active' : ''}" 
-            id="nav-${navId + '-tab'}"
+      let navId = machineName + "-" + tabType;
+
+      tabString += `
+         <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}" 
+            id="nav-${navId + "-tab"}"
             data-toggle="tab"
             href="#nav-${navId}"
             role="tab"
             aria-controls="nav-${navId}"
-            aria-selected="${i == 0 ? 'true' : 'false'}">
+            aria-selected="${i == 0 ? "true" : "false"}">
 
             <p>
                ${tabType}
@@ -255,10 +315,10 @@ function createTabs(dataArr, machineName) {
       `;
 
       tabContentString += `
-         <div class="tab-pane fade ${i == 0 ? 'show active' : ''}"
+         <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
                id="nav-${navId}"
                role="tabpanel"
-               aria-labelledby="nav-${navId + '-tab'}">
+               aria-labelledby="nav-${navId + "-tab"}">
 
             <div class="row mt-2 p-2">
                <div class="col-md-12">
@@ -271,7 +331,7 @@ function createTabs(dataArr, machineName) {
 
       $("#nav-apps-tab").append(tabString);
       $("#nav-apps-tab-content").append(tabContentString);
-   }  
+   }
 }
 
 function getContentData(data, i) {
@@ -279,8 +339,7 @@ function getContentData(data, i) {
 
    switch (i) {
       case 0:
-         let tableString = 
-            `<table class="table table-responsive table-hover">
+         let tableString = `<table class="table table-responsive table-hover">
                <thead>
                   <tr>
                      <th>Application Name </th>
@@ -291,26 +350,27 @@ function getContentData(data, i) {
                      <th>Status </th>
                   </tr>
                </thead>
-               <tbody>`
+               <tbody>`;
 
-         data.forEach(element => {
-            element.applications = element.applications.replace('{',' ');
-            element.applications = element.applications.replace('}',' ');
-      
-            let elementApps = (element.applications.split('|')[0] + element.applications.split('|')[1]).split(',');
-            elementApps.forEach(app => {
+         data.forEach((element) => {
+            element.applications = element.applications.replace("{", " ");
+            element.applications = element.applications.replace("}", " ");
+
+            let elementApps = (
+               element.applications.split("|")[0] +
+               element.applications.split("|")[1]
+            ).split(",");
+            elementApps.forEach((app) => {
                if (apps[0] == undefined) {
                   apps.push({
                      appName: app.trim(),
-                     lastUsed: element.stamp
+                     lastUsed: element.stamp,
                   });
-               }
-               else {
-                  if (apps.find(x => x.appName == app.trim()) == undefined)
-                  {
+               } else {
+                  if (apps.find((x) => x.appName == app.trim()) == undefined) {
                      apps.push({
                         appName: app.trim(),
-                        lastUsed: element.stamp
+                        lastUsed: element.stamp,
                      });
                   }
                }
@@ -319,7 +379,7 @@ function getContentData(data, i) {
 
          var appssql = alasql(`SELECT * FROM ? ORDER BY appName`, [apps]);
 
-         appssql.forEach(app => {
+         appssql.forEach((app) => {
             tableString += `
                <tr>
                   <td>${app.appName}</td>
@@ -329,28 +389,27 @@ function getContentData(data, i) {
                   <td></td>
                   <td>Normal</td>
                </tr>`;
-         })
+         });
 
-         tableString += `</tbody></table>`
+         tableString += `</tbody></table>`;
 
-         return tableString
+         return tableString;
       case 1:
       case 2:
-         return 'NO DATA'
+         return "NO DATA";
          break;
       case 3:
          let gpsArr = [];
-         let tableGpsString = 
-            `<table class="table table-responsive table-hover">
+         let tableGpsString = `<table class="table table-responsive table-hover">
                <thead>
                   <tr>
                      <th>GPS: </th>
                      <th>Date: </th>
                   </tr>
                </thead>
-               <tbody>`
+               <tbody>`;
 
-         data.forEach(element => {   
+         data.forEach((element) => {
             if (gpsArr[0] == undefined) {
                gpsArr.push(element.gps);
 
@@ -358,9 +417,8 @@ function getContentData(data, i) {
                   <tr>
                      <td>${element.gps}</td>
                      <td>${element.stamp}</td>
-                  </tr>`
-            }
-            else {
+                  </tr>`;
+            } else {
                if (gpsArr.indexOf(element.gps) === -1) {
                   gpsArr.push(element.gps);
 
@@ -371,13 +429,12 @@ function getContentData(data, i) {
                      </tr>`;
                }
             }
-         })
-            
+         });
+
          tableGpsString += `</tbody></table>`;
 
          return tableGpsString;
    }
-   
 }
 
 function getproductivityData(result) {
@@ -386,7 +443,7 @@ function getproductivityData(result) {
    let slctUsersId = usrid;
    let arrLock = [];
 
-   let dateFrom = moment().add(-7, 'days').format('YYYY-MM-DDT00:00:00');
+   let dateFrom = moment().add(-7, "days").format("YYYY-MM-DDT00:00:00");
 
    let dates = [];
 
@@ -395,7 +452,8 @@ function getproductivityData(result) {
       dates.push(dt.substring(0, 10));
    }
 
-   let userData = alasql(`
+   let userData = alasql(
+      `
       SELECT
          CASE 
             WHEN diagcode IN ('D0001','D0002','D0006','D0014','D0011','D0010','D0013') THEN 1
@@ -409,20 +467,26 @@ function getproductivityData(result) {
       WHERE stamp >= '${dateFrom}'
       AND userid = '${slctUsersId}' OR UPPER(userid) = '${usrid}'
       ORDER BY userid, stamp
-   `, [result]);
-   userData.forEach(function (d, idx) { d.rownum = idx });
+   `,
+      [result]
+   );
+   userData.forEach(function (d, idx) {
+      d.rownum = idx;
+   });
 
    for (let i = 0; i < userData.length; i++) {
       let actualData = userData[i];
 
       if (i > 0) {
          let nextData = userData[i + 1];
-         if (nextData !== undefined && (actualData.activeStatus != nextData.activeStatus || actualData.userid != nextData.userid)) {
+         if (
+            nextData !== undefined &&
+            (actualData.activeStatus != nextData.activeStatus ||
+               actualData.userid != nextData.userid)
+         ) {
             arrLock.push(nextData);
          }
-      }
-      else
-         arrLock.push(actualData);
+      } else arrLock.push(actualData);
    }
 
    for (let i = 0; i < arrLock.length; i++) {
@@ -430,14 +494,23 @@ function getproductivityData(result) {
 
       if (i != arrLock.length - 1) {
          let nextData = arrLock[i + 1];
-         if (actualData.userid == nextData.userid && actualData.timeInterval.substring(0, 10) == nextData.timeInterval.substring(0, 10)) {
-            if (actualData.activeStatus == 1) { // ACTIVE TIME
-               arrLock[i].activeTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
+         if (
+            actualData.userid == nextData.userid &&
+            actualData.timeInterval.substring(0, 10) ==
+            nextData.timeInterval.substring(0, 10)
+         ) {
+            if (actualData.activeStatus == 1) {
+               // ACTIVE TIME
+               arrLock[i].activeTime = Math.abs(
+                  new Date(nextData.date) - new Date(actualData.date)
+               );
                arrLock[i].inactiveTime = 0;
-            }
-            else { // INACTIVE TIME
-               arrLock[i].activeTime = 0
-               arrLock[i].inactiveTime = Math.abs(new Date(nextData.date) - new Date(actualData.date));
+            } else {
+               // INACTIVE TIME
+               arrLock[i].activeTime = 0;
+               arrLock[i].inactiveTime = Math.abs(
+                  new Date(nextData.date) - new Date(actualData.date)
+               );
             }
          }
       }
@@ -445,14 +518,17 @@ function getproductivityData(result) {
 
    // console.table(arrLock);
 
-   let activeInactiveDatabyUser = alasql(`
+   let activeInactiveDatabyUser = alasql(
+      `
       SELECT userid, SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
       FROM ? 
       GROUP BY userid
       ORDER BY userid
-   `, [arrLock])
+   `,
+      [arrLock]
+   );
 
-   activeInactiveDatabyUser.forEach(item => {
+   activeInactiveDatabyUser.forEach((item) => {
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
@@ -471,21 +547,24 @@ function getproductivityData(result) {
             inactiveTime: 0,
             rownum: 0,
             timeInterval: dates[dt],
-            userid: userId
+            userid: userId,
          });
       }
    }
    //console.table(arrLock); // TIMES
 
-   let activeInactiveData = alasql(`
+   let activeInactiveData = alasql(
+      `
       SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
       SUBSTRING(timeInterval, 1,10) AS [timeInterval]
       FROM ? 
       GROUP BY SUBSTRING(date, 1, 10), SUBSTRING(timeInterval, 1,10)
       ORDER BY [date], [timeInterval]
-   `, [arrLock])
+   `,
+      [arrLock]
+   );
 
-   activeInactiveData.forEach(item => {
+   activeInactiveData.forEach((item) => {
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
@@ -496,26 +575,29 @@ function getproductivityData(result) {
 }
 
 function createTable(data) {
-   if (dataTable !== null)
-      dataTable.destroy();
+   if (dataTable !== null) dataTable.destroy();
 
-   dataTable = $('#example').DataTable({
+   dataTable = $("#example").DataTable({
       data: data,
       columns: [
          { data: "userid" },
          { data: "activeTime" },
-         { data: "inactiveTime" }
+         { data: "inactiveTime" },
       ],
-      order: [0, 'asc'],
+      order: [0, "asc"],
       rowCallback: function (row, data, index) {
-         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
+         $(row)
+            .find("td:eq(0)")
+            .html(
+               `<a href="users.html?usrid=${data["userid"]}">${data["userid"]}</a>`
+            );
       },
       select: false,
       pageLength: 10,
       responsive: true,
-      dom: '',
+      dom: "",
       retrieve: false,
-      searching: false
+      searching: false,
    });
 }
 
@@ -531,8 +613,8 @@ function createGraph(graphData) {
             pointBorderColor: "#fff",
             data: getGraphUnlockValues(graphData),
             stack: "Stack 0",
-         }
-      ]
+         },
+      ],
    };
 
    var barOptions = {
@@ -545,37 +627,35 @@ function createGraph(graphData) {
                   beginAtZero: true,
                   callback: function (label, index, labels) {
                      return msToTimeHr(label);
-                  }
+                  },
                },
                scaleLabel: {
                   display: true,
-                  labelString: 'Total Hours'
-               }
+                  labelString: "Total Hours",
+               },
             },
          ],
          xAxes: [
             {
                scaleLabel: {
                   display: true,
-                  labelString: 'Days / Hours'
+                  labelString: "Days / Hours",
                },
-               stacked: true
+               stacked: true,
             },
-         ]
+         ],
       },
       tooltips: {
          callbacks: {
             label: function (tooltipItem) {
                return msToTime(tooltipItem.yLabel);
-            }
-         }
+            },
+         },
       },
    };
 
-   if (ctx2 !== null)
-      ctx = null;
-   if (chart !== null)
-      chart.destroy();
+   if (ctx2 !== null) ctx = null;
+   if (chart !== null) chart.destroy();
 
    ctx2 = document.getElementById("userBarChart").getContext("2d");
    chart = new Chart(ctx2, { type: "bar", data: barData, options: barOptions });
@@ -583,7 +663,7 @@ function createGraph(graphData) {
 
 function getGraphLabels(data) {
    let result = [];
-   data.forEach(item => {
+   data.forEach((item) => {
       result.push(item.timeInterval);
    });
    return result;
@@ -591,7 +671,7 @@ function getGraphLabels(data) {
 
 function getGraphLockValues(data) {
    let result = [];
-   data.forEach(item => {
+   data.forEach((item) => {
       result.push(item.inactiveMs);
    });
    return result;
@@ -599,7 +679,7 @@ function getGraphLockValues(data) {
 
 function getGraphUnlockValues(data) {
    let result = [];
-   data.forEach(item => {
+   data.forEach((item) => {
       result.push(item.activeMs);
    });
    return result;
@@ -608,7 +688,9 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-      (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+      (d.getMonth() + 1).toString().length == 1
+         ? "0" + (d.getMonth() + 1)
+         : d.getMonth() + 1;
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =
@@ -639,7 +721,7 @@ function formatDate(utcDate) {
 function msToTime(s) {
    function pad(n, z) {
       z = z || 2;
-      return ('00' + n).slice(-z);
+      return ("00" + n).slice(-z);
    }
 
    var ms = s % 1000;
@@ -649,13 +731,13 @@ function msToTime(s) {
    var mins = s % 60;
    var hrs = (s - mins) / 60;
 
-   return pad(hrs) + ':' + pad(mins)
+   return pad(hrs) + ":" + pad(mins);
 }
 
 function msToTimeHr(s) {
    function pad(n, z) {
       z = z || 2;
-      return ('00' + n).slice(-z);
+      return ("00" + n).slice(-z);
    }
 
    var ms = s % 1000;
@@ -665,13 +747,13 @@ function msToTimeHr(s) {
    var mins = s % 60;
    var hrs = (s - mins) / 60;
 
-   return pad(hrs) + ':00'
+   return pad(hrs) + ":00";
 }
 
 function msToDateTime(s) {
    function pad(n, z) {
       z = z || 2;
-      return ('00' + n).slice(-z);
+      return ("00" + n).slice(-z);
    }
 
    var ms = s % 1000;
@@ -682,12 +764,20 @@ function msToDateTime(s) {
    var hrs = (s - mins) / 60;
 
    let dateNow = new Date();
-   return new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), pad(hrs), pad(mins), pad(secs), 0);
+   return new Date(
+      dateNow.getFullYear(),
+      dateNow.getMonth(),
+      dateNow.getDate(),
+      pad(hrs),
+      pad(mins),
+      pad(secs),
+      0
+   );
 }
 
 function initMap(gps) {
-   if(gps !== undefined) {
-      let gpsArr = gps.split(',');
+   if (gps !== undefined) {
+      let gpsArr = gps.split(",");
       let lat = parseFloat(gpsArr[0].trim());
       let long = parseFloat(gpsArr[1].trim());
       const uluru = { lat: lat, lng: long };
