@@ -1,4 +1,4 @@
-const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 
 let dataSet = null;
 var dataTable = null;
@@ -38,50 +38,77 @@ $.ajax({
    contentType: 'application/json',
    data: {
    },
-   success: function (result) {
-      document.getElementById("loader").classList.remove("show-loader");
-      document.getElementById("loader").classList.add("hide-loader");
+   success: function (res) {
+      $.ajax({
+         url: dataLakeUrl + "/actions/all",
+         headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+         },
+         type: "GET",
+         dataType: "json",
+         data: {},
+         success: function (resa) {
 
-      let machinesData = alasql(`
-         SELECT machinename
-         FROM ?
-         GROUP BY machinename
-      `, [result]);
+            let result = alasql(`
+               SELECT 
+                  CASE 
+                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                     ELSE a.userId
+                  END [userid],
+                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+               FROM ? r
+               LEFT JOIN ? a 
+               ON r.machinename IN a.machineName
+            `, [res, resa]);
+            document.getElementById("loader").classList.remove("show-loader");
+            document.getElementById("loader").classList.add("hide-loader");
 
-      let usersData = alasql(`
-         SELECT UPPER(userid) [userid]
-         FROM ?
-         GROUP BY UPPER(userid)
-         ORDER BY userid
-      `, [result]);
+            let machinesData = alasql(`
+               SELECT machinename
+               FROM ?
+               GROUP BY machinename
+            `, [result]);
 
-      let slctUsersHtml = `<option value=""></option>`;
+            let usersData = alasql(`
+               SELECT UPPER(userid) [userid]
+               FROM ?
+               GROUP BY UPPER(userid)
+               ORDER BY userid
+            `, [result]);
 
-      let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-         <select name="slctMachine[]" multiple id="slctMachine">`;
+            let slctUsersHtml = `<option value=""></option>`;
 
-      machinesData.forEach(machine => {
-         slctMachineHtml += `
-            <option value="${machine.machinename}">${machine.machinename}</option>
-         `;
+            let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
+               <select name="slctMachine[]" multiple id="slctMachine">`;
+
+            machinesData.forEach(machine => {
+               slctMachineHtml += `
+                  <option value="${machine.machinename}">${machine.machinename}</option>
+               `;
+            });
+
+            usersData.forEach(user => {
+               slctUsersHtml += `
+                  <option value="${user.userid}">${user.userid}</option>
+               `;
+            });
+
+            $("#slctUserId").html(slctUsersHtml);
+            $("#slctMachineContainer").html(slctMachineHtml);
+            $('#slctMachine').multiselect({
+               columns: 1,
+               placeholder: 'Select Machines',
+               selectAll: true
+            });
+            $(".ms-selectall").trigger("click");
+
+            processData(result);
+         },
+         error: function (err) {
+            console.log("Error:");
+            console.log(err);
+         },
       });
-
-      usersData.forEach(user => {
-         slctUsersHtml += `
-            <option value="${user.userid}">${user.userid}</option>
-         `;
-      });
-
-      $("#slctUserId").html(slctUsersHtml);
-      $("#slctMachineContainer").html(slctMachineHtml);
-      $('#slctMachine').multiselect({
-         columns: 1,
-         placeholder: 'Select Machines',
-         selectAll: true
-      });
-      $(".ms-selectall").trigger("click");
-
-      processData(result);
    },
    error: function (request, status, error) {
       console.error(error);
@@ -101,10 +128,39 @@ function getLogs() {
       contentType: 'application/json',
       data: {
       },
-      success: function (result) {
-         document.getElementById("loader").classList.remove("show-loader");
-         document.getElementById("loader").classList.add("hide-loader");
-         processData(result);
+      success: function (res) {
+         $.ajax({
+            url: dataLakeUrl + "/actions/all",
+            headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+            },
+            type: "GET",
+            dataType: "json",
+            data: {},
+            success: function (resa) {
+
+               let result = alasql(`
+                  SELECT 
+                     CASE 
+                        WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                        ELSE a.userId
+                     END [userid],
+                     r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+                  FROM ? r
+                  LEFT JOIN ? a 
+                  ON r.machinename IN a.machineName
+               `, [res, resa]);
+
+               document.getElementById("loader").classList.remove("show-loader");
+               document.getElementById("loader").classList.add("hide-loader");
+               processData(result);
+
+            },
+            error: function (err) {
+               console.log("Error:");
+               console.log(err);
+            },
+         });
       },
       error: function (request, status, error) {
          console.error(error);
@@ -161,7 +217,7 @@ function processData(result) {
          { data: "remoteip" },
          { data: "localip" },
          { data: "gps" },
-         { data: "stamp" },
+         { data: "utc" },
          { data: "diagcode" },
          { data: "key" }
       ],
@@ -180,7 +236,7 @@ function processData(result) {
       },
       rowCallback: function (row, data, index) {
          $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
-         $(row).find('td:eq(6)').html(formatDate(data['stamp']));
+         $(row).find('td:eq(6)').html(formatDate(data['utc']));
          $(row).find('td:eq(7)').html(getCode(data['diagcode']));
       },
       select: true,
@@ -286,32 +342,60 @@ $("#slctUserId").on('change', function(){
       contentType: 'application/json',
       data: {
       },
-      success: function (result) {
-         document.getElementById("loader").classList.remove("show-loader");
-         document.getElementById("loader").classList.add("hide-loader");
-         
-         let machinesData = alasql(`
-            SELECT machinename
-            FROM ?
-            WHERE UPPER(userid) = '${userid}'
-            GROUP BY machinename
-         `, [result]);
+      success: function (res) {
+         $.ajax({
+            url: dataLakeUrl + "/actions/all",
+            headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+            },
+            type: "GET",
+            dataType: "json",
+            data: {},
+            success: function (resa) {
+               let result = alasql(`
+                  SELECT 
+                     CASE 
+                        WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                        ELSE a.userId
+                     END [userid],
+                     r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+                  FROM ? r
+                  LEFT JOIN ? a 
+                  ON r.machinename IN a.machineName
+               `, [res, resa]);
 
-         let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-            <select name="slctMachine[]" multiple id="slctMachine">`;
+               document.getElementById("loader").classList.remove("show-loader");
+               document.getElementById("loader").classList.add("hide-loader");
+               
+               let machinesData = alasql(`
+                  SELECT machinename
+                  FROM ?
+                  WHERE UPPER(userid) = '${userid}'
+                  GROUP BY machinename
+               `, [result]);
 
-         machinesData.forEach(machine => {
-            slctMachineHtml += `<option value="${machine.machinename}">${machine.machinename}</option>`;
+               let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
+                  <select name="slctMachine[]" multiple id="slctMachine">`;
+
+               machinesData.forEach(machine => {
+                  slctMachineHtml += `<option value="${machine.machinename}">${machine.machinename}</option>`;
+               });
+
+               $("#slctMachineContainer").html(slctMachineHtml);
+               $('#slctMachine').multiselect({
+                  columns: 1,
+                  placeholder: 'Select Machines',
+                  selectAll: true
+               });
+
+               $(".ms-selectall").trigger("click");
+            },
+            error: function (err) {
+               console.log("Error:");
+               console.log(err);
+            },
          });
-
-         $("#slctMachineContainer").html(slctMachineHtml);
-         $('#slctMachine').multiselect({
-            columns: 1,
-            placeholder: 'Select Machines',
-            selectAll: true
-         });
-
-         $(".ms-selectall").trigger("click");
+            
       },
       error: function (request, status, error) {
          console.error(error);

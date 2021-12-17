@@ -1,5 +1,4 @@
-
-const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
 
 var dataTable = null;
@@ -15,12 +14,11 @@ var customerId = null;
 var machineName = null;
 var userId = null;
 
-
 toastr.options = {
-   closeButton: true,
-   progressBar: true,
-   timeOut: "2000",
-   extendedTimeOut: "1000",
+   "closeButton": true,
+   "progressBar": true,
+   "timeOut": "2000",
+   "extendedTimeOut": "1000"
 };
 
 Date.prototype.addDays = function (days) {
@@ -30,6 +28,7 @@ Date.prototype.addDays = function (days) {
 };
 
 document.getElementById("loader").classList.add("show-loader");
+
 $.ajax({
    url: dataLakeUrl + "/message",
    headers: {
@@ -38,90 +37,118 @@ $.ajax({
    type: "GET" /* or type:"GET" or type:"PUT" */,
    dataType: "json",
    data: {},
-   success: function (result) {
+   success: function (res) {
       document.getElementById("loader").classList.remove("show-loader");
-      document.getElementById("loader").classList.add("hide-loader");
 
-      const querystring = window.location.search;
-      const params = new URLSearchParams(querystring);
-      usrid = params.get("usrid");
+      $.ajax({
+         url: dataLakeUrl + "/actions/all",
+         headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+         },
+         type: "GET",
+         dataType: "json",
+         data: {},
+         success: function (resa) {
+            document.getElementById("loader").classList.add("hide-loader");
+            
+            let result = alasql(`
+               SELECT 
+                  CASE 
+                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                     ELSE a.userId
+                  END [userid],
+                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+               FROM ? r
+               LEFT JOIN ? a 
+               ON r.machinename IN a.machineName
+            `, [res, resa]);
+                        
+            const querystring = window.location.search;
+            const params = new URLSearchParams(querystring);
+            usrid = params.get("usrid");
 
-      $("#user-name").html(`
-         <div class="userid-font">
-            <img src="img/Circle-icons-profile.svg" alt="user-image">
-         </div>
-         <h3>${usrid}</h3>`);
+            $("#user-name").html(`
+               <div class="userid-font">
+                  <img src="img/Circle-icons-profile.svg" alt="user-image">
+               </div>
+               <h3>${usrid}</h3>`);
 
-      let machinestabString = "";
-      let machinesTabContentString = "";
+            let machinestabString = "";
+            let machinesTabContentString = "";
 
-      let machines = alasql(
-         `
-         SELECT  machinename
-         FROM ? 
-         WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
-         GROUP BY machinename
-         `,
-         [result]
-      );
+            let machines = alasql(
+               `
+               SELECT machinename
+               FROM ?
+               WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
+               GROUP BY machinename
+               `,
+               [result]
+            );
 
-      for (let i = 0; i < machines.length; i++) {
-         let navId = `${machines[i].machinename}`;
-         machineName = machines[i].machinename;
+            for (let i = 0; i < machines.length; i++) {
+               let navId = `${machines[i].machinename}`;
+               machineName = machines[i].machinename;
 
-         machinestabString += `
-            <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}" 
-               id="nav-${navId + "-tab"}"
-               data-toggle="tab"
-               href="#nav-${navId}"
-               role="tab"
-               aria-controls="nav-${navId}"
-               aria-selected="${i == 0 ? "true" : "false"}">
-               
-               <i class="fa fa-desktop"></i>
-               <p>
-                  ${machines[i].machinename}
-               </p>
-            </a>`;
+               machinestabString += `
+                  <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}"
+                     id="nav-${navId + "-tab"}"
+                     data-toggle="tab"
+                     href="#nav-${navId}"
+                     role="tab"
+                     aria-controls="nav-${navId}"
+                     aria-selected="${i == 0 ? "true" : "false"}">
 
-         machinesTabContentString += `
-            <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
-               id="nav-${navId}"
-               role="tabpanel"
-               aria-labelledby="nav-${navId + "-tab"}">
+                     <i class="fa fa-desktop"></i>
+                     <p>
+                        ${machines[i].machinename}
+                     </p>
+                  </a>`;
 
-               <div class="row mt-2 p-2">
-                  <div class="col-md-12">
-                     <table id="machine-table" class="table table-sm table-mail">
-                        <tbody>
-                        ${getMachineData(navId, result)}
-                        </tbody>
-                     </table>
-                     <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
-                        <div id="map"></div>
+               machinesTabContentString += `
+                  <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
+                     id="nav-${navId}"
+                     role="tabpanel"
+                     aria-labelledby="nav-${navId + "-tab"}">
+
+                     <div class="row mt-2 p-2">
+                        <div class="col-md-12">
+                           <table id="machine-table" class="table table-sm table-mail">
+                              <tbody>
+                              ${getMachineData(navId, result)}
+                              </tbody>
+                           </table>
+                           <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
+                              <div id="map"></div>
+                           </div>
+                        </div>
                      </div>
-                  </div>
-               </div>               
-            </div>`;
-      }
+                  </div>`;
+            }
 
-      let data = alasql(
-         `
-         SELECT customerid, devicelist, os, hardware, localip, applications, gps
-         FROM ?
-         WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
-         GROUP BY customerid, devicelist, os, hardware, localip, applications, gps
-      `,
-         [result]
-      );
-      
-      userData = data[0];
-      createUserDetail();
+            let data = alasql(
+               `
+               SELECT customerid, userid, devicelist, os, hardware, localip, applications, gps
+               FROM ?
+               WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
+               GROUP BY customerid, userid, devicelist, os, hardware, localip, applications, gps
+            `,
+               [result]
+            );
+            
+            userData = data[0];
+            createUserDetail();
 
-      $("#nav-tab").append(machinestabString);
-      $("#nav-tabContent").append(machinesTabContentString);
+            $("#nav-tab").append(machinestabString);
+            $("#nav-tabContent").append(machinesTabContentString);
 
-      getproductivityData(result);
+            getproductivityData(result);
+         },
+         error: function (err) {
+            console.log("Error:");
+            console.log(err);
+         },
+      });
    },
    error: function (xhr, status, error) {
       console.error(error);
@@ -140,7 +167,7 @@ function createUserDetail(editUser = false) {
             <tr>
                <td class="form-inline pb-0">
                   <p class="mr-2"><b>User Id: </b></p>
-                  <input type="text" id="inptUserId" class="form-control form-control-sm" value="Not defined" />
+                  <input type="text" id="inptUserId" class="form-control form-control-sm" value="${userData.userid}" />
                </td>
             </tr>
             <tr>
@@ -149,7 +176,7 @@ function createUserDetail(editUser = false) {
             <tr>
                <td><b>Phone number: </b> Not defined</td>
             </tr>
-            <tr>  
+            <tr>
                <td><b>Department: </b> Not defined</td>
             </tr>
          </thead>`;
@@ -162,7 +189,7 @@ function createUserDetail(editUser = false) {
                <td><b>Customer Id: </b>${userData.customerid}</td>
             </tr>
             <tr>
-               <td><b>Name: </b> Not defined</td>
+               <td><b>UserId: </b> ${userData.userid}</td>
             </tr>
             <tr>
                <td><b>Address: </b> Not defined</td>
@@ -170,7 +197,7 @@ function createUserDetail(editUser = false) {
             <tr>
                <td><b>Phone number: </b> Not defined</td>
             </tr>
-            <tr>  
+            <tr>
                <td><b>Department: </b> Not defined</td>
             </tr>
          </thead>`;
@@ -185,7 +212,7 @@ function showEdit() {
    createUserDetail(editUser);
 }
 
-function saveUserDetails() {
+async function saveUserDetails() {
    userRequest = {
       actionType: "changeUserId",
       customerId: customerId,
@@ -195,18 +222,20 @@ function saveUserDetails() {
       accessId: "000000",
       verified: "true",
    };
-   console.log(userRequest);
+
+   document.getElementById("loader").classList.remove("show-loader");
+   await deleteLastUsers(userRequest);
    $.ajax({
       url: dataLakeUrl + "/actions/save",
       headers: {
          "Content-Type": "application/json",
       },
       type: "POST",
-      data: userRequest,
+      data: JSON.stringify(userRequest),
       success: function (result) {
          toastr.success('User saved successfully', 'Success');
-         saveLog(userRequest);
-         $('#addUserModal').modal('hide');
+         document.getElementById("loader").classList.add("hide-loader");
+         document.location.href = 'users.html?usrid=' + userRequest.userId;
       },
       error: function (err) {
          console.log("Error:");
@@ -215,28 +244,48 @@ function saveUserDetails() {
    });
 }
 
-function saveLog(userRequest) {
-   let request = {
-      accessId: "string",
-      customerId: sessionData.customerId,
-      eventType: "UserId Update",
-      key: key,
-      logEntry: `User: ${userRequest.userId} created`,
-      userId: sessionData.userId,
-   };
 
-   $.ajax({
-      url: dataLakeUrl + "/log/save",
+async function deleteLastUsers(userRequest) {
+   await $.ajax({
+      url: dataLakeUrl + "/actions/all",
       headers: {
-         "Content-Type": "application/json",
+         "Content-Type": "application/x-www-form-urlencoded",
       },
-      type: "POST",
-      data: JSON.stringify(request),
+      type: "GET",
+      dataType: "json",
+      data: {},
       success: function (result) {
-         console.log(result);
+         let data = alasql(`
+            SELECT  *
+            FROM ?
+            WHERE machineName = '${userRequest.machineName}'`,
+            [result]
+         );
+
+         if (data.length > 0) {
+            data.forEach(item => {
+               $.ajax({
+                  url: dataLakeUrl + "/actions/delete?id=" + item.id + "&key=" + encodeURIComponent(key),
+                  headers: {
+                     "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  type: "DELETE",
+                  dataType: "json",
+                  data: {},
+                  success: function (result) {
+                     console.log(result);
+                  },
+                  error: function (err) {
+                     console.log("Error:");
+                     console.log(err);
+                  },
+               });
+            });
+         }
       },
-      error: function () {
-         console.log("error");
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
       },
    });
 }
@@ -300,7 +349,7 @@ function createTabs(dataArr, machineName) {
       let navId = machineName + "-" + tabType;
 
       tabString += `
-         <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}" 
+         <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}"
             id="nav-${navId + "-tab"}"
             data-toggle="tab"
             href="#nav-${navId}"
@@ -325,7 +374,7 @@ function createTabs(dataArr, machineName) {
                   ${getContentData(dataArr, i)}
                </div>
             </div>
-            
+
          </div>
       `;
 
@@ -455,7 +504,7 @@ function getproductivityData(result) {
    let userData = alasql(
       `
       SELECT
-         CASE 
+         CASE
             WHEN diagcode IN ('D0001','D0002','D0006','D0014','D0011','D0010','D0013') THEN 1
             WHEN diagcode IN ('D0003','D0004','D0005','D0007','D0008','D0009','D0012','D0015') THEN 0
             ELSE  diagcode
@@ -463,7 +512,7 @@ function getproductivityData(result) {
          ,userid
          ,stamp [date]
          ${timeInterval}
-      FROM ? 
+      FROM ?
       WHERE stamp >= '${dateFrom}'
       AND userid = '${slctUsersId}' OR UPPER(userid) = '${usrid}'
       ORDER BY userid, stamp
@@ -521,7 +570,7 @@ function getproductivityData(result) {
    let activeInactiveDatabyUser = alasql(
       `
       SELECT userid, SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
-      FROM ? 
+      FROM ?
       GROUP BY userid
       ORDER BY userid
    `,
@@ -557,7 +606,7 @@ function getproductivityData(result) {
       `
       SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
       SUBSTRING(timeInterval, 1,10) AS [timeInterval]
-      FROM ? 
+      FROM ?
       GROUP BY SUBSTRING(date, 1, 10), SUBSTRING(timeInterval, 1,10)
       ORDER BY [date], [timeInterval]
    `,

@@ -1,4 +1,4 @@
-const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 
 var dataTable = null;
 var weekDataTable = null;
@@ -15,8 +15,8 @@ Date.prototype.addDays = function (days) {
    return date;
 }
 
-
 document.getElementById("loader").classList.add("show-loader");
+
 $(function () {
    $('input[name="daterange"]').daterangepicker({
       autoApply: true,
@@ -46,38 +46,67 @@ $.ajax({
    contentType: 'application/json',
    data: {
    },
-   success: function (result) {
-      document.getElementById("loader").classList.remove("show-loader");
-      document.getElementById("loader").classList.add("hide-loader");
+   success: function (res) {
+      $.ajax({
+         url: dataLakeUrl + "/actions/all",
+         headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+         },
+         type: "GET",
+         dataType: "json",
+         data: {},
+         success: function (resa) {
 
-      let usersData = alasql(`
-         SELECT UPPER(userid) [userid]
-         FROM ?
-         GROUP BY UPPER(userid)
-         ORDER BY userid
-      `, [result]);
+            let result = alasql(`
+               SELECT 
+                  CASE 
+                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                     ELSE a.userId
+                  END [userid],
+                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+               FROM ? r
+               LEFT JOIN ? a 
+               ON r.machinename IN a.machineName
+            `, [res, resa]);                     
+         
+            document.getElementById("loader").classList.remove("show-loader");
+            document.getElementById("loader").classList.add("hide-loader");
 
-      let slctUsersHtml = `
-         <label for="slctUserId">User ID:</label>
-         <select name="slctUserId[]" multiple id="slctUserId">`;
+            let usersData = alasql(`
+               SELECT UPPER(userid) [userid]
+               FROM ?
+               GROUP BY UPPER(userid)
+               ORDER BY userid
+            `, [result]);
 
-      usersData.forEach(user => {
-         slctUsersHtml += `
-            <option value="${user.userid}">${user.userid.toUpperCase()}</option>
-         `;
+            let slctUsersHtml = `
+               <label for="slctUserId">User ID:</label>
+               <select name="slctUserId[]" multiple id="slctUserId">`;
+
+            usersData.forEach(user => {
+               slctUsersHtml += `
+                  <option value="${user.userid}">${user.userid.toUpperCase()}</option>
+               `;
+            });
+            slctUsersHtml += '</select>';
+
+            $("#slctContainer").html(slctUsersHtml);
+            $('#slctUserId').multiselect({
+               columns: 1,
+               placeholder: 'Select Users',
+               search: true,
+               selectAll: true
+            });
+
+            $(".ms-selectall").trigger("click");
+            getproductivityData(result);
+         },
+         error: function (err) {
+            console.log("Error:");
+            console.log(err);
+         },
       });
-      slctUsersHtml += '</select>';
-
-      $("#slctContainer").html(slctUsersHtml);
-      $('#slctUserId').multiselect({
-         columns: 1,
-         placeholder: 'Select Users',
-         search: true,
-         selectAll: true
-      });
-
-      $(".ms-selectall").trigger("click");
-      getproductivityData(result);
+         
    },
    error: function (request, status, error) {
       console.error(error);
@@ -109,8 +138,35 @@ function getproductivityData(result = null) {
          type: "GET",
          dataType: "json",
          data: {},
-         success: function (result) {
-            ProcessData(result)
+         success: function (res) {
+            $.ajax({
+               url: dataLakeUrl + "/actions/all",
+               headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+               },
+               type: "GET",
+               dataType: "json",
+               data: {},
+               success: function (resa) {
+                  let result = alasql(`
+                     SELECT 
+                        CASE 
+                           WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                           ELSE a.userId
+                        END [userid],
+                        r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+                     FROM ? r
+                     LEFT JOIN ? a 
+                     ON r.machinename IN a.machineName
+                  `, [res, resa]);
+                        
+                  ProcessData(result)
+               },
+               error: function (err) {
+                  console.log("Error:");
+                  console.log(err);
+               },
+            });
          },
          error: function (err) {
             console.error(err);
@@ -170,13 +226,13 @@ function ProcessData(result) {
             ELSE  diagcode
          END [activeStatus]
          ,UPPER(userid) [userid]
-         ,stamp [date]
-         ,WEEKDAY(stamp) [weekday]
+         ,utc [date]
+         ,WEEKDAY(utc) [weekday]
          ${timeInterval}
       FROM ? 
-      WHERE stamp >= '${dateFrom}' AND stamp <='${dateTo}' 
+      WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
       AND UPPER(userid) IN (${slctUsersId}'') 
-      ORDER BY userid, stamp
+      ORDER BY userid, utc
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
 
@@ -807,10 +863,10 @@ function msToDateTime(s) {
 
 function getTimeInterval(range) {
    if (parseInt(range) == 1) {
-      return ",SUBSTRING(stamp, 1, 13) [timeInterval]";
+      return ",SUBSTRING(utc, 1, 13) [timeInterval]";
    }
    else {
-      return ",SUBSTRING(stamp, 1, 10) [timeInterval]";
+      return ",SUBSTRING(utc, 1, 10) [timeInterval]";
    }
 }
 

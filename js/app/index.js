@@ -1,4 +1,4 @@
-const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
+const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
 
 let tAccountLicenses;
 var ctx2 = null;
@@ -20,397 +20,424 @@ $.ajax({
    type: "GET" /* or type:"GET" or type:"PUT" */,
    dataType: "json",
    data: {},
-   success: function (result) {
-      document.getElementById("loader").classList.remove("show-loader");
-      document.getElementById("loader").classList.add("hide-loader");
-      startOfWeek = "2021-04-05T01:35:35.648732Z";
-      //var productData = alasql("SELECT diagcode, utc FROM ? WHERE userid='Kingpin' and utc > '" + startOfWeek + "' order by utc",[result]);
+   success: function (res) {
+      $.ajax({
+         url: dataLakeUrl + "/actions/all",
+         headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+         },
+         type: "GET",
+         dataType: "json",
+         data: {},
+         success: function (resa) {
+            let result = alasql(`
+               SELECT 
+                  CASE 
+                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+                     ELSE a.userId
+                  END [userid],
+                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+               FROM ? r
+               LEFT JOIN ? a 
+               ON r.machinename IN a.machineName
+            `, [res, resa]);
 
-      var productData = alasql(`SELECT COUNT(diagcode) FROM ? order by utc`, [
-         result,
-      ]);
+            document.getElementById("loader").classList.remove("show-loader");
+            document.getElementById("loader").classList.add("hide-loader");
+            startOfWeek = "2021-04-05T01:35:35.648732Z";
+            //var productData = alasql("SELECT diagcode, utc FROM ? WHERE userid='Kingpin' and utc > '" + startOfWeek + "' order by utc",[result]);
 
-      var start = new Date();
-      var end = new Date();
+            var productData = alasql(`SELECT COUNT(diagcode) FROM ? order by utc`, [
+               result,
+            ]);
 
-      //var start = new Date();
-      //start.setDate(start.getDate() - 2);
+            var start = new Date();
+            var end = new Date();
 
-      start.setHours(0, 0, 0, 0);
-      end.setHours(0, 0, 0, 0);
-      var hourBefore;
-      var hourAfter;
-      var accountLicenses;
-      var accountDevices;
-      var accountIntrusions;
-      var accountAlerts;
+            //var start = new Date();
+            //start.setDate(start.getDate() - 2);
 
-      var licensesArray = [];
-      var devicesArray = [];
-      var IntrusionsArray = [];
-      var alertsArray = [];
-      var accountDevicesTest = [];
+            start.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            var hourBefore;
+            var hourAfter;
+            var accountLicenses;
+            var accountDevices;
+            var accountIntrusions;
+            var accountAlerts;
 
-      statCount();
+            var licensesArray = [];
+            var devicesArray = [];
+            var IntrusionsArray = [];
+            var alertsArray = [];
+            var accountDevicesTest = [];
 
-      for (i = 0; i < 24; i++) {
-         hourBefore = moment(start.setHours(start.getHours() + i)).format();
-         hourAfter = moment(end.setHours(end.getHours() + i + 1)).format();
+            statCount();
 
-         accountLicenses = alasql(
-            "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' order by utc",
-            [result]
-         );
-         accountDevices = alasql(
-            "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' order by utc",
-            [result]
-         );
-         accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' and (diagcode = 'D0011' or diagcode = 'D0012') order by utc",
-            [result]
-         );
-         accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' order by utc",
-            [result]
-         );
+            for (i = 0; i < 24; i++) {
+               hourBefore = moment(start.setHours(start.getHours() + i)).format();
+               hourAfter = moment(end.setHours(end.getHours() + i + 1)).format();
 
-         accountDevicesTest = alasql(
-            "SELECT utc FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' order by utc",
-            [result]
-         );
+               accountLicenses = alasql(
+                  "SELECT COUNT(DISTINCT userid) licenses FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' order by utc",
+                  [result]
+               );
+               accountDevices = alasql(
+                  "SELECT COUNT(DISTINCT userid) devices FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' order by utc",
+                  [result]
+               );
+               accountIntrusions = alasql(
+                  "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' and (diagcode = 'D0011' or diagcode = 'D0012') order by utc",
+                  [result]
+               );
+               accountAlerts = alasql(
+                  "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' order by utc",
+                  [result]
+               );
 
-         licensesArray.push(accountLicenses[0].licenses);
-         devicesArray.push(accountDevices[0].devices);
-         IntrusionsArray.push(accountIntrusions[0].intrusions);
-         alertsArray.push(accountAlerts[0].alerts);
+               accountDevicesTest = alasql(
+                  "SELECT utc FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' order by utc",
+                  [result]
+               );
 
-         start.setHours(0, 0, 0, 0);
-         end.setHours(0, 0, 0, 0);
-      }
+               licensesArray.push(accountLicenses[0].licenses);
+               devicesArray.push(accountDevices[0].devices);
+               IntrusionsArray.push(accountIntrusions[0].intrusions);
+               alertsArray.push(accountAlerts[0].alerts);
 
-      function statCount() {
-         const today = moment();
-         const hourBefore = moment(today.startOf("day")).format();
-         const hourAfter = moment(today.endOf("day")).format();
+               start.setHours(0, 0, 0, 0);
+               end.setHours(0, 0, 0, 0);
+            }
 
-         const yesterday = moment();
+            function statCount() {
+               const today = moment();
+               const hourBefore = moment(today.startOf("day")).format();
+               const hourAfter = moment(today.endOf("day")).format();
 
-         const yesterdayHourBefore = moment(yesterday.startOf("day")).format();
-         const yesterdayHourAfter = moment(yesterday.endOf("day")).format();
+               const yesterday = moment();
 
-         accountLicenses = alasql(
-            "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
-            [result]
-         );
-         accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? ", [
-            result,
-         ]);
-         accountIntrusions = alasql(
-            "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' and (diagcode = 'D0011' or diagcode = 'D0012') order by utc",
-            [result]
-         );
-         accountAlerts = alasql(
-            "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
-            hourBefore +
-            "' and utc < '" +
-            hourAfter +
-            "' order by utc",
-            [result]
-         );
+               const yesterdayHourBefore = moment(yesterday.startOf("day")).format();
+               const yesterdayHourAfter = moment(yesterday.endOf("day")).format();
 
-         var countLicenses = accountLicenses[0].licenses;
-         var countDevices = accountDevices[0].devices;
-         var countIntrusions = accountIntrusions[0].intrusions;
-         var countAlerts = accountAlerts[0].alerts;
+               accountLicenses = alasql(
+                  "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
+                  [result]
+               );
+               accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? ", [
+                  result,
+               ]);
+               accountIntrusions = alasql(
+                  "SELECT COUNT(DISTINCT userid) intrusions FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' and (diagcode = 'D0011' or diagcode = 'D0012') order by utc",
+                  [result]
+               );
+               accountAlerts = alasql(
+                  "SELECT COUNT(userid) alerts FROM ? WHERE utc >= '" +
+                  hourBefore +
+                  "' and utc < '" +
+                  hourAfter +
+                  "' order by utc",
+                  [result]
+               );
 
-         $("#licUser").html(countLicenses);
-         tAccountLicenses = countLicenses;
-         $("#activeUsers_24hours").html(countLicenses);
-         /*graph*/
-         /*Devices*/
-         let devicesAction = countLicenses;
-         var doughnutData = {
-            labels: ["Active", "Inactive"],
-            datasets: [
-               {
-                  data: [devicesAction, 0],
-                  backgroundColor: ["#a3e1d4", "#dedede"],
-               },
-            ],
-         };
-         var doughnutOptions = {
-            legend: { display: true },
-            responsive: true,
-            title: {
-               display: true,
-               text: "Total Licenses:" + countLicenses,
-               verticalAlign: "center",
-               textAlign: "center",
-               textBaseline: "middle",
-            },
-            onClick: (evt, item) => {
-               window.location.href = "admin/userMachineManagement.html";
-            },
-         };
-         var ctx4 = document.getElementById("doughnutChart").getContext("2d");
-         new Chart(ctx4, {
-            type: "doughnut",
-            data: doughnutData,
-            options: doughnutOptions,
-         });
+               var countLicenses = accountLicenses[0].licenses;
+               var countDevices = accountDevices[0].devices;
+               var countIntrusions = accountIntrusions[0].intrusions;
+               var countAlerts = accountAlerts[0].alerts;
 
-         /******************************* Alerts and Intrusions *******************************/
-         getIntrusionGraphData(result);
-         /*************************************************************************************/
-         $("#devices").html(countDevices);
-         $("#activeDevices_24hours").html(countDevices);
+               $("#licUser").html(countLicenses);
+               tAccountLicenses = countLicenses;
+               $("#activeUsers_24hours").html(countLicenses);
+               /*graph*/
+               /*Devices*/
+               let devicesAction = countLicenses;
+               var doughnutData = {
+                  labels: ["Active", "Inactive"],
+                  datasets: [
+                     {
+                        data: [devicesAction, 0],
+                        backgroundColor: ["#a3e1d4", "#dedede"],
+                     },
+                  ],
+               };
+               var doughnutOptions = {
+                  legend: { display: true },
+                  responsive: true,
+                  title: {
+                     display: true,
+                     text: "Total Licenses:" + countLicenses,
+                     verticalAlign: "center",
+                     textAlign: "center",
+                     textBaseline: "middle",
+                  },
+                  onClick: (evt, item) => {
+                     window.location.href = "admin/userMachineManagement.html";
+                  },
+               };
+               var ctx4 = document.getElementById("doughnutChart").getContext("2d");
+               new Chart(ctx4, {
+                  type: "doughnut",
+                  data: doughnutData,
+                  options: doughnutOptions,
+               });
 
-         $("#intrusions").html(countIntrusions);
-         $("#intrusions_24hours").html(countIntrusions);
+               /******************************* Alerts and Intrusions *******************************/
+               getIntrusionGraphData(result);
+               /*************************************************************************************/
+               $("#devices").html(countDevices);
+               $("#activeDevices_24hours").html(countDevices);
 
-         $("#alerts").html(countAlerts);
-      }
+               $("#intrusions").html(countIntrusions);
+               $("#intrusions_24hours").html(countIntrusions);
 
-      var matrix = result.length;
-      //alert(result[0].userid);
+               $("#alerts").html(countAlerts);
+            }
 
-      var countItem = 0;
+            var matrix = result.length;
+            //alert(result[0].userid);
 
-      var uniqueNames = [];
-      var currentDT = new Date();
-      var subHour = 0;
-      var timeNow = new Date();
-      var stamTime;
-      var sessionTime;
-      var today = new Date();
-      var activeUser = 0;
-      var activeUserJson = [];
-      var dataMatch = false;
-      var htmlString = "";
-      var loactionInfo = "";
+            var countItem = 0;
 
-      for (i = 0; i < result.length; i++) {
-         if (result[i].length > 1) {
-            stamTime = new Date(result[i].stamp);
+            var uniqueNames = [];
+            var currentDT = new Date();
+            var subHour = 0;
+            var timeNow = new Date();
+            var stamTime;
+            var sessionTime;
+            var today = new Date();
+            var activeUser = 0;
+            var activeUserJson = [];
+            var dataMatch = false;
+            var htmlString = "";
+            var loactionInfo = "";
 
-            oneHoursBefore = new Date(today.getTime());
-            oneHoursAfter = new Date(today.getTime() - 1000 * 60 * 60);
+            for (i = 0; i < result.length; i++) {
+               if (result[i].length > 1) {
+                  stamTime = new Date(result[i].utc);
 
-            for (x = 0; x < result.length; x++) {
-               sessionTime = result[x].stamp;
-               if (
-                  Date.parse(oneHoursBefore) > Date.parse(sessionTime) &&
-                  Date.parse(oneHoursAfter) < Date.parse(sessionTime)
-               ) {
-                  activeUser = activeUser + 1;
-                  dataMatch = true;
+                  oneHoursBefore = new Date(today.getTime());
+                  oneHoursAfter = new Date(today.getTime() - 1000 * 60 * 60);
+
+                  for (x = 0; x < result.length; x++) {
+                     sessionTime = result[x].utc;
+                     if (
+                        Date.parse(oneHoursBefore) > Date.parse(sessionTime) &&
+                        Date.parse(oneHoursAfter) < Date.parse(sessionTime)
+                     ) {
+                        activeUser = activeUser + 1;
+                        dataMatch = true;
+                     }
+                  }
+
+                  if (dataMatch) {
+                     activeUserJson.push([oneHoursBefore, activeUser]);
+                  }
+
+                  today = oneHoursAfter;
+                  activeUser = 0;
+                  dataMatch = false;
                }
             }
 
-            if (dataMatch) {
-               activeUserJson.push([oneHoursBefore, activeUser]);
+            for (y = 0; y < result.length; y++) {
+               //if (result[y].length > 1) {
+               if (uniqueNames.indexOf(result[y].userid) === -1) {
+                  uniqueNames.push(result[y].userid);
+               }
+               //}
             }
 
-            today = oneHoursAfter;
-            activeUser = 0;
-            dataMatch = false;
-         }
-      }
-
-      for (y = 0; y < result.length; y++) {
-         //if (result[y].length > 1) {
-         if (uniqueNames.indexOf(result[y].userid) === -1) {
-            uniqueNames.push(result[y].userid);
-         }
-         //}
-      }
-
-      //Licensed users
-      for (y = 0; y < uniqueNames.length; y++) {
-         //if (result[y].length > 1) {
-         countItem = 1 + countItem;
-         //}
-      }
-
-      //$('#licUser').html(countItem);
-      //$('#activeUsers_24hours').html(countItem);
-
-      //Devices
-      countItem = 0;
-      for (y = 0; y < uniqueNames.length; y++) {
-         //alert(uniqueNames[i]);
-         countItem = 1 + countItem;
-      }
-
-      //$('#devices').html(countItem);
-      //$('#activeDevices_24hours').html(countItem);
-
-      //Intrusions
-      countItem = 0;
-      $.each(result, function (i, v) {
-         if (v.diagcode == "D0011" || v.diagcode == "D0012") {
-            countItem = 1 + countItem;
-         }
-      });
-
-      //$('#intrusions').html(countItem);
-      //$('#intrusions_24hours').html(countItem);
-
-      //Alerts
-      countItem = 0;
-      $.each(result, function (i, v) {
-         //if ((v.diagcode == 'D0003') || (v.diagcode == 'D0004') || (v.diagcode == 'D0005') || (v.diagcode == 'D0013')) {
-         countItem = 1 + countItem;
-         //}
-      });
-
-      //$('#alerts').html(countItem);
-
-      /** LAST 24 HOURS INSTRUSION INSIGHTS **/
-      let d = new Date();
-      let todayDateStr = `${d.getFullYear()}-${d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)}-${d.getDate().toString().length == 1 ? "0" + (d.getDate() - 1) : (d.getDate() - 1)}`;
-
-      let last24Result = alasql(`
-         SELECT gps, stamp, userid, diagcode FROM ? 
-         WHERE stamp > '${todayDateStr}'
-         ORDER BY stamp DESC
-      `, [result]);
-
-      for (i = 0; i < last24Result.length; i++) {
-         var gpsNumbers = last24Result[i].gps;
-         var longlatArray = last24Result[i].gps.split(",");
-         var timeStamp = last24Result[i].stamp;
-         var userName = last24Result[i].userid;
-         var diagcode = last24Result[i].diagcode;
-         var htmlString_1 = "";
-         var htmlString_2 = "";
-         var data = "";
-
-         getCodeData(longlatArray, userName, formatDate(timeStamp), diagcode, i);
-      }
-
-      function getCode(code) {
-         var codeDiscription = "";
-         var codeJson = [
-            {
-               D0001:
-                  "Screen Unlocked | Initial Login after reboot | Confidence 1:5,000,000",
-               D0002:
-                  "Screen Unlocked | Zero Touch Unlocked authorized user |  1:5,000,000",
-               D0003:
-                  "Screen Locked 0 | Zero Touch Locked no user present | Confidence 1:5,000,000",
-               D0004:
-                  "Screen Locked 2 | Manual Lock Initiated by authorized user |  1:5,000,000",
-               D0005:
-                  "Screen Locked 1| Lock without Camera | Confidence 1:5,000,000",
-               D0006:
-                  "Screen Unlocked | Authorized user certified | Confidence 1:25,000,000",
-               D0007:
-                  "Screen Locked 2 | Manual Lock Initiated by authorized user | Manual Process",
-               D0008:
-                  "Screen Unlocked | Unauthorized user(s) presented |  Confidence 1:5,000,000",
-               D0009:
-                  "Screen Locked 1 | Unauthorized user(s) presented  | Confidence 1:5,000,000",
-               D0010: "Screen Unlocked | Authorized user(s) presented | 1:5,000,000",
-               D0011:
-                  "Screen Unlocked | Unauthorized user(s) presented | Confidence 1:100,000",
-               D0012:
-                  "Screen Locked 3 | Power Savings Lock Initiated | System Process",
-               D0013: "Screen Unlocked | 8th Sensus EVE Stopped | Error",
-               D0014:
-                  "Screen Unlocked | Video Conference in progress| Confidence 1:5,000,000",
-               D0015:
-                  "Screen Locked 1 | Over the Shoulder unauthorized user(s) presented |  > 1",
-            },
-         ];
-
-         $.each(codeJson[0], function (key, value) {
-            if (code == key) {
-               codeDiscription = value;
+            //Licensed users
+            for (y = 0; y < uniqueNames.length; y++) {
+               //if (result[y].length > 1) {
+               countItem = 1 + countItem;
+               //}
             }
-         });
-         return codeDiscription;
-      }
 
-      function getCodeData(longlatArray, userName, timeStamp, diagcode, count) {
-         var state = "";
-         var town = "";
-         var postcode = "";
+            //$('#licUser').html(countItem);
+            //$('#activeUsers_24hours').html(countItem);
 
-         if (gpsNumbers !== "") {
-            state = data.principalSubdivision;
-            town = data.locality;
-            postcode = data.postcode;
-         } else {
-            state = data.location.isoPrincipalSubdivision;
-            town = data.location.localityName;
-            postcode = data.location.postcode;
-         }
+            //Devices
+            countItem = 0;
+            for (y = 0; y < uniqueNames.length; y++) {
+               //alert(uniqueNames[i]);
+               countItem = 1 + countItem;
+            }
 
-         var address = town + " " + postcode + ", " + state;
+            //$('#devices').html(countItem);
+            //$('#activeDevices_24hours').html(countItem);
 
-         var geoCodeInfo = getCode(diagcode);
+            //Intrusions
+            countItem = 0;
+            $.each(result, function (i, v) {
+               if (v.diagcode == "D0011" || v.diagcode == "D0012") {
+                  countItem = 1 + countItem;
+               }
+            });
 
-         var url = "../activity_logs/devices/?usrid=" + userName;
+            //$('#intrusions').html(countItem);
+            //$('#intrusions_24hours').html(countItem);
 
-         htmlString_1 = htmlString_1 + "<tr>";
-         htmlString_1 = htmlString_1 + "<td><i class='fa fa-clock-o'></i> " + timeStamp + "</td>";
-         htmlString_1 = htmlString_1 + "<td><a href='users.html?usrid=" + userName + "'>" + userName + "</td>";
-         /*htmlString_1 = htmlString_1 + "<td>" + address + "</td>";*/
+            //Alerts
+            countItem = 0;
+            $.each(result, function (i, v) {
+               //if ((v.diagcode == 'D0003') || (v.diagcode == 'D0004') || (v.diagcode == 'D0005') || (v.diagcode == 'D0013')) {
+               countItem = 1 + countItem;
+               //}
+            });
 
-         htmlString_1 =
-            htmlString_1 +
-            "<td class='text-navy'> <i class='fa fa-level-up'></i>" +
-            geoCodeInfo +
-            "</td>";
-         htmlString_1 = htmlString_1 + "</tr>";
+            //$('#alerts').html(countItem);
 
-         $("#intrusion-insights tbody").append(htmlString_1);
-         htmlString_1 = "";
+            /** LAST 24 HOURS INSTRUSION INSIGHTS **/
+            let d = new Date();
+            let todayDateStr = `${d.getFullYear()}-${d.getMonth().toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)}-${d.getDate().toString().length == 1 ? "0" + (d.getDate() - 1) : (d.getDate() - 1)}`;
 
-         if (count < 4) {
-            htmlString_2 = htmlString_2 + "<div class='feed-element'>";
-            htmlString_2 = htmlString_2 + "<div>";
-            htmlString_2 =
-               htmlString_2 +
-               "<small class='float-right text-navy'>1m ago</small>";
-            htmlString_2 = htmlString_2 + "<strong>" + address + "</strong>";
-            htmlString_2 = htmlString_2 + "<div>" + geoCodeInfo + "</div>";
-            htmlString_2 =
-               htmlString_2 +
-               "<small class='text-muted'>" +
-               timeStamp +
-               "</small>";
-            htmlString_2 = htmlString_2 + "</div>";
-            htmlString_2 = htmlString_2 + "</div>";
+            let last24Result = alasql(`
+               SELECT gps, utc, userid, diagcode FROM ? 
+               WHERE utc > '${todayDateStr}'
+               ORDER BY utc DESC
+            `, [result]);
 
-            $("#geo-loc-hotspots").html(htmlString_2);
-         }
-      }
+            for (i = 0; i < last24Result.length; i++) {
+               var gpsNumbers = last24Result[i].gps;
+               var longlatArray = last24Result[i].gps.split(",");
+               var timeStamp = last24Result[i].utc;
+               var userName = last24Result[i].userid;
+               var diagcode = last24Result[i].diagcode;
+               var htmlString_1 = "";
+               var htmlString_2 = "";
+               var data = "";
+
+               getCodeData(longlatArray, userName, formatDate(timeStamp), diagcode, i);
+            }
+
+            function getCode(code) {
+               var codeDiscription = "";
+               var codeJson = [
+                  {
+                     D0001:
+                        "Screen Unlocked | Initial Login after reboot | Confidence 1:5,000,000",
+                     D0002:
+                        "Screen Unlocked | Zero Touch Unlocked authorized user |  1:5,000,000",
+                     D0003:
+                        "Screen Locked 0 | Zero Touch Locked no user present | Confidence 1:5,000,000",
+                     D0004:
+                        "Screen Locked 2 | Manual Lock Initiated by authorized user |  1:5,000,000",
+                     D0005:
+                        "Screen Locked 1| Lock without Camera | Confidence 1:5,000,000",
+                     D0006:
+                        "Screen Unlocked | Authorized user certified | Confidence 1:25,000,000",
+                     D0007:
+                        "Screen Locked 2 | Manual Lock Initiated by authorized user | Manual Process",
+                     D0008:
+                        "Screen Unlocked | Unauthorized user(s) presented |  Confidence 1:5,000,000",
+                     D0009:
+                        "Screen Locked 1 | Unauthorized user(s) presented  | Confidence 1:5,000,000",
+                     D0010: "Screen Unlocked | Authorized user(s) presented | 1:5,000,000",
+                     D0011:
+                        "Screen Unlocked | Unauthorized user(s) presented | Confidence 1:100,000",
+                     D0012:
+                        "Screen Locked 3 | Power Savings Lock Initiated | System Process",
+                     D0013: "Screen Unlocked | 8th Sensus EVE Stopped | Error",
+                     D0014:
+                        "Screen Unlocked | Video Conference in progress| Confidence 1:5,000,000",
+                     D0015:
+                        "Screen Locked 1 | Over the Shoulder unauthorized user(s) presented |  > 1",
+                  },
+               ];
+
+               $.each(codeJson[0], function (key, value) {
+                  if (code == key) {
+                     codeDiscription = value;
+                  }
+               });
+               return codeDiscription;
+            }
+
+            function getCodeData(longlatArray, userName, timeStamp, diagcode, count) {
+               var state = "";
+               var town = "";
+               var postcode = "";
+
+               if (gpsNumbers !== "") {
+                  state = data.principalSubdivision;
+                  town = data.locality;
+                  postcode = data.postcode;
+               } else {
+                  state = data.location.isoPrincipalSubdivision;
+                  town = data.location.localityName;
+                  postcode = data.location.postcode;
+               }
+
+               var address = town + " " + postcode + ", " + state;
+
+               var geoCodeInfo = getCode(diagcode);
+
+               var url = "../activity_logs/devices/?usrid=" + userName;
+
+               htmlString_1 = htmlString_1 + "<tr>";
+               htmlString_1 = htmlString_1 + "<td><i class='fa fa-clock-o'></i> " + timeStamp + "</td>";
+               htmlString_1 = htmlString_1 + "<td><a href='users.html?usrid=" + userName + "'>" + userName + "</td>";
+               /*htmlString_1 = htmlString_1 + "<td>" + address + "</td>";*/
+
+               htmlString_1 =
+                  htmlString_1 +
+                  "<td class='text-navy'> <i class='fa fa-level-up'></i>" +
+                  geoCodeInfo +
+                  "</td>";
+               htmlString_1 = htmlString_1 + "</tr>";
+
+               $("#intrusion-insights tbody").append(htmlString_1);
+               htmlString_1 = "";
+
+               if (count < 4) {
+                  htmlString_2 = htmlString_2 + "<div class='feed-element'>";
+                  htmlString_2 = htmlString_2 + "<div>";
+                  htmlString_2 =
+                     htmlString_2 +
+                     "<small class='float-right text-navy'>1m ago</small>";
+                  htmlString_2 = htmlString_2 + "<strong>" + address + "</strong>";
+                  htmlString_2 = htmlString_2 + "<div>" + geoCodeInfo + "</div>";
+                  htmlString_2 =
+                     htmlString_2 +
+                     "<small class='text-muted'>" +
+                     timeStamp +
+                     "</small>";
+                  htmlString_2 = htmlString_2 + "</div>";
+                  htmlString_2 = htmlString_2 + "</div>";
+
+                  $("#geo-loc-hotspots").html(htmlString_2);
+               }
+            }
+         },
+         error: function (err) {
+            console.log("Error:");
+            console.log(err);
+         },
+      });
    },
    error: function (xhr, status, error) {
       //alert(error);
@@ -435,11 +462,11 @@ function getIntrusionGraphData(resultData) {
             ELSE  diagcode
          END [activeStatus]
          ,userid
-         ,stamp [date]
+         ,utc [date]
          ,SUBSTRING(stamp, 1, 10) [timeInterval]
       FROM ? 
-      WHERE stamp >= '${dateFrom}'
-      ORDER BY userid, stamp
+      WHERE utc >= '${dateFrom}'
+      ORDER BY userid, utc
    `, [resultData]);
    userData.forEach(function (d, idx) { d.rownum = idx });
 
@@ -593,7 +620,7 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-   (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+      (d.getMonth() + 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =
