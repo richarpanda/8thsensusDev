@@ -70,9 +70,9 @@ $.ajax({
             `, [result]);
 
             let usersData = alasql(`
-               SELECT UPPER(userid) [userid]
+               SELECT userid [userid]
                FROM ?
-               GROUP BY UPPER(userid)
+               GROUP BY userid
                ORDER BY userid
             `, [result]);
 
@@ -188,9 +188,10 @@ function processData(result) {
 
    let inEventsString = "";
    if (slctEvents !== "") {
-      inEventsString = slctEvents == "Locked" ?
-         "AND diagcode IN ('D0003','D0004','D0005','D0007','D0009','D0012','D0015')" :
-         "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
+      if (slctEvents == "Locked")
+         inEventsString = "AND diagcode IN ('D0003','D0004','D0005','D0007','D0009','D0012','D0015')";
+      else if (slctEvents == "Unlocked")
+         inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
    }
 
    slctMachine.forEach(mach => slctMachineStr += `'${mach}',`);
@@ -370,7 +371,7 @@ $("#slctUserId").on('change', function(){
                let machinesData = alasql(`
                   SELECT machinename
                   FROM ?
-                  WHERE UPPER(userid) = '${userid}'
+                  WHERE UPPER(userid) = '${userid}' OR UPPER(userid) = UPPER('${userid}')
                   GROUP BY machinename
                `, [result]);
 
