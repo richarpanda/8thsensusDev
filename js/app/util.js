@@ -1,5 +1,3 @@
-console.log(123);
-
 function createGraph(graphData) {
    var barData = {
       labels: getGraphLabels(graphData),

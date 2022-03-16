@@ -1,4 +1,4 @@
-const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
+const dataLakeUrl = webConfig.dataLakeUrl;
 
 let dataSet = null;
 var dataTable = null;

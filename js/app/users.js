@@ -1,5 +1,5 @@
-const dataLakeUrl = "https://dashboard.8thsensus.com:8080";
-const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
+const dataLakeUrl = webConfig.dataLakeUrl;
+const key = webConfig.key;
 
 var dataTable = null;
 let tAccountLicenses;

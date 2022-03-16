@@ -1,6 +1,6 @@
-const dataLakeUrl = "https://dashboard1.8thsensus.com:8080";
-const key = "%$%$#5454354343trqt34rtrfwrgrfSFGFfgGSDFSFDSFDSFD";
-let customerFilter = 'eve6512Sd2';
+const dataLakeUrl = webConfig.dataLakeUrl;
+const key = webConfig.key;
+let customerFilter = webConfig.customerFilter;
 
 var dataTable = null;
 var slctMachine = [];
