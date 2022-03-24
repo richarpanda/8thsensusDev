@@ -1,5 +1,3 @@
-const dataLakeUrl = webConfig.dataLakeUrl;
-
 var dataTable = null;
 var weekDataTable = null;
 var ctx2 = null;
@@ -36,82 +34,56 @@ $(function () {
    });
 });
 
-$.ajax({
-   url: dataLakeUrl + '/message',
-   headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-   },
-   type: "GET",
-   dataType: "json",
-   contentType: 'application/json',
-   data: {
-   },
-   success: function (res) {
-      $.ajax({
-         url: dataLakeUrl + "/actions/all",
-         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-         },
-         type: "GET",
-         dataType: "json",
-         data: {},
-         success: function (resa) {
+init();
 
-            let result = alasql(`
-               SELECT 
-                  CASE 
-                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
-                     ELSE a.userId
-                  END [userid],
-                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
-               FROM ? r
-               LEFT JOIN ? a 
-               ON r.machinename IN a.machineName
-            `, [res, resa]);                     
-         
-            document.getElementById("loader").classList.remove("show-loader");
-            document.getElementById("loader").classList.add("hide-loader");
+async function init() {
+   let res = JSON.parse(await getMessage());
+   let resa = JSON.parse(await getActionsAll());
 
-            let usersData = alasql(`
-               SELECT UPPER(userid) [userid]
-               FROM ?
-               GROUP BY UPPER(userid)
-               ORDER BY userid
-            `, [result]);
+   let result = alasql(`
+      SELECT 
+         CASE 
+            WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+            ELSE a.userId
+         END [userid],
+         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+      FROM ? r
+      LEFT JOIN ? a 
+      ON r.machinename IN a.machineName
+   `, [res, resa]);                     
 
-            let slctUsersHtml = `
-               <label for="slctUserId">User ID:</label>
-               <select name="slctUserId[]" multiple id="slctUserId">`;
+   document.getElementById("loader").classList.remove("show-loader");
+   document.getElementById("loader").classList.add("hide-loader");
 
-            usersData.forEach(user => {
-               slctUsersHtml += `
-                  <option value="${user.userid}">${user.userid.toUpperCase()}</option>
-               `;
-            });
-            slctUsersHtml += '</select>';
+   let usersData = alasql(`
+      SELECT UPPER(userid) [userid]
+      FROM ?
+      GROUP BY UPPER(userid)
+      ORDER BY userid
+   `, [result]);
 
-            $("#slctContainer").html(slctUsersHtml);
-            $('#slctUserId').multiselect({
-               columns: 1,
-               placeholder: 'Select Users',
-               search: true,
-               selectAll: true
-            });
+   let slctUsersHtml = `
+      <label for="slctUserId">User ID:</label>
+      <select name="slctUserId[]" multiple id="slctUserId">`;
 
-            $(".ms-selectall").trigger("click");
-            getproductivityData(result);
-         },
-         error: function (err) {
-            console.log("Error:");
-            console.log(err);
-         },
-      });
-         
-   },
-   error: function (request, status, error) {
-      console.error(error);
-   }
-});
+   usersData.forEach(user => {
+      slctUsersHtml += `
+         <option value="${user.userid}">${user.userid.toUpperCase()}</option>
+      `;
+   });
+   slctUsersHtml += '</select>';
+
+   $("#slctContainer").html(slctUsersHtml);
+   $('#slctUserId').multiselect({
+      columns: 1,
+      placeholder: 'Select Users',
+      search: true,
+      selectAll: true
+   });
+
+   $(".ms-selectall").trigger("click");
+   getproductivityData(result);
+}
 
 function setCheckValue(val, checked) {
    if (checked) {
@@ -125,53 +97,27 @@ function setCheckValue(val, checked) {
    }
 }
 
-function getproductivityData(result = null) {
+async function getproductivityData(result = null) {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
 
    if (result == null) {
-      $.ajax({
-         url: dataLakeUrl + '/message',
-         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-         },
-         type: "GET",
-         dataType: "json",
-         data: {},
-         success: function (res) {
-            $.ajax({
-               url: dataLakeUrl + "/actions/all",
-               headers: {
-                  "Content-Type": "application/x-www-form-urlencoded",
-               },
-               type: "GET",
-               dataType: "json",
-               data: {},
-               success: function (resa) {
-                  let result = alasql(`
-                     SELECT 
-                        CASE 
-                           WHEN NOT LEN(a.userId) >= 0 THEN r.userid
-                           ELSE a.userId
-                        END [userid],
-                        r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
-                     FROM ? r
-                     LEFT JOIN ? a 
-                     ON r.machinename IN a.machineName
-                  `, [res, resa]);
-                        
-                  ProcessData(result)
-               },
-               error: function (err) {
-                  console.log("Error:");
-                  console.log(err);
-               },
-            });
-         },
-         error: function (err) {
-            console.error(err);
-         }
-      });
+      let res = JSON.parse(await getMessage());
+      let resa = JSON.parse(await getActionsAll());
+
+      let result = alasql(`
+         SELECT 
+            CASE 
+               WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+               ELSE a.userId
+            END [userid],
+            r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+         FROM ? r
+         LEFT JOIN ? a 
+         ON r.machinename IN a.machineName
+      `, [res, resa]);
+            
+      ProcessData(result);
    }
    else {
       ProcessData(result);
@@ -226,6 +172,7 @@ function ProcessData(result) {
             ELSE  diagcode
          END [activeStatus]
          ,UPPER(userid) [userid]
+         ,version
          ,utc [date]
          ,WEEKDAY(utc) [weekday]
          ${timeInterval}
@@ -274,9 +221,9 @@ function ProcessData(result) {
    //console.table(arrLock);
 
    let activeInactiveDatabyUser = alasql(`
-      SELECT userid, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
+      SELECT userid, version, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
       FROM ? 
-      GROUP BY userid
+      GROUP BY userid, version
       ORDER BY userid
    `, [arrLock])
 
@@ -284,6 +231,8 @@ function ProcessData(result) {
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
+
+   //console.table(activeInactiveDatabyUser);
 
    createTable(activeInactiveDatabyUser);
    getTableReportData(arrLock, result);
@@ -377,14 +326,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: weekElement.weeknumber,
             userid: user.userid.trim().toUpperCase(),
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       });
    })
@@ -428,14 +377,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
             sunday: msToTime(element.activeTime),
-            total: "00:00"
+            total: "00:00:00"
          });
       }
       else {
@@ -450,13 +399,13 @@ function getTableReportData(data, result) {
             weeknumber: element.weeknumber,
             userid: element.userid,
             monday: msToTime(element.activeTime),
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -470,14 +419,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
+            monday: "00:00:00",
             tuesday: msToTime(element.activeTime),
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -492,14 +441,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
             wednesday: msToTime(element.activeTime),
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -513,14 +462,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
             thursday: msToTime(element.activeTime),
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -534,14 +483,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
             friday: msToTime(element.activeTime),
-            saturday: "00:00",
-            sunday: "00:00",
-            total: "00:00"
+            saturday: "00:00:00",
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -555,14 +504,14 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
             saturday: msToTime(element.activeTime),
-            sunday: "00:00",
-            total: "00:00"
+            sunday: "00:00:00",
+            total: "00:00:00"
          });
       }
       else {
@@ -576,13 +525,13 @@ function getTableReportData(data, result) {
          week.push({
             weeknumber: element.weeknumber,
             userid: element.userid,
-            monday: "00:00",
-            tuesday: "00:00",
-            wednesday: "00:00",
-            thursday: "00:00",
-            friday: "00:00",
-            saturday: "00:00",
-            sunday: "00:00",
+            monday: "00:00:00",
+            tuesday: "00:00:00",
+            wednesday: "00:00:00",
+            thursday: "00:00:00",
+            friday: "00:00:00",
+            saturday: "00:00:00",
+            sunday: "00:00:00",
             total: msToTime(element.activeTime),
          });
       }
@@ -653,7 +602,7 @@ function createWeekTable(data) {
 
 function createTable(data) {
    let dateRange = document.getElementById("inptDateRange").value;
-
+   //console.table(data);
    if (dataTable !== null)
       dataTable.destroy();
 
@@ -664,7 +613,8 @@ function createTable(data) {
          { data: "from" },
          { data: "to" },
          { data: "activeTime" },
-         { data: "inactiveTime" }
+         { data: "inactiveTime" },
+         { data: "version" }
       ],
       order: [0, 'asc'],
       rowCallback: function (row, data, index) {
@@ -825,7 +775,7 @@ function msToTime(s) {
    var mins = s % 60;
    var hrs = (s - mins) / 60;
 
-   return pad(hrs) + ':' + pad(mins)
+   return pad(hrs) + ':' + pad(mins) + ':00'
 }
 
 function msToTimeHr(s) {
@@ -841,7 +791,7 @@ function msToTimeHr(s) {
    var mins = s % 60;
    var hrs = (s - mins) / 60;
 
-   return pad(hrs) + ':00'
+   return pad(hrs) + ':00' + ':00'
 }
 
 function msToDateTime(s) {
@@ -887,4 +837,35 @@ function getWeekDay(day) {
       case 7:
          return 'Sunday';
    }
+}
+
+async function getAllDocs() {
+   let finalArr = null;
+   let result = null;
+   let docLen = 0;
+   let offset = 0;
+
+   do {
+      result = await getDocs(offset);
+
+      docLen += result.actions.length;
+      if (docLen > 0) {
+         finalArr = offset == 0 ? result.actions : finalArr.concat(result.actions);
+         docLen += 1;
+         offset = docLen;
+      }
+
+   } while (result.actions.length > 0);
+
+   return (finalArr);
+}
+
+async function getDocs(offset) {
+   let result = null;
+
+   await getDocsOffset(offset).then((res) => {
+      result = JSON.parse(res);
+   });
+
+   return result;
 }

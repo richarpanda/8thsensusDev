@@ -11,10 +11,9 @@
    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
    <link href="css/animate.css" rel="stylesheet">
    <link href="css/menu.min.css" rel="stylesheet">
-   <link href="css/style.css" rel="stylesheet">
+   <link href="css/style.min.css" rel="stylesheet">
    <link href="css/loader.min.css" rel="stylesheet">
 </head>
-
 <body class="top-navigation">
    <div id="loader">
       <div class="loading">
@@ -40,7 +39,11 @@
             </nav>
          </div>
 
-         <div class="wrapper wrapper-content">
+         <div class="wrapper wrapper-content position-relative">         
+            <div class="mini-loader" id="mini-loader">
+               <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            </div>
+
             <!--CHARTS-->
             <div class="row">
 
@@ -81,6 +84,7 @@
                                     <th>Date/Time</th>
                                     <th>User</th>
                                     <th>Event</th>
+                                    <th>Version</th>
                                  </tr>
                               </thead>
                               <tbody></tbody>
@@ -95,7 +99,7 @@
          <!--FOOTER-->
          <div class="footer">
             <div>
-               <strong>Copyright</strong> 8th Sensus 2021
+               <strong>Copyright</strong> 8th Sensus 2022
             </div>
          </div>
       </div>
@@ -123,8 +127,9 @@
    <script src="js/plugins/moment.js"></script>
    <script src="js/plugins/pace/pace.min.js"></script>
    <!-- APP -->
-   <script src="js/config.js"></script>
    <script src="js/app/general.js"></script>
+   <script src="js/config.js"></script>
+   <script src="js/dataService.js"></script>
    <script src="js/app/index.js"></script>
 </body>
 

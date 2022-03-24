@@ -55,7 +55,6 @@
                      <div class="ibox-title">
                         <h5>Productivity hours</h5>
                      </div>
-
                      <div class="ibox-content">
                         <!-- FILTERS -->
                         <div class="p-4 logs-filters">
@@ -109,10 +108,14 @@
                                                 aria-label="Date Range: activate to sort column ascending">To</th>
                                              <th class="sorting" tabindex="0" aria-controls="example"
                                                 aria-label="Active Time: activate to sort column ascending">Active Time
+                                                <br> (HH:mm:ss)
                                              </th>
                                              <th class="sorting" tabindex="0" aria-controls="example"
-                                                aria-label="Inactive Time: activate to sort column ascending">Inactive
-                                                Time
+                                                aria-label="Inactive Time: activate to sort column ascending">Inactive Time
+                                                <br> (HH:mm:ss)
+                                             </th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Version
                                              </th>
                                           </tr>
                                        </thead>
@@ -158,21 +161,21 @@
                                                       <th class="sorting" tabindex="0" aria-controls="example"
                                                          aria-label="WeekTo">Week To</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Sunday">Sunday</th>
+                                                         aria-label="Sunday">Sunday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Monday">Monday</th>
+                                                         aria-label="Monday">Monday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Tuesday">Tuesday</th>
+                                                         aria-label="Tuesday">Tuesday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Wednesday">Wednesday</th>
+                                                         aria-label="Wednesday">Wednesday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Thursday">Thursday</th>
+                                                         aria-label="Thursday">Thursday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Friday">Friday</th>
+                                                         aria-label="Friday">Friday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Saturday">Saturday</th>
+                                                         aria-label="Saturday">Saturday <br> (HH:mm:ss)</th>
                                                       <th class="sorting" tabindex="0" aria-controls="example"
-                                                         aria-label="Total">TOTAL</th>
+                                                         aria-label="Total">TOTAL <br> (HH:mm:ss)</th>
                                                    </tr>
                                                 </thead>
                                              </table>
@@ -192,7 +195,7 @@
          <!--FOOTER-->
          <div class="footer">
             <div>
-               <strong>Copyright</strong> 8th Sensus 2021
+               <strong>Copyright</strong> 8th Sensus 2022
             </div>
          </div>
       </div>
@@ -220,8 +223,9 @@
    <script src="js/plugins/moment.js"></script>
    <script src="js/plugins/pace/pace.min.js"></script>
    <!-- APP -->
-   <script src="js/config.js"></script>
    <script src="js/app/general.js"></script>
+   <script src="js/config.js"></script>
+   <script src="js/dataService.js"></script>
    <script src="js/app/productivity.js"></script>
 </body>
 

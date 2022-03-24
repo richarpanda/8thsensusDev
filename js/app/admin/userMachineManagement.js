@@ -1,7 +1,6 @@
-const dataLakeUrl = webConfig.dataLakeUrl;
 const key = webConfig.key;
-let customerFilter = webConfig.customerFilter;
 
+var userData = null;
 var dataTable = null;
 var slctMachine = [];
 var selectedUsers = [];
@@ -18,295 +17,251 @@ toastr.options = {
    "extendedTimeOut": "1000"
 }
 
-function getUsers() {
-   document.getElementById("loader").classList.add("show-loader");
-   document.getElementById("loader").classList.remove("hide-loader");
-   $.ajax({
-      url: dataLakeUrl + '/message',
-      headers: {
-         'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      type: "GET",
-      dataType: "json",
-      contentType: 'application/json',
-      data: {
-      },
-      success: function (result) {
-         let slctMachineStr = "";
-         let slctUserId = document.getElementById("slctUserId").value;
+$("#unlockForm").submit(e => e.preventDefault());
+$("#updateForm").submit(e => e.preventDefault());
 
-         document.getElementById("loader").classList.remove("show-loader");
-         document.getElementById("loader").classList.add("hide-loader");
+init();
+async function init() {
+   let result = JSON.parse(await getMessage());
 
-         slctMachine.forEach(mach => slctMachineStr += `'${mach}',`);
+   document.getElementById("loader").classList.remove("show-loader");
+   document.getElementById("loader").classList.add("hide-loader");
 
-         if (dataTable !== null)
-            dataTable.destroy();
-            assets = alasql(`
-            SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
-            MAX(stamp) stamp
-            FROM ?`
-         , [result]);
+   let machinesData = alasql(`
+         SELECT machinename
+         FROM ?
+         GROUP BY machinename
+      `, [result]);
 
-         let filterQuery = `SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
-            MAX(stamp) stamp
-            FROM ?
-            WHERE machinename IN (${slctMachineStr}'')
-            ${slctUserId !== "" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
+   let usersData = alasql(`
+         SELECT UPPER(userid) [userid]
+         FROM ?
+         GROUP BY UPPER(userid)
+         ORDER BY userid
+      `, [result]);
 
-         let tableData = alasql(filterQuery, [result]);
+   let slctUsersHtml = `<option value=""></option>`;
 
-         console.table(tableData);
+   let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
+         <select name="slctMachine[]" multiple id="slctMachine">`;
 
-         dataTable = $('#example').DataTable({
-            data: tableData,
-            columns: [
-               { data: "userid" },
-               { data: "assets" }, // Number of assets
-               { data: "version" },
-               { data: "license" },
-               { data: null },
-               { data: null },
-               { data: null }
-            ],
-            order: [[0, "asc"]],
-            rowCallback: function (row, data, index) {
-               let userMachines = alasql(`SELECT DISTINCT machinename FROM ? WHERE UPPER(userid) = '${data.userid}'`, [result])
-               let machinesHtml = '';
-
-               userMachines.forEach(item => {
-                  machinesHtml += ` ${item.machinename}`;
-               });
-
-               $(row).find('td:eq(1)').html(machinesHtml);
-               $(row).find('td:eq(4)').html(`<a href="../logs.html?usrid=${data.userid}">See Logs</a>`);
-               $(row).find('td:eq(5)').html(formatDate(data.stamp));
-               $(row).find('td:eq(6)').html(`
-                        <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#lockWarn" onClick='getUserData(${JSON.stringify(data)})'>
-                           <i class="fa fa-lock"></i> Lock
-                        </button>
-                        <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#deleteWarn" onClick='getUserData(${JSON.stringify(data)})'>
-                           <i class="fa fa-trash"></i> Delete 
-                        </button>`
-               );
-            },
-            select: true,
-            pageLength: 25,
-            responsive: true,
-            dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
-            buttons: [
-               { extend: 'copy' },
-               { extend: 'csv' },
-               { extend: 'excel', title: 'ExampleFile' },
-               { extend: 'pdf', title: 'ExampleFile' },
-
-               {
-                  extend: 'print',
-                  customize: function (win) {
-                     $(win.document.body).addClass('white-bg');
-                     $(win.document.body).css('font-size', '10px');
-
-                     $(win.document.body).find('table')
-                        .addClass('compact')
-                        .css('font-size', 'inherit');
-                  }
-               }
-            ]
-         });
-
-         dataTable.column(1).data().unique();
-         $("#example tr").css('cursor', 'hand');
-      },
-      error: function (request, status, error) {
-         console.error(error);
-      }
+   machinesData.forEach(machine => {
+      slctMachineHtml += `
+            <option value="${machine.machinename}">${machine.machinename}</option>
+         `;
    });
+
+   usersData.forEach(user => {
+      slctUsersHtml += `
+            <option value="${user.userid}">${user.userid}</option>
+         `;
+   });
+
+   $("#slctUserId").html(slctUsersHtml);
+   $("#slctMachineContainer").html(slctMachineHtml);
+   $('#slctMachine').multiselect({
+      columns: 1,
+      placeholder: 'Select Machines',
+      selectAll: true
+   });
+   $(".ms-selectall").trigger("click");
+   assets = alasql(`
+         SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
+         MAX(stamp) stamp
+         FROM ?
+         GROUP BY UPPER(userid)`
+      , [result]);
+
+   var matrix = result.length;
+   if (dataTable !== null)
+      dataTable.destroy();
+
+   dataTable = $('#example').DataTable({
+      data: assets,
+      columns: [
+         { data: "userid" },
+         { data: "assets" }, // Number of assets
+         { data: "version" },
+         { data: "license" },
+         { data: null },
+         { data: null },
+         { data: null }
+      ],
+      order: [[0, "asc"]],
+      rowCallback: function (row, data, index) {
+         let userMachines = alasql(`SELECT DISTINCT machinename FROM ? WHERE UPPER(userid) = '${data.userid}'`, [result])
+         let machinesHtml = '';
+
+         userMachines.forEach(item => {
+            machinesHtml += ` ${item.machinename}`;
+         });
+         data.machineName = machinesHtml;
+
+         $(row).find('td:eq(1)').html(machinesHtml);
+         $(row).find('td:eq(4)').html(`<a href="../logs.html?usrid=${data.userid}">See Logs</a>`);
+         $(row).find('td:eq(5)').html(formatDate(data.stamp));
+         $(row).find('td:eq(6)').html(`
+            <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#unlockWarn" onClick='getUserData(${JSON.stringify(data)})'>
+               <i class="fa fa-unlock-alt" aria-hidden="true"></i> Unlock
+            </button>
+            <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#updateWarn" onClick='getUserData(${JSON.stringify(data)})'>
+               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update User
+            </button>`
+         );
+      },
+      select: true,
+      pageLength: 25,
+      responsive: true,
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
+      buttons: [
+         { extend: 'copy' },
+         { extend: 'csv' },
+         { extend: 'excel', title: 'ExampleFile' },
+         { extend: 'pdf', title: 'ExampleFile' },
+
+         {
+            extend: 'print',
+            customize: function (win) {
+               $(win.document.body).addClass('white-bg');
+               $(win.document.body).css('font-size', '10px');
+
+               $(win.document.body).find('table')
+                  .addClass('compact')
+                  .css('font-size', 'inherit');
+            }
+         }
+      ]
+   });
+
+   dataTable.column(1).data().unique();
+   $("#example tr").css('cursor', 'hand');
 }
 
-$.ajax({
-   url: dataLakeUrl + '/message',
-   headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-   },
-   type: "GET",
-   dataType: "json",
-   data: {
-   },
-   success: function (result) {
-      document.getElementById("loader").classList.remove("show-loader");
-      document.getElementById("loader").classList.add("hide-loader");
+async function getUsers() {
+   document.getElementById("loader").classList.add("show-loader");
+   document.getElementById("loader").classList.remove("hide-loader");
 
-      let machinesData = alasql(`
-            SELECT machinename
-            FROM ?
-            GROUP BY machinename
-         `, [result]);
+   let result = JSON.parse(await getMessage());
+   let slctMachineStr = "";
+   let slctUserId = document.getElementById("slctUserId").value;
 
-      let usersData = alasql(`
-            SELECT UPPER(userid) [userid]
-            FROM ?
-            GROUP BY UPPER(userid)
-            ORDER BY userid
-         `, [result]);
+   document.getElementById("loader").classList.remove("show-loader");
+   document.getElementById("loader").classList.add("hide-loader");
 
-      let slctUsersHtml = `<option value=""></option>`;
+   slctMachine.forEach(mach => slctMachineStr += `'${mach}',`);
 
-      let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-            <select name="slctMachine[]" multiple id="slctMachine">`;
-
-      machinesData.forEach(machine => {
-         slctMachineHtml += `
-               <option value="${machine.machinename}">${machine.machinename}</option>
-            `;
-      });
-
-      usersData.forEach(user => {
-         slctUsersHtml += `
-               <option value="${user.userid}">${user.userid}</option>
-            `;
-      });
-
-      $("#slctUserId").html(slctUsersHtml);
-      $("#slctMachineContainer").html(slctMachineHtml);
-      $('#slctMachine').multiselect({
-         columns: 1,
-         placeholder: 'Select Machines',
-         selectAll: true
-      });
-      $(".ms-selectall").trigger("click");
+   if (dataTable !== null)
+      dataTable.destroy();
       assets = alasql(`
-            SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
-            MAX(stamp) stamp
-            FROM ?
-            GROUP BY UPPER(userid)`
-         , [result]);
+      SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
+      MAX(stamp) stamp
+      FROM ?`
+   , [result]);
 
-      var matrix = result.length;
-      if (dataTable !== null)
-         dataTable.destroy();
+   let filterQuery = `SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, machinename, MAX(version) as version, MAX(customerid) as license,
+      MAX(stamp) stamp
+      FROM ?
+      WHERE machinename IN (${slctMachineStr}'')
+      ${slctUserId !== "" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
 
-      dataTable = $('#example').DataTable({
-         data: assets,
-         columns: [
-            { data: "userid" },
-            { data: "assets" }, // Number of assets
-            { data: "version" },
-            { data: "license" },
-            { data: null },
-            { data: null },
-            { data: null }
-         ],
-         order: [[0, "asc"]],
-         rowCallback: function (row, data, index) {
-            let userMachines = alasql(`SELECT DISTINCT machinename FROM ? WHERE UPPER(userid) = '${data.userid}'`, [result])
-            let machinesHtml = '';
+   let tableData = alasql(filterQuery, [result]);
 
-            userMachines.forEach(item => {
-               machinesHtml += ` ${item.machinename}`;
-            });
+   console.table(tableData);
 
-            $(row).find('td:eq(1)').html(machinesHtml);
-            $(row).find('td:eq(4)').html(`<a href="../logs.html?usrid=${data.userid}">See Logs</a>`);
-            $(row).find('td:eq(5)').html(formatDate(data.stamp));
-            $(row).find('td:eq(6)').html(`
-                  <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#lockWarn" onClick='getUserData(${JSON.stringify(data)})'>
-                     <i class="fa fa-lock"></i> Lock
-                  </button>
-                  <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#deleteWarn" onClick='getUserData(${JSON.stringify(data)})'>
-                     <i class="fa fa-trash"></i> Delete 
-                  </button>`
-            );
-         },
-         select: true,
-         pageLength: 25,
-         responsive: true,
-         dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
-         buttons: [
-            { extend: 'copy' },
-            { extend: 'csv' },
-            { extend: 'excel', title: 'ExampleFile' },
-            { extend: 'pdf', title: 'ExampleFile' },
+   dataTable = $('#example').DataTable({
+      data: tableData,
+      columns: [
+         { data: "userid" },
+         { data: "assets" }, // Number of assets
+         { data: "version" },
+         { data: "license" },
+         { data: null },
+         { data: null },
+         { data: null }
+      ],
+      order: [[0, "asc"]],
+      rowCallback: function (row, data, index) {
+         let userMachines = alasql(`SELECT DISTINCT machinename FROM ? WHERE UPPER(userid) = '${data.userid}'`, [result])
+         let machinesHtml = '';
 
-            {
-               extend: 'print',
-               customize: function (win) {
-                  $(win.document.body).addClass('white-bg');
-                  $(win.document.body).css('font-size', '10px');
+         userMachines.forEach(item => {
+            machinesHtml += ` ${item.machinename}`;
+         });
 
-                  $(win.document.body).find('table')
-                     .addClass('compact')
-                     .css('font-size', 'inherit');
-               }
+         data.machineName = machinesHtml;
+
+         $(row).find('td:eq(1)').html(machinesHtml);
+         $(row).find('td:eq(4)').html(`<a href="../logs.html?usrid=${data.userid}">See Logs</a>`);
+         $(row).find('td:eq(5)').html(formatDate(data.stamp));
+         $(row).find('td:eq(6)').html(`
+            <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#unlockWarn" onClick='getUserData(${JSON.stringify(data)})'>
+               <i class="fa fa-unlock-alt" aria-hidden="true"></i> Unlock
+            </button>
+            <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#updateWarn" onClick='getUserData(${JSON.stringify(data)})'>
+               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update User
+            </button>`
+         );
+      },
+      select: true,
+      pageLength: 25,
+      responsive: true,
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
+      buttons: [
+         { extend: 'copy' },
+         { extend: 'csv' },
+         { extend: 'excel', title: 'ExampleFile' },
+         { extend: 'pdf', title: 'ExampleFile' },
+
+         {
+            extend: 'print',
+            customize: function (win) {
+               $(win.document.body).addClass('white-bg');
+               $(win.document.body).css('font-size', '10px');
+
+               $(win.document.body).find('table')
+                  .addClass('compact')
+                  .css('font-size', 'inherit');
             }
-         ]
-      });
+         }
+      ]
+   });
 
-      dataTable.column(1).data().unique();
-      $("#example tr").css('cursor', 'hand');
-   },
-   error: function () {
-      console.log("error");
-   }
-});
+   dataTable.column(1).data().unique();
+   $("#example tr").css('cursor', 'hand');
+}
+
 
 function getUserData(data) {
-   //console.log(data);
+   userData = data;
 }
 
 function saveAction(action) {
-   $('#lockWarn').modal('hide');
-   $('#deleteWarn').modal('hide');
-   toastr.success('User saved successfully', 'Success');
-   // $.ajax({
-   //    url: dataLakeUrl + "/actions/save",
-   //    headers: {
-   //       "Content-Type": "application/json",
-   //    },
-   //    type: "POST",
-   //    data: JSON.stringify({
-   //       "accessId": "string",
-   //       "actionType": action,
-   //       "customerId": sessionData.customerId,
-   //       "key": key,
-   //       "machineName": "string",
-   //       "userId": sessionData.userId,
-   //       "verified": "string"
-   //    }),
-   //    success: function (result) {
-   //       toastr.success('User saved successfully', 'Success');
-   //       saveLog(userRequest);
-   //       $('#lockWarn').modal('hide');
-   //       $('#deleteWarn').modal('hide');
-   //    },
-   //    error: function (err) {
-   //       console.log("Error:");
-   //       console.log(err);
-   //    },
-   // });
-}
-
-function saveLog(userRequest) {
-   let request = {
-      accessId: "string",
-      customerId: sessionData.customerId,
-      eventType: "User Creation",
-      key: key,
-      logEntry: `User: ${userRequest.userId} created`,
-      userId: sessionData.userId,
-   };
+   $('#unlockWarn').modal('hide');
+   $('#updateWarn').modal('hide');
 
    $.ajax({
-      url: dataLakeUrl + "/log/save",
+      url: dataLakeUrl + "/actions/save",
       headers: {
          "Content-Type": "application/json",
       },
       type: "POST",
-      data: JSON.stringify(request),
+      data: JSON.stringify({
+         accessId: "-1",
+         actionType: action == 'UNLOCK' ? 
+            `unlock('${ document.getElementById("intpMinutes").value }')` :
+            `update('${ userData.license }')`,
+         customerId: userData.license,
+         key: key,
+         machineName: userData.machinename,
+         userId: userData.userId,
+         verified: "-1"
+      }),
       success: function (result) {
-         console.log(result);
+         toastr.success('Action completed successfully', 'Success');
       },
-      error: function () {
-         console.log("error");
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
       },
    });
 }
@@ -354,49 +309,68 @@ function setCheckValue(val, checked) {
    }
 }
 
-$("#slctUserId").on('change', function () {
+$("#slctUserId").on('change', async function () {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
    let userid = this.value;
-   $.ajax({
-      url: dataLakeUrl + '/message',
-      headers: {
-         'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      type: "GET",
-      dataType: "json",
-      contentType: 'application/json',
-      data: {
-      },
-      success: function (result) {
-         document.getElementById("loader").classList.remove("show-loader");
-         document.getElementById("loader").classList.add("hide-loader");
 
-         let machinesData = alasql(`
-            SELECT machinename
-            FROM ?
-            WHERE UPPER(userid) = '${userid}' OR userid = '${userid}'
-            GROUP BY machinename
-         `, [result]);
+   let result = JSON.parse(await getMessage());
 
-         let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-            <select name="slctMachine[]" multiple id="slctMachine">`;
+   document.getElementById("loader").classList.remove("show-loader");
+   document.getElementById("loader").classList.add("hide-loader");
 
-         machinesData.forEach(machine => {
-            slctMachineHtml += `<option value="${machine.machinename}">${machine.machinename}</option>`;
-         });
+   let machinesData = alasql(`
+      SELECT machinename
+      FROM ?
+      WHERE UPPER(userid) = '${userid}' OR userid = '${userid}'
+      GROUP BY machinename
+   `, [result]);
 
-         $("#slctMachineContainer").html(slctMachineHtml);
-         $('#slctMachine').multiselect({
-            columns: 1,
-            placeholder: 'Select Machines',
-            selectAll: true
-         });
+   let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
+      <select name="slctMachine[]" multiple id="slctMachine">`;
 
-         $(".ms-selectall").trigger("click");
-      },
-      error: function (request, status, error) {
-         console.error(error);
-      }
+   machinesData.forEach(machine => {
+      slctMachineHtml += `<option value="${machine.machinename}">${machine.machinename}</option>`;
    });
+
+   $("#slctMachineContainer").html(slctMachineHtml);
+   $('#slctMachine').multiselect({
+      columns: 1,
+      placeholder: 'Select Machines',
+      selectAll: true
+   });
+
+   $(".ms-selectall").trigger("click");
 });
+
+
+async function getAllDocs() {
+   let finalArr = null;
+   let result = null;
+   let docLen = 0;
+   let offset = 0;
+
+   do {
+      result = await getDocs(offset);
+
+      docLen += result.actions.length;
+      if (docLen > 0) {
+         finalArr = offset == 0 ? result.actions : finalArr.concat(result.actions);
+         docLen += 1;
+         offset = docLen;
+      }
+
+   } while (result.actions.length > 0);
+
+   return (finalArr);
+}
+
+async function getDocs(offset) {
+   let result = null;
+
+   await getDocsOffset(offset).then((res) => {
+      result = JSON.parse(res);
+   });
+
+   return result;
+}

@@ -1,4 +1,3 @@
-const dataLakeUrl = webConfig.dataLakeUrl;
 const key = webConfig.key;
 
 var dataTable = null;
@@ -27,133 +26,110 @@ Date.prototype.addDays = function (days) {
    return date;
 };
 
-document.getElementById("loader").classList.add("show-loader");
+init();
 
-$.ajax({
-   url: dataLakeUrl + "/message",
-   headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-   },
-   type: "GET" /* or type:"GET" or type:"PUT" */,
-   dataType: "json",
-   data: {},
-   success: function (res) {
-      document.getElementById("loader").classList.remove("show-loader");
+async function init() {
+   document.getElementById("loader").classList.add("show-loader");
+   
+   let res = JSON.parse(await getMessage());
+   let resa = JSON.parse(await getActionsAll());
 
-      $.ajax({
-         url: dataLakeUrl + "/actions/all",
-         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-         },
-         type: "GET",
-         dataType: "json",
-         data: {},
-         success: function (resa) {
-            document.getElementById("loader").classList.add("hide-loader");
-            
-            let result = alasql(`
-               SELECT 
-                  CASE 
-                     WHEN NOT LEN(a.userId) >= 0 THEN r.userid
-                     ELSE a.userId
-                  END [userid],
-                  r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
-               FROM ? r
-               LEFT JOIN ? a 
-               ON r.machinename IN a.machineName
-            `, [res, resa]);
-                        
-            const querystring = window.location.search;
-            const params = new URLSearchParams(querystring);
-            usrid = params.get("usrid");
+   document.getElementById("loader").classList.remove("show-loader");
+   document.getElementById("loader").classList.add("hide-loader");
+   
+   let result = alasql(`
+      SELECT 
+         CASE 
+            WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+            ELSE a.userId
+         END [userid],
+         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+      FROM ? r
+      LEFT JOIN ? a 
+      ON r.machinename IN a.machineName
+   `, [res, resa]);
+               
+   const querystring = window.location.search;
+   const params = new URLSearchParams(querystring);
+   usrid = params.get("usrid");
 
-            $("#user-name").html(`
-               <div class="userid-font">
-                  <img src="img/Circle-icons-profile.svg" alt="user-image">
+   $("#user-name").html(`
+      <div class="userid-font">
+         <img src="img/Circle-icons-profile.svg" alt="user-image">
+      </div>
+      <h3>${usrid}</h3>`);
+
+   let machinestabString = "";
+   let machinesTabContentString = "";
+
+   let machines = alasql(
+      `
+      SELECT machinename
+      FROM ?
+      WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
+      GROUP BY machinename
+      `,
+      [result]
+   );
+
+   for (let i = 0; i < machines.length; i++) {
+      let navId = `${machines[i].machinename}`;
+      machineName = machines[i].machinename;
+
+      machinestabString += `
+         <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}"
+            id="nav-${navId + "-tab"}"
+            data-toggle="tab"
+            href="#nav-${navId}"
+            role="tab"
+            aria-controls="nav-${navId}"
+            aria-selected="${i == 0 ? "true" : "false"}">
+
+            <i class="fa fa-desktop"></i>
+            <p>
+               ${machines[i].machinename}
+            </p>
+         </a>`;
+
+      machinesTabContentString += `
+         <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
+            id="nav-${navId}"
+            role="tabpanel"
+            aria-labelledby="nav-${navId + "-tab"}">
+
+            <div class="row mt-2 p-2">
+               <div class="col-md-12">
+                  <table id="machine-table" class="table table-sm table-mail">
+                     <tbody>
+                     ${getMachineData(navId, result)}
+                     </tbody>
+                  </table>
+                  <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
+                     <div id="map"></div>
+                  </div>
                </div>
-               <h3>${usrid}</h3>`);
+            </div>
+         </div>`;
+   }
 
-            let machinestabString = "";
-            let machinesTabContentString = "";
+   let data = alasql(
+      `
+      SELECT customerid, userid, devicelist, os, hardware, localip, applications, gps
+      FROM ?
+      WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
+      GROUP BY customerid, userid, devicelist, os, hardware, localip, applications, gps
+   `,
+      [result]
+   );
+   
+   userData = data[0];
+   createUserDetail();
 
-            let machines = alasql(
-               `
-               SELECT machinename
-               FROM ?
-               WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
-               GROUP BY machinename
-               `,
-               [result]
-            );
+   $("#nav-tab").append(machinestabString);
+   $("#nav-tabContent").append(machinesTabContentString);
 
-            for (let i = 0; i < machines.length; i++) {
-               let navId = `${machines[i].machinename}`;
-               machineName = machines[i].machinename;
-
-               machinestabString += `
-                  <a class="nav-item nav-link user-nav ${i == 0 ? "active" : ""}"
-                     id="nav-${navId + "-tab"}"
-                     data-toggle="tab"
-                     href="#nav-${navId}"
-                     role="tab"
-                     aria-controls="nav-${navId}"
-                     aria-selected="${i == 0 ? "true" : "false"}">
-
-                     <i class="fa fa-desktop"></i>
-                     <p>
-                        ${machines[i].machinename}
-                     </p>
-                  </a>`;
-
-               machinesTabContentString += `
-                  <div class="tab-pane fade ${i == 0 ? "show active" : ""}"
-                     id="nav-${navId}"
-                     role="tabpanel"
-                     aria-labelledby="nav-${navId + "-tab"}">
-
-                     <div class="row mt-2 p-2">
-                        <div class="col-md-12">
-                           <table id="machine-table" class="table table-sm table-mail">
-                              <tbody>
-                              ${getMachineData(navId, result)}
-                              </tbody>
-                           </table>
-                           <div id="map-container" class="map-container animate__animated animate__pulse animate__faster hide-map">
-                              <div id="map"></div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>`;
-            }
-
-            let data = alasql(
-               `
-               SELECT customerid, userid, devicelist, os, hardware, localip, applications, gps
-               FROM ?
-               WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
-               GROUP BY customerid, userid, devicelist, os, hardware, localip, applications, gps
-            `,
-               [result]
-            );
-            
-            userData = data[0];
-            createUserDetail();
-
-            $("#nav-tab").append(machinestabString);
-            $("#nav-tabContent").append(machinesTabContentString);
-
-            getproductivityData(result);
-         },
-         error: function (err) {
-            console.log("Error:");
-            console.log(err);
-         },
-      });
-   },
-   error: function (xhr, status, error) {
-      console.error(error);
-   },
-});
+   getproductivityData(result);
+}
 
 function createUserDetail(editUser = false) {
    customerId = userData.customerid;
@@ -226,14 +202,13 @@ async function saveUserDetails() {
    document.getElementById("loader").classList.remove("show-loader");
    await deleteLastUsers(userRequest);
    $.ajax({
-      url: dataLakeUrl + "/actions/save",
+      url: webConfig.dataLakeUrl + "/actions/save",
       headers: {
          "Content-Type": "application/json",
       },
       type: "POST",
       data: JSON.stringify(userRequest),
       success: function (result) {
-         toastr.success('User saved successfully', 'Success');
          document.getElementById("loader").classList.add("hide-loader");
          document.location.href = 'users.html?usrid=' + userRequest.userId;
       },
@@ -244,10 +219,9 @@ async function saveUserDetails() {
    });
 }
 
-
 async function deleteLastUsers(userRequest) {
    await $.ajax({
-      url: dataLakeUrl + "/actions/all",
+      url: webConfig.dataLakeUrl + "/actions/all",
       headers: {
          "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -265,7 +239,7 @@ async function deleteLastUsers(userRequest) {
          if (data.length > 0) {
             data.forEach(item => {
                $.ajax({
-                  url: dataLakeUrl + "/actions/delete?id=" + item.id + "&key=" + encodeURIComponent(key),
+                  url: webConfig.dataLakeUrl + "/actions/delete?id=" + item.id + "&key=" + encodeURIComponent(key),
                   headers: {
                      "Content-Type": "application/x-www-form-urlencoded",
                   },
@@ -843,4 +817,35 @@ function initMap(gps) {
       element.classList.remove("hide-map");
       element.classList.add("show-map");
    }
+}
+
+async function getAllDocs() {
+   let finalArr = null;
+   let result = null;
+   let docLen = 0;
+   let offset = 0;
+
+   do {
+      result = await getDocs(offset);
+
+      docLen += result.actions.length;
+      if (docLen > 0) {
+         finalArr = offset == 0 ? result.actions : finalArr.concat(result.actions);
+         docLen += 1;
+         offset = docLen;
+      }
+
+   } while (result.actions.length > 0);
+
+   return (finalArr);
+}
+
+async function getDocs(offset) {
+   let result = null;
+
+   await getDocsOffset(offset).then((res) => {
+      result = JSON.parse(res);
+   });
+
+   return result;
 }
