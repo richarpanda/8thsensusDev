@@ -28,12 +28,12 @@ $(function () {
 
 
 init();
-
 async function init() {
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
 
-   let result = alasql(`
+   let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
+   let resultA = alasql(`
       SELECT 
          CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
@@ -41,9 +41,18 @@ async function init() {
          END [userid],
          r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
       FROM ? r
+      INNER JOIN ? max
+      ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
-   `, [res, resa]);
+   `, [res, resultMax, resa]);
+   
+   let result = alasql(`
+      SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
+
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
 
@@ -96,7 +105,7 @@ async function getLogs() {
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
    
-   let result = alasql(`
+   let resultA = alasql(`
       SELECT 
          CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
@@ -107,6 +116,12 @@ async function getLogs() {
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
    `, [res, resa]);
+
+   let result = alasql(`
+      SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
@@ -142,7 +157,7 @@ function processData(result) {
    slctMachine.forEach(mach => slctMachineStr += `'${mach}',`);
 
    let tableData = alasql(`
-      SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode, diagcode, key
+      SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
       FROM ?
       WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
       ${inEventsString}
@@ -276,7 +291,7 @@ function getCode(code) {
    return codeDiscription
 }
 
-$("#slctUserId").on('change', function(){
+$("#slctUserId").on('change', async function(){
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
    let userid = this.value;
@@ -284,7 +299,8 @@ $("#slctUserId").on('change', function(){
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
 
-   let result = alasql(`
+   let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
+   let resultA = alasql(`
       SELECT 
          CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
@@ -292,9 +308,17 @@ $("#slctUserId").on('change', function(){
          END [userid],
          r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
       FROM ? r
+      INNER JOIN ? max
+      ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
-   `, [res, resa]);
+   `, [res, resultMax, resa]);
+   
+   let result = alasql(`
+      SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");

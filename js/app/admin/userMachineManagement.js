@@ -22,7 +22,29 @@ $("#updateForm").submit(e => e.preventDefault());
 
 init();
 async function init() {
-   let result = JSON.parse(await getMessage());
+   let res = JSON.parse(await getMessage());
+   let resa = JSON.parse(await getActionsAll());
+
+   let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
+   let resultA = alasql(`
+      SELECT 
+         CASE 
+            WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+            ELSE a.userId
+         END [userid],
+         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+      FROM ? r
+      INNER JOIN ? max
+      ON r.id = max.id
+      LEFT JOIN ? a 
+      ON r.machinename IN a.machineName
+   `, [res, resultMax, resa]);
+   
+   let result = alasql(`
+      SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
@@ -65,6 +87,7 @@ async function init() {
       selectAll: true
    });
    $(".ms-selectall").trigger("click");
+   
    assets = alasql(`
          SELECT UPPER(userid) as userid, COUNT(DISTINCT machinename) as assets, MAX(version) as version, MAX(customerid) as license,
          MAX(stamp) stamp
@@ -105,7 +128,7 @@ async function init() {
                <i class="fa fa-unlock-alt" aria-hidden="true"></i> Unlock
             </button>
             <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#updateWarn" onClick='getUserData(${JSON.stringify(data)})'>
-               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update User
+               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update Client
             </button>`
          );
       },
@@ -141,7 +164,30 @@ async function getUsers() {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
 
-   let result = JSON.parse(await getMessage());
+   let res = JSON.parse(await getMessage());
+   let resa = JSON.parse(await getActionsAll());
+
+   let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
+   let resultA = alasql(`
+      SELECT 
+         CASE 
+            WHEN NOT LEN(a.userId) >= 0 THEN r.userid
+            ELSE a.userId
+         END [userid],
+         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
+      FROM ? r
+      INNER JOIN ? max
+      ON r.id = max.id
+      LEFT JOIN ? a 
+      ON r.machinename IN a.machineName
+   `, [res, resultMax, resa]);
+   
+   let result = alasql(`
+      SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
+
    let slctMachineStr = "";
    let slctUserId = document.getElementById("slctUserId").value;
 
@@ -198,7 +244,7 @@ async function getUsers() {
                <i class="fa fa-unlock-alt" aria-hidden="true"></i> Unlock
             </button>
             <button class="btn btn-outline-primary d-inline" data-toggle="modal" data-target="#updateWarn" onClick='getUserData(${JSON.stringify(data)})'>
-               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update User
+               <i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Update Client
             </button>`
          );
       },
@@ -248,12 +294,12 @@ function saveAction(action) {
       data: JSON.stringify({
          accessId: "-1",
          actionType: action == 'UNLOCK' ? 
-            `unlock('${ document.getElementById("intpMinutes").value }')` :
-            `update('${ userData.license }')`,
+            `unlock(${ document.getElementById("intpMinutes").value })` :
+            `update('latest')`,
          customerId: userData.license,
          key: key,
-         machineName: userData.machinename,
-         userId: userData.userId,
+         machineName: userData.machineName.trim(),
+         userId: userData.userid.trim(),
          verified: "-1"
       }),
       success: function (result) {

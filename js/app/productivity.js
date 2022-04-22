@@ -40,7 +40,7 @@ async function init() {
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
 
-   let result = alasql(`
+   let resultA = alasql(`
       SELECT 
          CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
@@ -50,7 +50,13 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
-   `, [res, resa]);                     
+   `, [res, resa]);
+   
+   let result = alasql(`
+      SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
@@ -105,7 +111,7 @@ async function getproductivityData(result = null) {
       let res = JSON.parse(await getMessage());
       let resa = JSON.parse(await getActionsAll());
 
-      let result = alasql(`
+      let resultA = alasql(`
          SELECT 
             CASE 
                WHEN NOT LEN(a.userId) >= 0 THEN r.userid
@@ -116,7 +122,14 @@ async function getproductivityData(result = null) {
          LEFT JOIN ? a 
          ON r.machinename IN a.machineName
       `, [res, resa]);
-            
+      
+      let result = alasql(`
+         SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+         FROM ? r
+         GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+         `, [resultA]);
+         
+      
       ProcessData(result);
    }
    else {

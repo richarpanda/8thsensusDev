@@ -29,23 +29,25 @@ async function processData(iteration) {
       document.getElementById("mini-loader").classList.add("show-loader");
    }
 
-   let result = alasql(
-      `
-      SELECT
-         CASE
+   let resultA = alasql(`
+      SELECT 
+         CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
             ELSE a.userId
          END [userid],
-         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp, r.version
+         r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
       FROM ? r
-      LEFT JOIN ? a
-      ON r.machinename IN a.machineName`,
-      [res, resa]
-   );
+      LEFT JOIN ? a 
+      ON r.machinename IN a.machineName
+   `, [res, resa]);
+   
+   let result = alasql(`
+      SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      `, [resultA]);
 
-   var productData = alasql(`SELECT COUNT(diagcode) FROM ? order by utc`, [
-      result,
-   ]);
+   // console.log(alasql(`SELECT * FROM ?`, [res]));
 
    var start = new Date();
    var end = new Date();
@@ -249,13 +251,15 @@ async function processData(iteration) {
          : d.getDate() - 1
       }`;
 
-   let last24Result = alasql(
-      `
-   SELECT gps, utc, userid, diagcode, version FROM ?
-   WHERE utc > '${todayDateStr}'
-   ORDER BY utc DESC
-`,
-      [result]
+   let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
+   let last24Result = alasql(`
+      SELECT id, gps, utc, userid, diagcode, version 
+      FROM ? r
+      INNER JOIN ? max
+      ON r.id = max.id
+      WHERE utc > '${todayDateStr}'
+      ORDER BY utc DESC
+   `,  [result, resultMax]
    );
 
    for (i = 0; i < last24Result.length; i++) {
@@ -663,7 +667,6 @@ async function getDocs(offset) {
 }
 
 function insertHR(hr, res) {
-   console.table(hr);
    let usersFilter = alasql(`
       SELECT r.userid,
       CASE
