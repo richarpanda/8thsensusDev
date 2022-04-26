@@ -35,6 +35,10 @@
    </div>
 
    <div id="wrapper">
+      <div class="mini-loader" id="mini-loader" style="margin-top: 58px; margin-right: 15px;">
+         <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+      </div>
+
       <div id="page-wrapper" class="dark-bg">
          <!--MENU-->
          <div class="row border-bottom gray-bg">
@@ -62,7 +66,7 @@
                            <div class="col-md-2">
                               <label for="slctUserId">User ID:</label>
                               <select id="slctUserId" class="select_user form-control select-control"
-                                 onclick="selectUser()"">
+                                 onclick="selectUser()">
                                  <option value=""></option>
                               </select>
                            </div>

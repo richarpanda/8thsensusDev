@@ -4,6 +4,9 @@ var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
 var dateTo = moment().format('YYYY-MM-DDT23:59:59');
 var slctMachine = [];
 
+var res = null;
+var resa = null;
+
 Date.prototype.addDays = function (days) {
    var date = new Date(this.valueOf());
    date.setDate(date.getDate() + days);
@@ -29,9 +32,16 @@ $(function () {
 
 init();
 async function init() {
-   let res = JSON.parse(await getMessage());
-   let resa = JSON.parse(await getActionsAll());
+   
+   res = null;
+   resa = null;
+   res = JSON.parse(await getMessage());
+   resa = JSON.parse(await getActionsAll());
 
+   await getData(0);
+}
+
+async function getData(iteration) {
    let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
    let resultA = alasql(`
       SELECT 
@@ -70,9 +80,7 @@ async function init() {
    `, [result]);
 
    let slctUsersHtml = `<option value=""></option>`;
-
-   let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-      <select name="slctMachine[]" multiple id="slctMachine">`;
+   let slctMachineHtml = `<option value=""></option>`;
 
    machinesData.forEach(machine => {
       slctMachineHtml += `
@@ -87,24 +95,27 @@ async function init() {
    });
 
    $("#slctUserId").html(slctUsersHtml);
-   $("#slctMachineContainer").html(slctMachineHtml);
-   $('#slctMachine').multiselect({
-      columns: 1,
-      placeholder: 'Select Machines',
-      selectAll: true
-   });
+   $("#slctMachine").html(slctMachineHtml);
    $(".ms-selectall").trigger("click");
 
-   processData(result);
+   await processData(result);
+
+   // if (iteration > 0) {
+   //    document.getElementById("mini-loader").classList.remove("show-loader");
+   //    document.getElementById("mini-loader").classList.add("hide-loader");
+   // }
+   
+   // if (iteration == 0) {
+   //    resAll = await getAllDocs();
+   //    res = res.concat(resAll);
+   //    getData(1);
+   // }
 }
 
 async function getLogs() {
    document.getElementById("loader").classList.add("show-loader");
    document.getElementById("loader").classList.remove("hide-loader");
 
-   let res = JSON.parse(await getMessage());
-   let resa = JSON.parse(await getActionsAll());
-   
    let resultA = alasql(`
       SELECT 
          CASE 
@@ -116,6 +127,8 @@ async function getLogs() {
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
    `, [res, resa]);
+
+   console.log('length: ' + res.length);
 
    let result = alasql(`
       SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
@@ -140,11 +153,12 @@ function setCheckValue(val, checked) {
    }
 }
 
-function processData(result) {
+async function processData(result) {
+   console.log(1);
    var matrix = result.length;
    let slctEvents = document.getElementById("slctEvents").value;
    let slctUserId = document.getElementById("slctUserId").value;
-   let slctMachineStr = "";
+   let slctMachineStr = document.getElementById("slctMachine").value;
 
    let inEventsString = "";
    if (slctEvents !== "") {
@@ -154,15 +168,13 @@ function processData(result) {
          inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
    }
 
-   slctMachine.forEach(mach => slctMachineStr += `'${mach}',`);
-
    let tableData = alasql(`
       SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
       FROM ?
       WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
       ${inEventsString}
       ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
-      AND machinename IN (${slctMachineStr}'')
+      ${slctMachineStr !== "" ? " AND machinename = '" + slctMachineStr + "'" : ""}
    `, [result]);
 
    if (dataTable !== null)
@@ -330,20 +342,12 @@ $("#slctUserId").on('change', async function(){
       GROUP BY machinename
    `, [result]);
 
-   let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
-      <select name="slctMachine[]" multiple id="slctMachine">`;
-
+   let slctMachineHtml = '';
    machinesData.forEach(machine => {
       slctMachineHtml += `<option value="${machine.machinename}">${machine.machinename}</option>`;
    });
 
-   $("#slctMachineContainer").html(slctMachineHtml);
-   $('#slctMachine').multiselect({
-      columns: 1,
-      placeholder: 'Select Machines',
-      selectAll: true
-   });
-
+   $("#slctMachine").html(slctMachineHtml);
    $(".ms-selectall").trigger("click");
             
 });
