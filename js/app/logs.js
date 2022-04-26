@@ -70,6 +70,7 @@ async function getData(iteration) {
       SELECT machinename
       FROM ?
       GROUP BY machinename
+      ORDER BY machinename
    `, [result]);
 
    let usersData = alasql(`
@@ -340,6 +341,7 @@ $("#slctUserId").on('change', async function(){
       FROM ?
       WHERE UPPER(userid) = '${userid}' OR UPPER(userid) = UPPER('${userid}')
       GROUP BY machinename
+      ORDER BY machinename
    `, [result]);
 
    let slctMachineHtml = '';
