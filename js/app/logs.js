@@ -100,16 +100,16 @@ async function getData(iteration) {
 
    await processData(result);
 
-   // if (iteration > 0) {
-   //    document.getElementById("mini-loader").classList.remove("show-loader");
-   //    document.getElementById("mini-loader").classList.add("hide-loader");
-   // }
+   if (iteration > 0) {
+      document.getElementById("mini-loader").classList.remove("show-loader");
+      document.getElementById("mini-loader").classList.add("hide-loader");
+   }
    
-   // if (iteration == 0) {
-   //    resAll = await getAllDocs();
-   //    res = res.concat(resAll);
-   //    getData(1);
-   // }
+   if (iteration == 0) {
+      resAll = await getAllDocs();
+      res = res.concat(resAll);
+      getData(1);
+   }
 }
 
 async function getLogs() {
