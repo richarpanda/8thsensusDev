@@ -5,7 +5,7 @@ var dataTable = null;
 var slctMachine = [];
 var selectedUsers = [];
 var sessionData = {
-   customerId: "TestCustomer",
+   customerId: webConfig.customerFilter,
    department: "TestDepartment",
    userId: "LoggedTestUser"
 };
@@ -53,6 +53,7 @@ $(document).ready(function () {
             let usersData = alasql(`
                   SELECT UPPER(userId) [userId], 'View' [permission]
                   FROM ?
+                  WHERE customerId = '${ webConfig.customerFilter }'
                   GROUP BY UPPER(userId)
                   ORDER BY userId
                `, [result]);

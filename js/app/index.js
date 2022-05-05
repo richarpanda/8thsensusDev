@@ -39,15 +39,15 @@ async function processData(iteration) {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
    
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
-
-   // console.log(alasql(`SELECT * FROM ?`, [res]));
 
    var start = new Date();
    var end = new Date();
@@ -133,7 +133,7 @@ async function processData(iteration) {
          "SELECT COUNT(distinct UPPER(userid)) as licenses FROM ?",
          [result]
       );
-      accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ? ", [
+      accountDevices = alasql("SELECT COUNT(DISTINCT userid) devices FROM ?", [
          result,
       ]);
       accountIntrusions = alasql(
@@ -253,15 +253,17 @@ async function processData(iteration) {
 
    let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
    let last24Result = alasql(`
-      SELECT id, gps, utc, userid, diagcode, version 
+      SELECT id, utc, userid, diagcode, version 
       FROM ? r
       INNER JOIN ? max
       ON r.id = max.id
-      WHERE utc > '${todayDateStr}'
+      WHERE utc > '${ todayDateStr }'
       ORDER BY utc DESC
    `,  [result, resultMax]
    );
 
+   $("#intrusion-insights tbody tr").remove();
+   
    for (i = 0; i < last24Result.length; i++) {
       fillTable(last24Result[i]); //longlatArray, userName, formatDate(timeStamp), diagcode, i);
    }
@@ -275,7 +277,8 @@ async function processData(iteration) {
 
    if (iteration == 0) {
       resAll = await getAllDocs();
-      res = res.concat(resAll);
+      res = null;
+      res = resAll;
       processData(1);
 
       let hr = JSON.parse(await getHumanResourceAll());
@@ -375,7 +378,8 @@ function getIntrusionGraphData(resultData) {
          ,utc [date]
          ,SUBSTRING(stamp, 1, 10) [timeInterval]
       FROM ?
-      WHERE utc >= '${dateFrom}'
+      WHERE utc >= '${ dateFrom }'
+      AND customerid = '${ webConfig.customerFilter }'
       ORDER BY userid, utc
    `,
       [resultData]

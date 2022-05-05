@@ -3,7 +3,7 @@ const key = webConfig.key;
 
 var dataTable = null;
 var sessionData = {
-   customerId: "TestCustomer",
+   customerId: webConfig.customerFilter,
    userId: "LoggedTestUser"
 };
 
@@ -25,6 +25,7 @@ function getSecurityLogs() {
          let logsData = alasql(`
                SELECT accessId, customerId, eventType, logEntry, userId, utc
                FROM ?
+               WHERE customerId = '${ webConfig.customerFilter }'
                ORDER BY utc DESC
             `, [result]);
 

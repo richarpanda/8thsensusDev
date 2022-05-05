@@ -55,11 +55,13 @@ async function getData(iteration) {
       ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
    
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
@@ -127,13 +129,15 @@ async function getLogs() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
 
-   console.log('length: ' + res.length);
+   // console.log('length: ' + res.length);
 
    let result = alasql(`
       SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
@@ -155,7 +159,6 @@ function setCheckValue(val, checked) {
 }
 
 async function processData(result) {
-   console.log(1);
    var matrix = result.length;
    let slctEvents = document.getElementById("slctEvents").value;
    let slctUserId = document.getElementById("slctUserId").value;
@@ -325,11 +328,13 @@ $("#slctUserId").on('change', async function(){
       ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
    
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 

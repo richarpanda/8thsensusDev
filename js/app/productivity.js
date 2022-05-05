@@ -50,11 +50,13 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
    
    let result = alasql(`
       SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
@@ -64,6 +66,7 @@ async function init() {
    let usersData = alasql(`
       SELECT UPPER(userid) [userid]
       FROM ?
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY UPPER(userid)
       ORDER BY userid
    `, [result]);
@@ -121,11 +124,13 @@ async function getproductivityData(result = null) {
          FROM ? r
          LEFT JOIN ? a 
          ON r.machinename IN a.machineName
+         WHERE customerid = '${ webConfig.customerFilter }'
       `, [res, resa]);
       
       let result = alasql(`
          SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          FROM ? r
+         WHERE customerid = '${ webConfig.customerFilter }'
          GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          `, [resultA]);
          

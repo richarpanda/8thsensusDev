@@ -38,11 +38,13 @@ async function init() {
       ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
    
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
@@ -180,11 +182,13 @@ async function getUsers() {
       ON r.id = max.id
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
    
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 

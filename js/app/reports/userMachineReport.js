@@ -13,6 +13,7 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
 
    document.getElementById("loader").classList.remove("show-loader");
