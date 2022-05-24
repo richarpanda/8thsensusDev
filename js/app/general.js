@@ -77,11 +77,6 @@ $(document).ready(function () {
                      Security Logs
                   </a>
                </li>
-               <li>
-                  <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "userMachineManagement.html" }'>
-                     User / Machine Management
-                  </a>
-               </li>
                <!-- <li>
                   <a href='${ (!isSubMenuItem ? "admin/" : !isAdmin ? "../admin/" : "") + "reportAdmin.html" }'>
                      Report Admin

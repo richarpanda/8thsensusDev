@@ -103,12 +103,12 @@ async function getData(iteration) {
 
    await processData(result);
 
-   if (iteration > 0) {
+   if (iteration > 0 || result.length < 5000) {
       document.getElementById("mini-loader").classList.remove("show-loader");
       document.getElementById("mini-loader").classList.add("hide-loader");
    }
    
-   if (iteration == 0) {
+   if (iteration == 0 && result.length >= 5000) {
       resAll = await getAllDocs();
       res = res.concat(resAll);
       getData(1);
@@ -172,10 +172,18 @@ async function processData(result) {
          inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
    }
 
+   console.log(`
+   SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
+   FROM ?
+   WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
+   ${inEventsString}
+   ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
+   ${slctMachineStr !== "" ? " AND machinename = '" + slctMachineStr + "'" : ""}
+`);
    let tableData = alasql(`
       SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
       FROM ?
-      WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
+      WHERE utc >= '${dateFrom}' AND utc <='${dateTo}'
       ${inEventsString}
       ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
       ${slctMachineStr !== "" ? " AND machinename = '" + slctMachineStr + "'" : ""}

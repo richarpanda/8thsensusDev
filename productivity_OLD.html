@@ -21,8 +21,6 @@
    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" />
    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
    <link href="css/loader.min.css" rel="stylesheet">
-
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="top-navigation">
@@ -92,34 +90,44 @@
                         </div>
 
                         <!--CHART-->
-                        <div class="row justify-content-md-center mt-3" style="text-align: center; font-size: 12px;">
-                           <div class="col-md-6">
-                              <canvas id="barChart"></canvas></div>
-                           </div>
-                        <div>
+                        <div><canvas id="barChart"></canvas></div>
+
                         <!-- TABLE -->
-                        <div class="row justify-content-md-center mt-3" style="text-align: center; font-size: 12px;">
-                           <div class="col-md-10">
+                        <div class="row mt-3" style="text-align: center; font-size: 12px;">
+                           <div class="col-md-12" style="margin: 0 auto;">
+                              <div class="table-responsive position-relative">
+                                 <div id="example_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 p-0">
+                                    <table id="productivityReport" class="dataTable table-striped table-sm table-hover">
+                                       <thead>
+                                          <tr role="row">
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="User ID: activate to sort column ascending">User Id</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Date Range: activate to sort column ascending">From</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Date Range: activate to sort column ascending">To</th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Active Time: activate to sort column ascending">Active Time
+                                                <br> (HH:mm:ss)
+                                             </th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Inactive Time
+                                                <br> (HH:mm:ss)
+                                             </th>
+                                             <th class="sorting" tabindex="0" aria-controls="example"
+                                                aria-label="Inactive Time: activate to sort column ascending">Version
+                                             </th>
+                                          </tr>
+                                       </thead>
+                                    </table>
+                                 </div>
 
-                              <table class="table productivity-table">
-                                 <thead>
-                                    <tr>
-                                       <th>Name</th>
-                                       <th></th>
-                                       <th>Version</th>
-                                       <th>Total Hours</th>
-                                       <!-- <th>Timeline</th> -->
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                 </tbody>
-                              </table>
-
-                              <button type="button"
-                                 class="btn btn-outline btn-sm btn-outline-secondary position-absolute"
-                                 data-toggle="modal" data-target="#exampleModal" style="bottom: -15px; left: 20px;">
-                                 Timesheet generator
-                              </button>
+                                 <button type="button"
+                                    class="btn btn-outline btn-sm btn-outline-secondary position-absolute"
+                                    data-toggle="modal" data-target="#exampleModal" style="bottom: 31px; left: 22px;">
+                                    Timesheet generator
+                                 </button>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -191,12 +199,14 @@
             </div>
          </div>
       </div>
-   </div> 
-
+   </div>
+   
    <!-- Mainly scripts -->
    <script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
    <script src="js/plugins/popper.min.js"></script>
    <script src="js/plugins/bootstrap.js"></script>
+   <!-- ChartJS-->
+   <script src="js/plugins/chartJs/Chart.min.js"></script>
    <!-- Selector -->
    <script src="js/plugins/select2/select2.full.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>

@@ -12,6 +12,7 @@ var chart = null;
 var customerId = null;
 var machineName = null;
 var userId = null;
+var hr = null;
 
 toastr.options = {
    "closeButton": true,
@@ -30,15 +31,22 @@ init();
 
 async function init() {
    document.getElementById("loader").classList.add("show-loader");
+
+   const querystring = window.location.search;
+   const params = new URLSearchParams(querystring);
+   usrid = params.get("usrid");
+
    
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
+   hr = JSON.parse(await getHumanResourceAll());
+
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
    
    let result = alasql(`
-      SELECT 
+      SELECT
          CASE 
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
             ELSE a.userId
@@ -46,13 +54,8 @@ async function init() {
          r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
       FROM ? r
       LEFT JOIN ? a 
-      ON r.machinename IN a.machineName
-   `, [res, resa]);
-               
-   const querystring = window.location.search;
-   const params = new URLSearchParams(querystring);
-   usrid = params.get("usrid");
-
+      ON r.machinename IN a.machineName`, [res, resa]);
+   
    $("#user-name").html(`
       <div class="userid-font">
          <img src="img/Circle-icons-profile.svg" alt="user-image">
@@ -112,16 +115,13 @@ async function init() {
          </div>`;
    }
 
-   let data = alasql(
-      `
-      SELECT customerid, userid, devicelist, os, hardware, localip, applications, gps
+   let data = alasql(`
+      SELECT customerid, userid, devicelist, os, hardware, localip, applications, gps, anchorAddress ,firstName ,lastName ,key ,telephone, department
       FROM ?
       WHERE userid = '${usrid}' OR UPPER(userid) = '${usrid}'
-      GROUP BY customerid, userid, devicelist, os, hardware, localip, applications, gps
-   `,
-      [result]
-   );
-   
+      GROUP BY customerid, userid, devicelist, os, hardware, localip, applications, gps, anchorAddress ,firstName ,lastName ,key ,telephone, department
+   `,[result]);
+
    userData = data[0];
    createUserDetail();
 
@@ -133,6 +133,7 @@ async function init() {
 
 function createUserDetail(editUser = false) {
    customerId = userData.customerid;
+   let hrData = alasql(`SELECT * FROM ? WHERE userId = '${usrid}' OR UPPER(userId) = '${usrid}'`, [hr])[0];
 
    if (editUser) {
       userDetailString = `
@@ -147,13 +148,28 @@ function createUserDetail(editUser = false) {
                </td>
             </tr>
             <tr>
-               <td><b>Address: </b> Not defined</td>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>First Name: </b></p>
+                  <input type="text" id="inptFirstName" class="form-control form-control-sm" value="${hrData.firstName}" />
+               </td>
             </tr>
             <tr>
-               <td><b>Phone number: </b> Not defined</td>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Last Name: </b></p>
+                  <input type="text" id="inptLastName" class="form-control form-control-sm" value="${hrData.lastName}" />
+               </td>
             </tr>
             <tr>
-               <td><b>Department: </b> Not defined</td>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Address: </b></p>
+                  <input type="text" id="inptAnchorAddress" class="form-control form-control-sm" value="${hrData.anchorAddress}" />
+               </td>
+            </tr>
+            <tr>
+               <td><b>Phone number: </b> ${hrData.telephone}</td>
+            </tr>
+            <tr>
+               <td><b>Department: </b> ${hrData.department}</td>
             </tr>
          </thead>`;
 
@@ -168,13 +184,19 @@ function createUserDetail(editUser = false) {
                <td><b>UserId: </b> ${userData.userid}</td>
             </tr>
             <tr>
-               <td><b>Address: </b> Not defined</td>
+               <td><b>First Name: </b> ${hrData.firstName}</td>
             </tr>
             <tr>
-               <td><b>Phone number: </b> Not defined</td>
+               <td><b>Last Name: </b> ${hrData.lastName}</td>
             </tr>
             <tr>
-               <td><b>Department: </b> Not defined</td>
+               <td><b>Address: </b> ${hrData.anchorAddress}</td>
+            </tr>
+            <tr>
+               <td><b>Phone number: </b> ${hrData.telephone}</td>
+            </tr>
+            <tr>
+               <td><b>Department: </b> ${hrData.department}</td>
             </tr>
          </thead>`;
       document.getElementById("edit-buttons").className = "hide";
@@ -200,7 +222,7 @@ async function saveUserDetails() {
    };
 
    document.getElementById("loader").classList.remove("show-loader");
-   await deleteLastUsers(userRequest);
+   // await deleteLastUsers(userRequest);
    $.ajax({
       url: webConfig.dataLakeUrl + "/actions/save",
       headers: {
@@ -208,6 +230,44 @@ async function saveUserDetails() {
       },
       type: "POST",
       data: JSON.stringify(userRequest),
+      success: function (result) {
+         document.getElementById("loader").classList.add("hide-loader");
+         updateUser();
+      },
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
+      },
+   });
+}
+
+async function updateUser() {
+   let data = await alasql(`
+      SELECT * FROM ? WHERE userId = '${usrid}' OR UPPER(userId) = '${usrid}'`, [hr])[0];
+   
+   let request = {
+      anchorAddress: document.getElementById("inptAnchorAddress").value,
+      anchorGPS: data.anchorGPS,
+      customerId: data.customerId,
+      department: data.department,
+      firstName:document.getElementById("inptFirstName").value,
+      id: data.id,
+      key: data.key,
+      lastName: document.getElementById("inptLastName").value,
+      role: data.role,
+      telephone: data.telephone,
+      userId: data.userId,
+      utc: data.utc
+   };
+
+   document.getElementById("loader").classList.remove("show-loader");
+   $.ajax({
+      url: webConfig.dataLakeUrl + "/employee/update?id=" + request.id + "&key=" + encodeURIComponent(request.key),
+      headers: {
+         "Content-Type": "application/json",
+      },
+      type: "PUT",
+      data: JSON.stringify(request),
       success: function (result) {
          document.getElementById("loader").classList.add("hide-loader");
          document.location.href = 'users.html?usrid=' + userRequest.userId;

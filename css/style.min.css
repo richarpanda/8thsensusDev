@@ -5903,7 +5903,6 @@ code {
 
 .user-ibox {
   clear: both;
-  background-color: green;
   margin-bottom: 0 !important;
   padding: 0 !important;
 }
@@ -5926,14 +5925,14 @@ code {
 }
 
 .user-ibox > .ibox-title + .ibox-content {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: inherit;
   padding: 15px 20px 20px 20px;
   border-color: #e7eaec;
   border-image: none;
   border-style: solid solid none;
   border-width: 1px 0;
-  height: 250px;
+  height: 300px;
 }
 
 .user-ibox > .ibox-title + .ibox-content .user-chart {
@@ -5946,19 +5945,18 @@ code {
 }
 
 .user-ibox > .ibox-content {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: inherit;
   padding: 15px 20px 20px 20px;
   border-color: #e7eaec;
   border-image: none;
   border-style: solid solid none;
   border-width: 1px 0;
-  height: 298px;
+  height: 348px;
 }
 
 .ibox {
   clear: both;
-  background-color: green;
   margin-bottom: 0px !important;
   padding: 0;
 }
@@ -11437,18 +11435,19 @@ tbody {
   padding-right: 10px;
 }
 
-.select2-results__option[aria-selected=true] .wrap:before {
+.select2-results__option[aria-selected="true"] .wrap:before {
   content: "\f14a";
 }
 
-.ms-options-wrap > button:focus, .ms-options-wrap > button {
+.ms-options-wrap > button:focus,
+.ms-options-wrap > button {
   position: relative;
   width: 100%;
   text-align: left;
   border: 1px solid #aaa;
   border-radius: 3px;
   background-color: #fff;
-  margin-top: -.5px !important;
+  margin-top: -0.5px !important;
   color: #000 !important;
   outline: none;
   white-space: nowrap;
@@ -11644,4 +11643,72 @@ tbody {
   100% {
     opacity: 0;
   }
+}
+
+/* PRODUCTIVY GRAPHS */
+table thead {
+  font-size: 13px;
+}
+
+table tbody {
+  font-size: 13px;
+}
+
+table.productivity-table tbody tr {
+  background-color: #f5f6f8;
+  position: relative;
+  vertical-align: middle;
+}
+
+table.productivity-table tbody tr td {
+  border: solid 5px #ffffff;
+  padding-top: 10px;
+}
+
+table.productivity-table tbody tr td + .graph-container .graph {
+  background-color: #d8d8da;
+  border-radius: 10px;
+  position: relative;
+}
+
+table.productivity-table tbody tr td + .graph-container .graph .active {
+  background-color: #18a689;
+  border-radius: 10px;
+  position: absolute;
+  top: 0;
+}
+
+table.productivity-table tbody tr .image {
+  padding: 4px 0;
+  width: 75px;
+}
+
+table.productivity-table tbody tr .image img {
+  width: auto;
+  height: 30px;
+}
+
+table.productivity-table tbody tr td:first-child::after {
+  content: ' ';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 3px;
+  height: 83%;
+  background-color: #1ab394;
+}
+
+table.productivity-table .green {
+  background-color: #01c877 !important;
+  color: #FFFFFF;
+}
+
+table.productivity-table .yellow {
+  background-color: #fdac41;
+  color: #FFFFFF;
+}
+
+table.productivity-table .red {
+  background-color: #e0445d;
+  color: #FFFFFF;
 }

@@ -13,10 +13,6 @@ Date.prototype.addDays = function (days) {
    return date;
 }
 
-$(function () {
-   $('[data-toggle="tooltip"]').tooltip()
-});
-
 document.getElementById("loader").classList.add("show-loader");
 
 $(function () {
@@ -43,7 +39,6 @@ init();
 async function init() {
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
-   console.table(res);
 
    let resultA = alasql(`
       SELECT 
@@ -55,13 +50,13 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
-      WHERE customerid = '${webConfig.customerFilter}'
+      WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
-
+   
    let result = alasql(`
       SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
-      WHERE customerid = '${webConfig.customerFilter}'
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
@@ -71,7 +66,7 @@ async function init() {
    let usersData = alasql(`
       SELECT UPPER(userid) [userid]
       FROM ?
-      WHERE customerid = '${webConfig.customerFilter}'
+      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY UPPER(userid)
       ORDER BY userid
    `, [result]);
@@ -129,17 +124,17 @@ async function getproductivityData(result = null) {
          FROM ? r
          LEFT JOIN ? a 
          ON r.machinename IN a.machineName
-         WHERE customerid = '${webConfig.customerFilter}'
+         WHERE customerid = '${ webConfig.customerFilter }'
       `, [res, resa]);
-
+      
       let result = alasql(`
          SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          FROM ? r
-         WHERE customerid = '${webConfig.customerFilter}'
+         WHERE customerid = '${ webConfig.customerFilter }'
          GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          `, [resultA]);
-
-
+         
+      
       ProcessData(result);
    }
    else {
@@ -147,8 +142,7 @@ async function getproductivityData(result = null) {
    }
 }
 
-async function ProcessData(result) {
-
+function ProcessData(result) {
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
 
@@ -191,8 +185,8 @@ async function ProcessData(result) {
    let userData = alasql(`
       SELECT
          CASE 
-            WHEN diagcode IN ('D0016') THEN 1
-            WHEN diagcode IN ('D0017') THEN 0
+            WHEN diagcode IN ('D0001','D0002','D0006','D0014','D0011','D0010','D0013') THEN 1
+            WHEN diagcode IN ('D0003','D0004','D0005','D0007','D0008','D0009','D0012','D0015') THEN 0
             ELSE  diagcode
          END [activeStatus]
          ,UPPER(userid) [userid]
@@ -242,32 +236,25 @@ async function ProcessData(result) {
       }
    }
 
-   // console.table(arrLock);
+   //console.table(arrLock);
 
    let activeInactiveDatabyUser = alasql(`
-      SELECT userid, version, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs, MAX(rownum) rownum
+      SELECT userid, version, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
       FROM ? 
       GROUP BY userid, version
       ORDER BY userid
    `, [arrLock])
 
-   // console.table(activeInactiveDatabyUser);
-
-   let activeInactiveDataJoin = alasql(`
-      SELECT a.userid, a.version, a.[from], a.[to], a.activeMs, a.inactiveMs, a.rownum, b.activeStatus
-      FROM ? a
-      INNER JOIN ? b
-      ON a.rownum = b.rownum
-   `, [activeInactiveDatabyUser, arrLock]);
-
-   // console.table(activeInactiveDataJoin);
-
-   activeInactiveDataJoin.forEach(item => {
-      item.activePer = item.activeMs * 100 / 28800000;
+   activeInactiveDatabyUser.forEach(item => {
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
+
+   console.table(activeInactiveDatabyUser);
    
+   createTable(activeInactiveDatabyUser);
+   getTableReportData(arrLock, result);
+
    if (arrLock.length > 0) {
       let date = arrLock[0].date;
       let userId = arrLock[0].userid;
@@ -303,16 +290,7 @@ async function ProcessData(result) {
          }
       }
    }
-
    //console.table(arrLock); // TIMES
-
-   createTable(activeInactiveDataJoin);
-   createGraph(activeInactiveDataJoin);
-   getTableReportData(arrLock, result);
-
-   let hr = JSON.parse(await getHumanResourceAll());
-   //console.table(hr);
-   insertHR(hr, result);
 
    let activeInactiveData = alasql(`
       SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
@@ -327,14 +305,13 @@ async function ProcessData(result) {
       item.inactiveTime = msToTime(item.inactiveMs);
    });
 
-   if (arrLock.length > 0) {
-      console.table(alasql(`
-         SELECT inactiveMs, userid FROM ? GROUP BY userid ORDER BY inactiveMs DESC
-      `, [activeInactiveDataJoin]));
+   //console.table(activeInactiveData); // FINAL RESULT
 
+   if (arrLock.length > 0) {
+      let mostleastData = alasql(`SELECT COUNT(userid) [userCount], userid FROM ? GROUP BY userid`, [arrLock]);
       labelData.avgHours = msToTime(alasql(`SELECT AVG(activeMs) [avgHours] FROM ?`, [activeInactiveData])[0].avgHours);
-      labelData.mostActive = alasql(`SELECT MAX(activeMs), userid FROM ? GROUP BY userid`, [activeInactiveDataJoin])[0].userid;
-      labelData.leastActive = alasql(`SELECT MIN(activeMs), userid FROM ? GROUP BY userid`, [activeInactiveDataJoin])[0].userid;
+      labelData.mostActive = alasql(`SELECT TOP 1 userCount, userid FROM ? ORDER BY userCount DESC`, [mostleastData])[0].userid;
+      labelData.leastActive = alasql(`SELECT TOP 1 userCount, userid FROM ? ORDER BY userCount ASC`, [mostleastData])[0].userid;
    }
 
    let lableGraphHtml = `
@@ -344,6 +321,8 @@ async function ProcessData(result) {
       <p><b>Least Active: </b>${labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
    `;
    $("#label-graph-info").html(lableGraphHtml);
+
+   createGraph(activeInactiveData);
 }
 
 function getTableReportData(data, result) {
@@ -641,93 +620,115 @@ function createWeekTable(data) {
 
 function createTable(data) {
    let dateRange = document.getElementById("inptDateRange").value;
-   $(".productivity-table tbody").empty();
-   let htmlString = "";
+   //console.table(data);
+   if (dataTable !== null)
+      dataTable.destroy();
 
-   data.forEach(item => {
-      let colorClass = item.activeStatus == 1 ? 'green' : item.activeStatus == 0 ? 'yellow' : 'red';
+   dataTable = $('#productivityReport').DataTable({
+      data: data,
+      columns: [
+         { data: "userid" },
+         { data: "from" },
+         { data: "to" },
+         { data: "activeTime" },
+         { data: "inactiveTime" },
+         { data: "version" }
+      ],
+      order: [0, 'asc'],
+      rowCallback: function (row, data, index) {
+         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
+      },
+      select: true,
+      pageLength: 500,
+      responsive: true,
+      // dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
+      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
+      retrieve: true,
+      searching: false,
+      buttons: [
+         { extend: 'copy' },
+         { extend: 'csv' },
+         { extend: 'excel', title: `Productivity Report ${dateRange}` },
+         { extend: 'pdf', title: `Productivity Report ${dateRange}` },
+         {
+            extend: 'print',
+            customize: function (win) {
+               $(win.document.body).addClass('white-bg');
+               $(win.document.body).css('font-size', '10px');
 
-      htmlString += `
-         <tr>
-            <td>${item.userid}</td>
-            <td class="image">
-               <img src="${'img/Circle-icons-profile.svg'}" alt="user-profile" />
-            </td>
-            <td class='${colorClass}'>${item.version}</td>
-            <td>${item.activeTime}</td>
-            <!--<td class="graph-container">
-               <div class="graph" style="width: 100%;">&nbsp;
-                  ${!isNaN(item.activePer) ? '<div class="active" style="width: ' + item.activePer + '%;">&nbsp;</div>' : ''} 
-               </div>
-            </td> -->
-         </tr>`
+               $(win.document.body).find('table')
+                  .addClass('compact')
+                  .css('font-size', 'inherit');
+            }
+         }
+      ]
    });
-
-   $(".productivity-table tbody").append(htmlString);
 }
 
 function createGraph(graphData) {
-   const data = {
+   var barData = {
       labels: getGraphLabels(graphData),
       datasets: [
          {
-            label: "Lock",
+            label: "Active",
             backgroundColor: "rgba(26,179,148,0.5)",
             borderColor: "rgba(26,179,148,0.7)",
             pointBackgroundColor: "rgba(26,179,148,1)",
             pointBorderColor: "#fff",
             data: getGraphUnlockValues(graphData),
-            stack: "Stack 1",
-         },
-         {
-            label: "Unlocked",
-            backgroundColor: "rgba(220, 220, 220, 0.5)",
-            pointBorderColor: "#fff",
-            data: getGraphLockValues(graphData),
-            stack: "Stack 1",
          },
       ]
    };
 
-   const config = {
-      type: 'bar',
-      data: data,
-      options: {
-         indexAxis: 'y',
-         scales: {
-            x: {
+   var barOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+         yAxes: [
+            {
                ticks: {
+                  beginAtZero: true,
                   callback: function (label, index, labels) {
-                     return '';
+                     return msToTimeHr(label);
                   }
+               },
+               scaleLabel: {
+                  display: true,
+                  labelString: 'Total Hours'
                }
             },
-         },
-         plugins: {
-            tooltip: {
-               callbacks: {
-                  label: function (tooltipItem) {
-                     return msToTime(tooltipItem.raw);
-                  }
+         ],
+         xAxes: [
+            {
+               scaleLabel: {
+                  display: true,
+                  labelString: 'Days / Hours'
                }
+            },
+         ]
+      },
+      tooltips: {
+         callbacks: {
+            label: function (tooltipItem) {
+               return msToTime(tooltipItem.yLabel);
             }
          }
       },
    };
-   
+
+   if (ctx2 !== null)
+      ctx = null;
    if (chart !== null)
       chart.destroy();
 
-   chart = new Chart(
-      document.getElementById('barChart'),
-      config
-   );
+   ctx2 = document.getElementById("barChart").getContext("2d");
+   chart = new Chart(ctx2, { type: "bar", data: barData, options: barOptions });
 }
 
 function getGraphLabels(data) {
    let result = [];
    data.forEach(item => {
-      result.push(item.userid);
+      result.push(item.timeInterval);
    });
    return result;
 }
@@ -751,7 +752,7 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-      (d.getMonth() + 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+      (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =
@@ -885,61 +886,4 @@ async function getDocs(offset) {
    });
 
    return result;
-}
-
-function insertHR(hr, res) {
-   let usersFilter = alasql(`
-      SELECT r.userid,
-      CASE
-         WHEN LEN(hr.userId) >= 0 THEN hr.userId
-         ELSE 'NULL'
-      END [hrUserId],
-      r.customerid, r.version as role
-      FROM ? r
-      LEFT JOIN ? hr 
-      ON r.userid = hr.userId
-      GROUP BY r.userid,CASE WHEN LEN(hr.userId) >= 0 THEN hr.userId ELSE 'NULL' END, r.customerid, r.version
-   `, [res, hr]);
-
-   //console.table(usersFilter);
-
-   let insertUsers = alasql(`
-      SELECT *
-      FROM ? 
-      WHERE hrUserId = 'NULL'
-   `, [usersFilter]);
-
-   // console.table(insertUsers);
-   insertUsers.forEach(item => {
-      saveHrUser(item);
-   });
-}
-
-function saveHrUser(item) {
-   $.ajax({
-      url: dataLakeUrl + "/employee/save",
-      headers: {
-         "Content-Type": "application/json",
-      },
-      type: "POST",
-      data: JSON.stringify({
-         anchorAddress: "-1",
-         anchorGPS: "-1",
-         customerId: item.customerid,
-         department: "-1",
-         firstName: "-1",
-         key: webConfig.key,
-         lastName: "-1",
-         role: item.role,
-         telephone: "-1",
-         userId: item.userid,
-      }),
-      success: function (res) {
-         console.log(res);
-      },
-      error: function (err) {
-         console.log("Error:");
-         console.log(err);
-      },
-   });
 }
