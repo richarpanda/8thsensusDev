@@ -11712,3 +11712,8 @@ table.productivity-table .red {
   background-color: #e0445d;
   color: #FFFFFF;
 }
+
+.grid-img {
+  border-radius: 100%;
+  width: 100%;
+}

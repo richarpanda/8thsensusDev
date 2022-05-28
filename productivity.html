@@ -62,16 +62,23 @@
                         <div class="p-4 logs-filters">
                            <div class="form-row justify-content-md-center">
 
-                              <div class="col-md-4">
+                              <div class="col-md-3">
                                  <label for="slctDateRange">Date range:</label>
                                  <input id="inptDateRange" type="text" name="daterange"
                                     class="form-control form-control-sm date-range" />
                               </div>
 
-                              <div class="col-md-4" id="slctContainer">
-                                 <label for="slctUserId">User ID:</label>
-                                 <select id="slctUserId" class="date_range_p form-control"></select>
+                              <div class="col-md-3" id="slctDepContainer">
+                                 <label for="slctDepartment">Department:</label>
+                                 <select id="slctDepartment" class="form-control"></select>
                               </div>
+
+                              <div class="col-md-3">
+                                 <label for="slctUserId">User ID:</label>
+                                 <select id="slctUserId" class="select_user form-control select-control">
+                                 </select>
+                              </div>
+                              
 
                               <div class="col-auto">
                                  <input type="button" id="searchButton" value="Search" class="btn btn-sm btn-primary"
@@ -99,22 +106,10 @@
                         <div>
                         <!-- TABLE -->
                         <div class="row justify-content-md-center mt-3" style="text-align: center; font-size: 12px;">
-                           <div class="col-md-10">
-
-                              <table class="table productivity-table">
-                                 <thead>
-                                    <tr>
-                                       <th>Name</th>
-                                       <th></th>
-                                       <th>Version</th>
-                                       <th>Total Hours</th>
-                                       <!-- <th>Timeline</th> -->
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                 </tbody>
-                              </table>
-
+                           <div class="col-md-8">
+                           
+                              <div id="table_hours"></div>
+                              
                               <button type="button"
                                  class="btn btn-outline btn-sm btn-outline-secondary position-absolute"
                                  data-toggle="modal" data-target="#exampleModal" style="bottom: -15px; left: 20px;">

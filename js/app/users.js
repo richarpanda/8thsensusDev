@@ -55,12 +55,6 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName`, [res, resa]);
-   
-   $("#user-name").html(`
-      <div class="userid-font">
-         <img src="img/Circle-icons-profile.svg" alt="user-image">
-      </div>
-      <h3>${usrid}</h3>`);
 
    let machinestabString = "";
    let machinesTabContentString = "";
@@ -135,6 +129,13 @@ function createUserDetail(editUser = false) {
    customerId = userData.customerid;
    let hrData = alasql(`SELECT * FROM ? WHERE userId = '${usrid}' OR UPPER(userId) = '${usrid}'`, [hr])[0];
 
+      
+   $("#user-name").html(`
+      <div class="userid-font">
+         <img src="${hrData.anchorGPS.length < 10 ? 'img/Circle-icons-profile.svg' : hrData.anchorGPS}" alt="user-profile" class="grid-img" />
+      </div>
+      <h3>${hrData.userId}</h3>`);
+
    if (editUser) {
       userDetailString = `
          <thead class="edit-table">
@@ -166,10 +167,16 @@ function createUserDetail(editUser = false) {
                </td>
             </tr>
             <tr>
-               <td><b>Phone number: </b> ${hrData.telephone}</td>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Image Link: </b></p>
+                  <input type="text" id="inptImageKey" class="form-control" value="${hrData.anchorGPS}" />
+               </td>
             </tr>
             <tr>
-               <td><b>Department: </b> ${hrData.department}</td>
+               <td class="form-inline pb-0">
+                  <p class="mr-2"><b>Department: </b></p>
+                  <input type="text" id="inptDepartment" class="form-control" value="${hrData.department}" />
+               </td>
             </tr>
          </thead>`;
 
@@ -191,9 +198,6 @@ function createUserDetail(editUser = false) {
             </tr>
             <tr>
                <td><b>Address: </b> ${hrData.anchorAddress}</td>
-            </tr>
-            <tr>
-               <td><b>Phone number: </b> ${hrData.telephone}</td>
             </tr>
             <tr>
                <td><b>Department: </b> ${hrData.department}</td>
@@ -247,10 +251,10 @@ async function updateUser() {
    
    let request = {
       anchorAddress: document.getElementById("inptAnchorAddress").value,
-      anchorGPS: data.anchorGPS,
+      anchorGPS: document.getElementById("inptImageKey").value,
       customerId: data.customerId,
-      department: data.department,
-      firstName:document.getElementById("inptFirstName").value,
+      department: document.getElementById("inptDepartment").value,
+      firstName: document.getElementById("inptFirstName").value,
       id: data.id,
       key: data.key,
       lastName: document.getElementById("inptLastName").value,

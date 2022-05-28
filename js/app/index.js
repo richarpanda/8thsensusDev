@@ -52,19 +52,19 @@ async function init() {
    generateLicencesGraph(result);
    
    let machinesData = alasql(`
-         SELECT machinename
-         FROM ?
-         GROUP BY machinename
-      `, [result]);
+      SELECT machinename
+      FROM ?
+      GROUP BY machinename
+   `, [result]);
 
    let usersData = alasql(`
-         SELECT UPPER(userid) [userid]
-         FROM ?
-         GROUP BY UPPER(userid)
-         ORDER BY userid
-      `, [result]);
+      SELECT UPPER(userid) [userid]
+      FROM ?
+      GROUP BY UPPER(userid)
+      ORDER BY userid
+   `, [result]);
 
-   let slctUsersHtml = `<option value=""></option>`;
+   let slctUsersHtml = `<option value="0">Select a user</option>`;
 
    let slctMachineHtml = `<label for="slctMachine">Machine Name:</label>
          <select name="slctMachine[]" multiple id="slctMachine">`;
@@ -121,6 +121,7 @@ async function init() {
          });
          data.machineName = machinesHtml;
 
+         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
          $(row).find('td:eq(1)').html(machinesHtml);
          $(row).find('td:eq(4)').html(formatDate(data.stamp));
          $(row).find('td:eq(5)').html(`
@@ -213,7 +214,7 @@ async function getUsers() {
       MAX(stamp) stamp
       FROM ?
       WHERE machinename IN (${slctMachineStr}'')
-      ${slctUserId !== "" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
+      ${slctUserId !== "" && slctUserId !== "0" ? " AND UPPER(userid) = '" + slctUserId + "'" : ""} GROUP BY UPPER(userid)`;
 
    let tableData = alasql(filterQuery, [result]);
 
@@ -238,6 +239,7 @@ async function getUsers() {
 
          data.machineName = machinesHtml;
 
+         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
          $(row).find('td:eq(1)').html(machinesHtml);
          $(row).find('td:eq(4)').html(formatDate(data.stamp));
          $(row).find('td:eq(5)').html(`
@@ -440,6 +442,14 @@ function setCheckValue(val, checked) {
       }
    }
 }
+
+function deleteSelection() {
+   $(document).ready(function() {
+      $('#slctUserId option:selected').remove();
+   });
+}
+
+
 
 $("#slctUserId").on('change', async function () {
    document.getElementById("loader").classList.add("show-loader");

@@ -42,7 +42,7 @@
          <!--MENU-->
          <div class="row border-bottom gray-bg">
             <nav class="menu-nav navbar navbar-expand-lg navbar-static-top" role="navigation">
-               <a href="../indexMain.html" class="navbar-brand "><img src="../img/logo.png"></a>
+               <a href="indexMain.html" class="navbar-brand "><img src="img/logo.png"></a>
                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
                   aria-expanded="false" aria-label="Toggle navigation">
                   <i class="fa fa-reorder"></i>
@@ -56,7 +56,7 @@
             <div class="row mb-2">
                <div class="col-md-12">
                   <div class="ibox-title">
-                     <h5>Licenses Per Day (Last 7 days)</h5>
+                     <h5>Licenses used per day over the last 7 days</h5>
                   </div>
 
                   <div class="ibox-content">
@@ -81,15 +81,14 @@
       
                            <div class="p-4 logs-filters">
                               <div class="form-row justify-content-md-center">
+
                                  <div class="col-md-2">
                                     <label for="slctUserId">User ID:</label>
-                                    <select id="slctUserId" class="select_user form-control select-control"
-                                       onclick="selectUser()"">
-                                       <option value=""></option>
+                                    <select id="slctUserId" class="select_user form-control select-control">
                                     </select>
                                  </div>
-      
-                                 <div class=" col-md-2" id="slctMachineContainer">
+                                 
+                                 <div class="col-md-2" id="slctMachineContainer">
                                        <label for="slctMachine">Machine Name:</label>
                                        <select id="slctMachine" class="select_machine form-control">
                                           <option value=""></option>
@@ -97,7 +96,7 @@
                                  </div>
       
                                  <div class="col-auto">
-                                    <input type="button" id="searchButton" value="Search" class="btn btn-primary pt-2 pb-2"
+                                    <input type="button" id="searchButton" value="Search" class="btn btn-sm btn-primary pt-1 pb-1"
                                        style="margin-top: 28px;" onclick="getUsers()">
                                  </div>
                               </div>

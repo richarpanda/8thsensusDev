@@ -172,14 +172,6 @@ async function processData(result) {
          inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
    }
 
-   console.log(`
-   SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
-   FROM ?
-   WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
-   ${inEventsString}
-   ${slctUserId !== "" ? " AND userid = '" + slctUserId + "'" : ""}
-   ${slctMachineStr !== "" ? " AND machinename = '" + slctMachineStr + "'" : ""}
-`);
    let tableData = alasql(`
       SELECT userid, machinename, mac, remoteip, localip, gps, utc, version, diagcode,  key
       FROM ?
