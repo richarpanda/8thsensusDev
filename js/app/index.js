@@ -46,6 +46,7 @@ async function init() {
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
+
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
 
@@ -97,6 +98,8 @@ async function init() {
          GROUP BY UPPER(userid)`
       , [result]);
 
+   insertHR(result);
+
    var matrix = result.length;
    if (dataTable !== null)
       dataTable.destroy();
@@ -121,7 +124,7 @@ async function init() {
          });
          data.machineName = machinesHtml;
 
-         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
+         $(row).find('td:eq(0)').html(`<a style="font-weight: bold !important;" href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
          $(row).find('td:eq(1)').html(machinesHtml);
          $(row).find('td:eq(4)').html(formatDate(data.stamp));
          $(row).find('td:eq(5)').html(`
@@ -239,7 +242,7 @@ async function getUsers() {
 
          data.machineName = machinesHtml;
 
-         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
+         $(row).find('td:eq(0)').html(`<a style="font-weight: bold !important;" href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
          $(row).find('td:eq(1)').html(machinesHtml);
          $(row).find('td:eq(4)').html(formatDate(data.stamp));
          $(row).find('td:eq(5)').html(`
@@ -324,7 +327,7 @@ function generateLicencesGraph(result) {
       labels: getGraphLabels(finalResult),
       datasets: [
          {
-            label: "Licenses",
+            label: "Active licences per day",
             backgroundColor: "rgba(26,179,148,0.5)",
             borderColor: "rgba(26,179,148,0.7)",
             pointBackgroundColor: "rgba(26,179,148,1)",
@@ -515,4 +518,63 @@ async function getDocs(offset) {
    });
 
    return result;
+}
+
+async function insertHR(res) {
+   let hr = JSON.parse(await getHumanResourceAll());
+   // console.table(hr);
+
+   let usersFilter = alasql(`
+      SELECT r.userid,
+      CASE
+         WHEN LEN(hr.userId) >= 0 THEN hr.userId
+         ELSE 'NULL'
+      END [hrUserId],
+      r.customerid, r.version as role
+      FROM ? r
+      LEFT JOIN ? hr 
+      ON r.userid = hr.userId OR UPPER(r.userid) = UPPER(hr.userId)
+      GROUP BY r.userid,CASE WHEN LEN(hr.userId) >= 0 THEN hr.userId ELSE 'NULL' END, r.customerid, r.version
+   `, [res, hr]);
+
+   let insertUsers = alasql(`
+      SELECT UPPER(userid) [userid], hrUserId, customerid, MAX(role) [role]
+      FROM ? 
+      WHERE hrUserId = 'NULL' AND userid <> 'undefined'
+      GROUP BY UPPER(userid), hrUserId, customerid
+   `, [usersFilter]);
+	
+   // console.table(insertUsers);
+   insertUsers.forEach(item => {
+      saveHrUser(item);
+   });
+}
+
+function saveHrUser(item) {
+   $.ajax({
+      url: dataLakeUrl + "/employee/save",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      type: "POST",
+      data: JSON.stringify({
+         anchorAddress: "-1",
+         anchorGPS: "-1",
+         customerId: item.customerid,
+         department: "-1",
+         firstName: "-1",
+         key: webConfig.key,
+         lastName: "-1",
+         role: item.role,
+         telephone: "-1",
+         userId: item.userid,
+      }),
+      success: function (res) {
+         console.log(res);
+      },
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
+      },
+   });
 }

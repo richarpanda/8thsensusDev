@@ -56,10 +56,10 @@ async function init() {
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName`, [res, resa]);
 
-   let machinestabString = "";
-   let machinesTabContentString = "";
-
-   let machines = alasql(
+      let machinestabString = "";
+      let machinesTabContentString = "";
+      
+      let machines = alasql(
       `
       SELECT machinename
       FROM ?
@@ -67,8 +67,9 @@ async function init() {
       GROUP BY machinename
       `,
       [result]
-   );
-
+      );
+      
+      console.table(machines);
    for (let i = 0; i < machines.length; i++) {
       let navId = `${machines[i].machinename}`;
       machineName = machines[i].machinename;
@@ -129,7 +130,6 @@ function createUserDetail(editUser = false) {
    customerId = userData.customerid;
    let hrData = alasql(`SELECT * FROM ? WHERE userId = '${usrid}' OR UPPER(userId) = '${usrid}'`, [hr])[0];
 
-      
    $("#user-name").html(`
       <div class="userid-font">
          <img src="${hrData.anchorGPS.length < 10 ? 'img/Circle-icons-profile.svg' : hrData.anchorGPS}" alt="user-profile" class="grid-img" />

@@ -11717,3 +11717,7 @@ table.productivity-table .red {
   border-radius: 100%;
   width: 100%;
 }
+
+.hour-color {
+  background-color: #1ab394;
+}

@@ -3,6 +3,7 @@ var weekDataTable = null;
 var ctx2 = null;
 var chart = null;
 var selectedUsers = [];
+var selectedDeps = [];
 var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
 var dateTo = moment().format('YYYY-MM-DDT23:59:59');
 var slctDateRange = 1;
@@ -12,6 +13,10 @@ Date.prototype.addDays = function (days) {
    date.setDate(date.getDate() + days);
    return date;
 }
+
+$(function () {
+   $('[data-toggle="tooltip"]').tooltip()
+});
 
 document.getElementById("loader").classList.add("show-loader");
 
@@ -39,6 +44,7 @@ init();
 async function init() {
    let res = JSON.parse(await getMessage());
    let resa = JSON.parse(await getActionsAll());
+   let hr = JSON.parse(await getHumanResourceAll());
 
    let resultA = alasql(`
       SELECT 
@@ -50,15 +56,22 @@ async function init() {
       FROM ? r
       LEFT JOIN ? a 
       ON r.machinename IN a.machineName
-      WHERE customerid = '${ webConfig.customerFilter }'
+      WHERE customerid = '${webConfig.customerFilter}'
    `, [res, resa]);
-   
-   let result = alasql(`
+
+   let resultB = alasql(`
       SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
-      WHERE customerid = '${ webConfig.customerFilter }'
+      WHERE customerid = '${webConfig.customerFilter}'
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
+
+   let result = alasql(`
+      SELECT userid, id, key, customerid, h.department, h.anchorGPS, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
+      FROM ? r
+      INNER JOIN ? h
+      ON r.userid = h.userId
+      `, [resultB, hr]);
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
@@ -66,14 +79,11 @@ async function init() {
    let usersData = alasql(`
       SELECT UPPER(userid) [userid]
       FROM ?
-      WHERE customerid = '${ webConfig.customerFilter }'
       GROUP BY UPPER(userid)
       ORDER BY userid
    `, [result]);
 
-   let slctUsersHtml = `
-      <label for="slctUserId">User ID:</label>
-      <select name="slctUserId[]" multiple id="slctUserId">`;
+   let slctUsersHtml = `<option value="0">Select a user</option>`;
 
    usersData.forEach(user => {
       slctUsersHtml += `
@@ -82,10 +92,30 @@ async function init() {
    });
    slctUsersHtml += '</select>';
 
-   $("#slctContainer").html(slctUsersHtml);
-   $('#slctUserId').multiselect({
+   $("#slctUserId").html(slctUsersHtml);
+
+   let departmentsData = alasql(`
+      SELECT UPPER(department) [department]
+      FROM ?
+      GROUP BY UPPER(department)
+      ORDER BY department
+   `, [result]);
+
+   let slctDepartmentHtml = `
+      <label for="slctDepartment">Department:</label>
+      <select name="slctDepartment[]" multiple id="slctDepartment">`;
+
+   departmentsData.forEach(dep => {
+      slctDepartmentHtml += `
+         <option value="${dep.department}">${dep.department.toUpperCase()}</option>
+      `;
+   });
+   slctDepartmentHtml += '</select>';
+
+   $("#slctDepContainer").html(slctDepartmentHtml);
+   $('#slctDepartment').multiselect({
       columns: 1,
-      placeholder: 'Select Users',
+      placeholder: 'Select Department',
       search: true,
       selectAll: true
    });
@@ -96,12 +126,12 @@ async function init() {
 
 function setCheckValue(val, checked) {
    if (checked) {
-      selectedUsers.push(val);
+      selectedDeps.push(val);
    }
    else {
-      let index = selectedUsers.indexOf(val);
+      let index = selectedDeps.indexOf(val);
       if (index > -1) {
-         selectedUsers.splice(index, 1);
+         selectedDeps.splice(index, 1);
       }
    }
 }
@@ -113,6 +143,9 @@ async function getproductivityData(result = null) {
    if (result == null) {
       let res = JSON.parse(await getMessage());
       let resa = JSON.parse(await getActionsAll());
+      let hr = JSON.parse(await getHumanResourceAll());
+
+      let slctUserId = document.getElementById("slctUserId").value;
 
       let resultA = alasql(`
          SELECT 
@@ -124,17 +157,28 @@ async function getproductivityData(result = null) {
          FROM ? r
          LEFT JOIN ? a 
          ON r.machinename IN a.machineName
-         WHERE customerid = '${ webConfig.customerFilter }'
+         WHERE customerid = '${webConfig.customerFilter}'
       `, [res, resa]);
-      
-      let result = alasql(`
+
+      let resultB = alasql(`
          SELECT userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          FROM ? r
-         WHERE customerid = '${ webConfig.customerFilter }'
+         WHERE customerid = '${webConfig.customerFilter}'
          GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
          `, [resultA]);
-         
-      
+
+      let resultC = alasql(`
+         SELECT r.userid, r.id, r.key, r.customerid, h.department, h.anchorGPS, r.mac, r.remoteip, r.diagcode, r.version, r.machinename, r.devicelist, r.confidence, r.type, r.os, r.hardware, r.applications, r.perfcounters, r.localip, r.gps, r.utc, r.stamp
+         FROM ? r
+         INNER JOIN ? h
+         ON r.userid = h.userId
+         `, [resultB, hr]);
+
+      let result = alasql(`
+         SELECT * FROM ?
+         ${slctUserId !== "" && slctUserId !== "0" ? " WHERE UPPER(userid) = '" + slctUserId + "'" : ""}
+         `, [resultC, hr]);
+
       ProcessData(result);
    }
    else {
@@ -142,7 +186,8 @@ async function getproductivityData(result = null) {
    }
 }
 
-function ProcessData(result) {
+async function ProcessData(result) {
+
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
 
@@ -150,6 +195,7 @@ function ProcessData(result) {
    let timeInterval = getTimeInterval(slctDateRange);
    let timeIntervalFormat = parseInt(slctDateRange) == 1 ? "SUBSTRING(timeInterval, 12,13) + ':00'" : "SUBSTRING(timeInterval, 1,10)";
    let slctUsersId = "";
+   let slctDeps = "";
    let arrLock = [];
    let dates = [];
    let labelData = {
@@ -159,18 +205,32 @@ function ProcessData(result) {
       leastActive: ""
    }
 
-   if (selectedUsers.length == 0) {
-      let usersData = alasql(`
-         SELECT userid
+   // if (selectedUsers.length == 0) {
+   //    let usersData = alasql(`
+   //       SELECT userid
+   //       FROM ?
+   //       GROUP BY userid
+   //    `, [result]);
+   //    labelData.totalEmployes = selectedUsers.length;
+   //    usersData.forEach(user => selectedUsers.push(user.userid));
+   //    selectedUsers.forEach(user => slctUsersId += `'${user}',`);
+   // } else
+   //    labelData.totalEmployes = selectedUsers.length - 1;
+   // selectedUsers.forEach(user => slctUsersId += `'${user}',`);
+
+
+   if (selectedDeps.length == 0) {
+      let depsData = alasql(`
+         SELECT UPPER(department) [department]
          FROM ?
-         GROUP BY userid
+         GROUP BY UPPER(department)
+         ORDER BY department
       `, [result]);
-      labelData.totalEmployes = selectedUsers.length;
-      usersData.forEach(user => selectedUsers.push(user.userid));
-      selectedUsers.forEach(user => slctUsersId += `'${user}',`);
+
+      depsData.forEach(dep => selectedDeps.push(dep.department));
+      selectedDeps.forEach(dep => slctDeps += `'${dep}',`);
    } else
-      labelData.totalEmployes = selectedUsers.length - 1;
-   selectedUsers.forEach(user => slctUsersId += `'${user}',`);
+      selectedDeps.forEach(dep => slctDeps += `'${dep}',`);
 
    if (slctDateRange == 1) {
       dates.push(dateFrom.substring(0, 10));
@@ -185,23 +245,24 @@ function ProcessData(result) {
    let userData = alasql(`
       SELECT
          CASE 
-            WHEN diagcode IN ('D0001','D0002','D0006','D0014','D0011','D0010','D0013') THEN 1
-            WHEN diagcode IN ('D0003','D0004','D0005','D0007','D0008','D0009','D0012','D0015') THEN 0
+            WHEN diagcode IN ('D0016') THEN 1
+            WHEN diagcode IN ('D0017') THEN 0
             ELSE  diagcode
          END [activeStatus]
          ,UPPER(userid) [userid]
          ,version
+         ,department
+         ,anchorGPS
          ,utc [date]
          ,WEEKDAY(utc) [weekday]
          ${timeInterval}
       FROM ? 
-      WHERE utc >= '${dateFrom}' AND utc <='${dateTo}' 
-      AND UPPER(userid) IN (${slctUsersId}'') 
+      WHERE utc >= '${dateFrom}' AND utc <='${dateTo}'
       ORDER BY userid, utc
    `, [result]);
    userData.forEach(function (d, idx) { d.rownum = idx });
 
-   // console.table(userData);
+   console.table(userData);
 
    for (let i = 0; i < userData.length; i++) {
       let actualData = userData[i];
@@ -215,6 +276,8 @@ function ProcessData(result) {
       else
          arrLock.push(actualData);
    }
+
+   // console.table(arrLock);
 
    for (let i = 0; i < arrLock.length; i++) {
       let actualData = arrLock[i];
@@ -236,29 +299,40 @@ function ProcessData(result) {
       }
    }
 
-   //console.table(arrLock);
+   // console.table(arrLock);
 
    let activeInactiveDatabyUser = alasql(`
-      SELECT userid, version, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs
+      SELECT userid, MAX(version) version, department, anchorGPS, '${dateRangeString.split('-')[0].trim()}' [from], '${dateRangeString.split('-')[1].trim()}' [to] ,SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs, MAX(rownum) rownum
       FROM ? 
-      GROUP BY userid, version
+      GROUP BY userid, department, anchorGPS
       ORDER BY userid
-   `, [arrLock])
+   `, [arrLock]);
 
-   activeInactiveDatabyUser.forEach(item => {
+   // console.table(activeInactiveDatabyUser);
+
+   let activeInactiveDataJoin = alasql(`
+      SELECT a.userid, a.version, a.department, a.anchorGPS, a.[from], a.[to], a.activeMs, a.inactiveMs, a.rownum, b.activeStatus
+      FROM ? a
+      INNER JOIN ? b
+      ON a.rownum = b.rownum
+      WHERE UPPER(a.department) IN (${slctDeps}'')
+      GROUP BY a.userid, a.version, a.department, a.anchorGPS, a.[from], a.[to], a.activeMs, a.inactiveMs, a.rownum, b.activeStatus
+      ORDER BY a.department
+   `, [activeInactiveDatabyUser, arrLock]);
+
+   // AND UPPER(userid) IN (${slctUsersId}'') 
+   // console.table(activeInactiveDataJoin);
+
+   activeInactiveDataJoin.forEach(item => {
+      item.activePer = item.activeMs * 100 / 28800000;
       item.activeTime = msToTime(item.activeMs);
       item.inactiveTime = msToTime(item.inactiveMs);
    });
 
-   console.table(activeInactiveDatabyUser);
-   
-   createTable(activeInactiveDatabyUser);
-   getTableReportData(arrLock, result);
-
    if (arrLock.length > 0) {
       let date = arrLock[0].date;
       let userId = arrLock[0].userid;
-      let actualHour = new Date().getHours()
+      let actualHour = new Date().getHours();
 
       for (let dt = 0; dt < dates.length; dt++) {
          if (parseInt(slctDateRange) === 1) {
@@ -290,7 +364,18 @@ function ProcessData(result) {
          }
       }
    }
-   //console.table(arrLock); // TIMES
+
+   // console.table(arrLock); // TIMES
+
+   createTable(activeInactiveDataJoin);
+   createGraph(activeInactiveDataJoin);
+   getTableReportData(arrLock, result);
+
+   //console.table(activeInactiveDataJoin);
+
+   let hr = JSON.parse(await getHumanResourceAll());
+
+   insertHR(hr, result);
 
    let activeInactiveData = alasql(`
       SELECT SUBSTRING(date, 1, 10) [date], SUM(activeTime) activeMs, SUM(inactiveTime) inactiveMs,
@@ -305,13 +390,10 @@ function ProcessData(result) {
       item.inactiveTime = msToTime(item.inactiveMs);
    });
 
-   //console.table(activeInactiveData); // FINAL RESULT
-
    if (arrLock.length > 0) {
-      let mostleastData = alasql(`SELECT COUNT(userid) [userCount], userid FROM ? GROUP BY userid`, [arrLock]);
       labelData.avgHours = msToTime(alasql(`SELECT AVG(activeMs) [avgHours] FROM ?`, [activeInactiveData])[0].avgHours);
-      labelData.mostActive = alasql(`SELECT TOP 1 userCount, userid FROM ? ORDER BY userCount DESC`, [mostleastData])[0].userid;
-      labelData.leastActive = alasql(`SELECT TOP 1 userCount, userid FROM ? ORDER BY userCount ASC`, [mostleastData])[0].userid;
+      labelData.mostActive = alasql(`SELECT MAX(activeMs), userid FROM ? GROUP BY userid`, [activeInactiveDataJoin])[0].userid;
+      labelData.leastActive = alasql(`SELECT MIN(activeMs), userid FROM ? GROUP BY userid`, [activeInactiveDataJoin])[0].userid;
    }
 
    let lableGraphHtml = `
@@ -321,12 +403,11 @@ function ProcessData(result) {
       <p><b>Least Active: </b>${labelData.leastActive == "" ? "" : labelData.leastActive.toUpperCase()}</p>
    `;
    $("#label-graph-info").html(lableGraphHtml);
-
-   createGraph(activeInactiveData);
 }
 
 function getTableReportData(data, result) {
-   let week = [];
+   let hoursObj = [];
+   let hoursFinal = [];
    let usersData = alasql(`
       SELECT DISTINCT(UPPER(userid)) userid
       FROM ?
@@ -334,401 +415,283 @@ function getTableReportData(data, result) {
       ORDER BY userid
    `, [result]);
 
-   let weekNumber = alasql(`
-      SELECT weeknumber
-      FROM ? GROUP BY weeknumber
+   for (let i = 0; i < data.length; i++) {
+      data[i].hour = parseInt(data[i].date.substring(11, 13));
+      data[i].date = data[i].date.substring(0, 10);
+   }
+
+   let dates = alasql(`
+      SELECT DISTINCT date
+      FROM ?
    `, [data]);
 
-   weekNumber.forEach(weekElement => {
+   dates.forEach(date => {
       usersData.forEach(user => {
-         week.push({
-            weeknumber: weekElement.weeknumber,
+         hoursObj.push({
             userid: user.userid.trim().toUpperCase(),
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
+            '_0': 0,
+            '_1': 0,
+            '_2': 0,
+            '_3': 0,
+            '_4': 0,
+            '_5': 0,
+            '_6': 0,
+            '_7': 0,
+            '_8': 0,
+            '_9': 0,
+            '_10': 0,
+            '_11': 0,
+            '_12': 0,
+            '_13': 0,
+            '_14': 0,
+            '_15': 0,
+            '_16': 0,
+            '_17': 0,
+            '_18': 0,
+            '_19': 0,
+            '_20': 0,
+            '_21': 0,
+            '_22': 0,
+            '_23': 0,
+            'totalHours': '00:00:00'
          });
       });
-   })
 
-   let sundayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Sunday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let mondayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Monday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let tuesdayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Tuesday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let wednesdayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Wednesday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let thursdayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Thursday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let fridayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Friday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
-   let saturdayData = alasql(`
-      SELECT userid, weekday, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? WHERE weekday = 'Saturday' GROUP BY userid, weekday, weeknumber
-   `, [data]);
+      let hoursDate = alasql(`
+         SELECT userid, weekday, weeknumber, hour, date
+         FROM ?
+         WHERE date = '${ date.date }' AND activeStatus = 1
+         GROUP BY userid, weekday, weeknumber, hour, date
+         ORDER BY date, hour
+      `, [data]);
+
+      // console.table(hoursDate);
+
+      hoursDate.forEach(element => {
+         let indx = hoursObj.findIndex(x => x.userid == element.userid);
+         Object.getOwnPropertyNames(hoursObj[indx]).forEach(function (val, idx, array) {
+            if (val === "_" + element.hour) {
+               hoursObj[indx][val] = 1;
+            }
+         });
+      });
+
+      hoursFinal.push({
+          date: date,
+          hoursArr: hoursObj
+      });
+
+      hoursObj = [];
+   });
+
    let totalData = alasql(`
-      SELECT userid, weeknumber, SUM(activeTime) [activeTime]
-      FROM ? GROUP BY userid, weeknumber
-   `, [data])
+      SELECT userid, weeknumber, date, SUM(activeTime) [activeTime]
+      FROM ? GROUP BY userid, weeknumber, date
+   `, [data]);
 
-   sundayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: msToTime(element.activeTime),
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].sunday = msToTime(element.activeTime);
-      }
+   totalData.forEach(item => {
+      hoursFinal.find(x => x.date.date == item.date)
+         .hoursArr.find(y => y.userid == item.userid).totalHours = msToTime(item.activeTime);
    });
 
-   mondayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: msToTime(element.activeTime),
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].monday = msToTime(element.activeTime);
-      }
-   });
-
-   tuesdayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: msToTime(element.activeTime),
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].tuesday = msToTime(element.activeTime);
-      }
-   });
-
-   wednesdayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: msToTime(element.activeTime),
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].wednesday = msToTime(element.activeTime);
-      }
-   });
-
-   thursdayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: msToTime(element.activeTime),
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].thursday = msToTime(element.activeTime);
-      }
-   });
-
-   fridayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: msToTime(element.activeTime),
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].friday = msToTime(element.activeTime);
-      }
-   });
-
-   saturdayData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: msToTime(element.activeTime),
-            sunday: "00:00:00",
-            total: "00:00:00"
-         });
-      }
-      else {
-         week[indx].saturday = msToTime(element.activeTime);
-      }
-   });
-
-   totalData.forEach(element => {
-      let indx = week.findIndex((obj => obj.userid == element.userid && obj.weeknumber == element.weeknumber));
-      if (indx == -1) {
-         week.push({
-            weeknumber: element.weeknumber,
-            userid: element.userid,
-            monday: "00:00:00",
-            tuesday: "00:00:00",
-            wednesday: "00:00:00",
-            thursday: "00:00:00",
-            friday: "00:00:00",
-            saturday: "00:00:00",
-            sunday: "00:00:00",
-            total: msToTime(element.activeTime),
-         });
-      }
-      else {
-         week[indx].total = msToTime(element.activeTime);
-      }
-   });
-
-   week.forEach(weekItem => {
-      weekItem.weekFrom = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).startOf('week').format('YYYY-MM-DD')
-      weekItem.weekTo = moment().isoWeekYear(new Date().getFullYear()).isoWeek(weekItem.weeknumber - 1).endOf('week').format('YYYY-MM-DD')
-   })
-
-   let weekdata = alasql(`SELECT userid, weeknumber, weekFrom, weekTo, sunday, monday, tuesday, wednesday, thursday, friday, saturday, total FROM ? ORDER BY weeknumber`, [week]);
-
-   createWeekTable(weekdata)
+   createWeekTable(hoursFinal);
 }
 
 function createWeekTable(data) {
-   if (weekDataTable !== null)
-      weekDataTable.destroy();
+   $("#table_hours_user").html('');
+   let htmlString = "";
 
-   weekDataTable = $('#weekDataTable').DataTable({
-      data: data,
-      columns: [
-         { data: "userid" },
-         { data: "weekFrom" },
-         { data: "weekTo" },
-         { data: "sunday" },
-         { data: "monday" },
-         { data: "tuesday" },
-         { data: "wednesday" },
-         { data: "thursday" },
-         { data: "friday" },
-         { data: "saturday" },
-         { data: "total" }
-      ],
-      order: [1, 'asc'],
-      rowCallback: function (row, data, index) {
-         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
-      },
-      select: true,
-      pageLength: 500,
-      responsive: true,
-      // dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
-      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
-      retrieve: true,
-      searching: false,
-      buttons: [
-         { extend: 'copy' },
-         { extend: 'csv' },
-         { extend: 'excel', title: `Timesheet Report` },
-         { extend: 'pdf', title: `Timesheet Report` },
-         {
-            extend: 'print',
-            customize: function (win) {
-               $(win.document.body).addClass('white-bg');
-               $(win.document.body).css('font-size', '10px');
+   for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      
+      if (htmlString == "") {
+         htmlString = `
+            <h4 class="float-left">Date: ${item.date.date} </h4>                     
+            <table class="table table-bordered">
+               <thead>
+                  <tr>
+                     <th>User Id</th>
+                     <th>0</th>
+                     <th>1</th>
+                     <th>2</th>
+                     <th>3</th>
+                     <th>4</th>
+                     <th>5</th>
+                     <th>6</th>
+                     <th>7</th>
+                     <th>8</th>
+                     <th>9</th>
+                     <th>10</th>
+                     <th>11</th>
+                     <th>12</th>
+                     <th>13</th>
+                     <th>14</th>
+                     <th>15</th>
+                     <th>16</th>
+                     <th>17</th>
+                     <th>18</th>
+                     <th>19</th>
+                     <th>20</th>
+                     <th>21</th>
+                     <th>22</th>
+                     <th>23</th>
+                     <th>Total Hours</th>
+                  </tr>
+               </thead>
+               <tbody>`;
+      }
 
-               $(win.document.body).find('table')
-                  .addClass('compact')
-                  .css('font-size', 'inherit');
-            }
-         }
-      ]
-   });
+      item.hoursArr.forEach(itemHour => {
+         htmlString += `
+            <tr>
+               <td>${ itemHour.userid }</td>
+               <th class="${ itemHour._0 == 1 ? 'hour-color' : '' }"></th>
+               <td class="${ itemHour._1 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._2 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._3 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._4 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._5 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._6 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._7 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._8 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._9 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._10 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._11 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._12 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._13 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._14 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._15 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._16 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._17 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._18 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._19 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._20 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._21 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._22 == 1 ? 'hour-color' : '' }"></td>
+               <td class="${ itemHour._23 == 1 ? 'hour-color' : '' }"></td>
+               <td>${ itemHour.totalHours }</td>
+            </tr>`;
+      });
+
+      htmlString += `</tbody></table>`
+      $("#table_hours_user").append(htmlString);
+
+      htmlString = "";
+   }
 }
 
 function createTable(data) {
    let dateRange = document.getElementById("inptDateRange").value;
-   //console.table(data);
-   if (dataTable !== null)
-      dataTable.destroy();
+   $(".productivity-table tbody").empty();
 
-   dataTable = $('#productivityReport').DataTable({
-      data: data,
-      columns: [
-         { data: "userid" },
-         { data: "from" },
-         { data: "to" },
-         { data: "activeTime" },
-         { data: "inactiveTime" },
-         { data: "version" }
-      ],
-      order: [0, 'asc'],
-      rowCallback: function (row, data, index) {
-         $(row).find('td:eq(0)').html(`<a href="users.html?usrid=${data['userid']}">${data['userid']}</a>`);
-      },
-      select: true,
-      pageLength: 500,
-      responsive: true,
-      // dom: 'rt<"bottom"flp><"html5buttons"B><"clear">',
-      dom: 'rt<"bottom"p><"html5buttons"B><"clear">',
-      retrieve: true,
-      searching: false,
-      buttons: [
-         { extend: 'copy' },
-         { extend: 'csv' },
-         { extend: 'excel', title: `Productivity Report ${dateRange}` },
-         { extend: 'pdf', title: `Productivity Report ${dateRange}` },
-         {
-            extend: 'print',
-            customize: function (win) {
-               $(win.document.body).addClass('white-bg');
-               $(win.document.body).css('font-size', '10px');
+   $("#table_hours").html('');
+   let htmlString = "";
 
-               $(win.document.body).find('table')
-                  .addClass('compact')
-                  .css('font-size', 'inherit');
-            }
+   for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      let colorClass = item.activeStatus == 1 ? 'green' : item.activeStatus == 0 ? 'yellow' : 'red';
+
+      if (htmlString == "") {
+         htmlString = `
+            <h4 class="float-left">Department: ${data[i].department} </h4>                     
+            <table class="table productivity-table">
+               <thead>
+                  <tr>
+                     <th>Name</th>
+                     <th></th>
+                     <th>Version</th>
+                     <th>Total Hours</th>
+                     <!-- <th>Timeline</th> -->
+                  </tr>
+               </thead>
+               <tbody>`;
+      }
+
+      if ((data[i + 1] !== undefined && data[i + 1].department !== data[i].department)) {
+         htmlString += `</tbody></table>`
+         $("#table_hours").append(htmlString);
+
+         htmlString = "";
+      }
+      else {
+         htmlString += `
+            <tr>
+               <td class="image">
+                  <img src="${item.anchorGPS.length < 10 ? 'img/Circle-icons-profile.svg' : item.anchorGPS}" alt="user-profile" class="grid-img" />
+               </td>
+               <td style="width: 40%;" class="font-weight-bold">${item.userid}</td>
+               <td style="width: 25%;"class='${colorClass}'>${item.version}</td>
+               <td class="${item.activeMs > 0 ? 'font-weight-bold' : ''}">
+                  <i class="fa fa-clock-o" aria-hidden="true"></i>
+                  ${item.activeTime}
+               </td>
+            </tr>`;
+
+         if (i == data.length - 1) {
+            htmlString += `</tbody></table>`
+            $("#table_hours").append(htmlString);
+
+            htmlString = "";
          }
-      ]
-   });
+      }
+   }
 }
 
 function createGraph(graphData) {
-   var barData = {
+   const data = {
       labels: getGraphLabels(graphData),
       datasets: [
          {
-            label: "Active",
+            label: "At Desk",
             backgroundColor: "rgba(26,179,148,0.5)",
             borderColor: "rgba(26,179,148,0.7)",
             pointBackgroundColor: "rgba(26,179,148,1)",
             pointBorderColor: "#fff",
             data: getGraphUnlockValues(graphData),
-         },
+            stack: "Stack 1",
+         }
       ]
    };
 
-   var barOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-         yAxes: [
-            {
+   const config = {
+      type: 'bar',
+      data: data,
+      options: {
+         indexAxis: 'y',
+         scales: {
+            x: {
                ticks: {
-                  beginAtZero: true,
                   callback: function (label, index, labels) {
-                     return msToTimeHr(label);
+                     return '';
                   }
-               },
-               scaleLabel: {
-                  display: true,
-                  labelString: 'Total Hours'
                }
             },
-         ],
-         xAxes: [
-            {
-               scaleLabel: {
-                  display: true,
-                  labelString: 'Days / Hours'
+         },
+         plugins: {
+            tooltip: {
+               callbacks: {
+                  label: function (tooltipItem) {
+                     return msToTime(tooltipItem.raw);
+                  }
                }
-            },
-         ]
-      },
-      tooltips: {
-         callbacks: {
-            label: function (tooltipItem) {
-               return msToTime(tooltipItem.yLabel);
             }
          }
       },
    };
 
-   if (ctx2 !== null)
-      ctx = null;
    if (chart !== null)
       chart.destroy();
 
-   ctx2 = document.getElementById("barChart").getContext("2d");
-   chart = new Chart(ctx2, { type: "bar", data: barData, options: barOptions });
+   chart = new Chart(
+      document.getElementById('barChart'),
+      config
+   );
 }
 
 function getGraphLabels(data) {
    let result = [];
    data.forEach(item => {
-      result.push(item.timeInterval);
+      result.push(item.userid);
    });
    return result;
 }
@@ -752,7 +715,7 @@ function getGraphUnlockValues(data) {
 function formatDate(utcDate) {
    let d = new Date(utcDate);
    let month =
-      (d.getMonth()+ 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+      (d.getMonth() + 1).toString().length == 1 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
    let day =
       d.getDate().toString().length == 1 ? "0" + d.getDate() : d.getDate();
    let hour =
@@ -886,4 +849,94 @@ async function getDocs(offset) {
    });
 
    return result;
+}
+
+function insertHR(hr, res) {
+   let usersFilter = alasql(`
+      SELECT r.userid,
+      CASE
+         WHEN LEN(hr.userId) >= 0 THEN hr.userId
+         ELSE 'NULL'
+      END [hrUserId],
+      r.customerid, r.version as role
+      FROM ? r
+      LEFT JOIN ? hr 
+      ON r.userid = hr.userId OR UPPER(r.userid) = UPPER(hr.userId)
+      GROUP BY r.userid,CASE WHEN LEN(hr.userId) >= 0 THEN hr.userId ELSE 'NULL' END, r.customerid, r.version
+   `, [res, hr]);
+
+   let insertUsers = alasql(`
+      SELECT UPPER(userid) [userid], hrUserId, customerid, MAX(role) [role]
+      FROM ? 
+      WHERE hrUserId = 'NULL' AND userid <> 'undefined'
+      GROUP BY UPPER(userid), hrUserId, customerid
+   `, [usersFilter]);
+	
+   // console.table(insertUsers);
+   insertUsers.forEach(item => {
+      saveHrUser(item);
+   });
+}
+
+// $("#slctUserId").on('change', async function () {
+//    document.getElementById("loader").classList.add("show-loader");
+//    document.getElementById("loader").classList.remove("hide-loader");
+//    let userid = this.value;
+
+//    let res = JSON.parse(await getMessage());
+//    let hr = JSON.parse(await getHumanResourceAll());
+
+//    let usersData = alasql(`
+//       SELECT UPPER(us.userid) [userid]
+//       FROM ? us
+//       INNER JOIN ? h ON us.userid = h.userId
+//       WHERE 
+//       GROUP BY UPPER(userid)
+//       ORDER BY userid
+//    `, [res, hr]);
+
+//    let slctUsersHtml = `<option value="0">Select a user</option>`;
+
+//    usersData.forEach(user => {
+//       slctUsersHtml += `
+//          <option value="${user.userid}">${user.userid.toUpperCase()}</option>
+//       `;
+//    });
+//    slctUsersHtml += '</select>';
+
+//    $("#slctUserId").html(slctUsersHtml);
+
+//    document.getElementById("loader").classList.remove("show-loader");
+//    document.getElementById("loader").classList.add("hide-loader");
+
+//    $(".ms-selectall").trigger("click");
+// });
+
+function saveHrUser(item) {
+   $.ajax({
+      url: dataLakeUrl + "/employee/save",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      type: "POST",
+      data: JSON.stringify({
+         anchorAddress: "-1",
+         anchorGPS: "-1",
+         customerId: item.customerid,
+         department: "-1",
+         firstName: "-1",
+         key: webConfig.key,
+         lastName: "-1",
+         role: item.role,
+         telephone: "-1",
+         userId: item.userid,
+      }),
+      success: function (res) {
+         console.log(res);
+      },
+      error: function (err) {
+         console.log("Error:");
+         console.log(err);
+      },
+   });
 }
