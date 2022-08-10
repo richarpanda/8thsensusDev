@@ -66,9 +66,9 @@ async function init() {
       SELECT userid, id, key, customerid, h.department, h.anchorGPS, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp, role
       FROM ? r
       INNER JOIN ? h
-      ON r.userid = h.userId
+      ON UPPER(r.userid) IN UPPER(h.userId)
       `, [resultB, hr]);
-
+      
    let timeObj = {
       dateFrom: dateFrom,
       dateTo: dateTo
@@ -93,7 +93,7 @@ async function init() {
       FROM ?
       GROUP BY UPPER(userid)
       ORDER BY userid
-   `, [result]);
+   `, [resultC]);
 
    let slctUsersHtml = `<option value="0">Select a user</option>`;
 
@@ -111,7 +111,7 @@ async function init() {
       FROM ?
       GROUP BY UPPER(department)
       ORDER BY department
-   `, [result]);
+   `, [resultC]);
 
    let slctDepartmentHtml = `
       <label for="slctDepartment">Department:</label>
@@ -204,9 +204,17 @@ async function getproductivityData(result = null) {
       let resultC = alasql(`
          SELECT userid, id, key, customerid, h.department, h.anchorGPS, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp, role
          FROM ? r
-         LEFT JOIN ? h
-         ON r.userid = h.userId
+         INNER JOIN ? h
+         ON UPPER(r.userid) IN UPPER(h.userId)
          `, [resultB, hr]);
+   
+      let timeObj = {
+         dateFrom: dateFrom,
+         dateTo: dateTo
+      }
+   
+      let distinctRes = JSON.parse(await getDistinctValues(timeObj));
+      let transData = await transformData(distinctRes);
 
       if (selectedDeps.length == 0) {
          let depsData = alasql(`
@@ -220,15 +228,7 @@ async function getproductivityData(result = null) {
          selectedDeps.forEach(dep => slctDeps += `'${dep}',`);
       } else
          selectedDeps.forEach(dep => slctDeps += `'${dep}',`);
-   
-      let timeObj = {
-         dateFrom: dateFrom,
-         dateTo: dateTo
-      }
-      
-      let distinctRes = JSON.parse(await getDistinctValues(timeObj));
-      let transData = await transformData(distinctRes);
-      
+
       let userIdCondition = slctUserId !== '0' ? "AND UPPER(rc.userid) = '" + slctUserId + "'" : '';
       let deptsCondition = `AND UPPER(rc.department) IN (${ slctDeps }'')`
 
@@ -236,11 +236,10 @@ async function getproductivityData(result = null) {
       document.getElementById("loader").classList.add("hide-loader");
    
       let query = `
-         SELECT rc.userid, version, r.machineName, totalHours, rc.department, MAX(rc.role), MAX(rc.utc)
+         SELECT rc.userid, version, r.machineName, totalHours, rc.department
          FROM ? r
-         INNER JOIN ? rc
+         LEFT JOIN ? rc
          ON r.machineName = rc.machinename
-         WHERE rc.userid <> r.machineName
          ${ userIdCondition }
          ${ deptsCondition }
          GROUP BY rc.userid, version, r.machineName, totalHours, rc.department
@@ -452,7 +451,6 @@ function createWeekTable(data) {
 }
 
 function createTable(data) {
-   console.table(data);
    let dateRange = document.getElementById("inptDateRange").value;
    $(".productivity-table tbody").empty();
 
@@ -461,7 +459,6 @@ function createTable(data) {
 
    for (let i = 0; i < data.length; i++) {
       const item = data[i];
-      console.log(item);
       let colorClass ='green';
       
       if (htmlString == "") {
