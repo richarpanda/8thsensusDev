@@ -32,7 +32,7 @@ $(function () {
 
 init();
 async function init() {
-   
+
    res = null;
    resa = null;
    res = JSON.parse(await getMessage());
@@ -44,8 +44,8 @@ async function init() {
 async function getData(iteration) {
    let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
    let resultA = alasql(`
-      SELECT 
-         CASE 
+      SELECT
+         CASE
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
             ELSE a.userId
          END [userid],
@@ -53,11 +53,11 @@ async function getData(iteration) {
       FROM ? r
       INNER JOIN ? max
       ON r.id = max.id
-      LEFT JOIN ? a 
+      LEFT JOIN ? a
       ON r.machinename IN a.machineName
       WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
-   
+
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
@@ -107,7 +107,7 @@ async function getData(iteration) {
       document.getElementById("mini-loader").classList.remove("show-loader");
       document.getElementById("mini-loader").classList.add("hide-loader");
    }
-   
+
    if (iteration == 0 && result.length >= 5000) {
       resAll = await getAllDocs();
       res = res.concat(resAll);
@@ -120,14 +120,14 @@ async function getLogs() {
    document.getElementById("loader").classList.remove("hide-loader");
 
    let resultA = alasql(`
-      SELECT 
-         CASE 
+      SELECT
+         CASE
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
             ELSE a.userId
          END [userid],
          r.id,r.key, r.customerid, r.mac,r.remoteip,r.diagcode,r.version,r.machinename,r.devicelist,r.confidence,r.type,r.os,r.hardware,r.applications,r.perfcounters,r.localip,r.gps,r.utc,r.stamp
       FROM ? r
-      LEFT JOIN ? a 
+      LEFT JOIN ? a
       ON r.machinename IN a.machineName
       WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resa]);
@@ -167,9 +167,9 @@ async function processData(result) {
    let inEventsString = "";
    if (slctEvents !== "") {
       if (slctEvents == "Locked")
-         inEventsString = "AND diagcode IN ('D0003','D0004','D0005','D0007','D0009','D0012','D0015')";
+         inEventsString = "AND diagcode IN ('D0003','D0004','D0005','D0007','D0009','D0012','D0015','D0017')";
       else if (slctEvents == "Unlocked")
-         inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001')";
+         inEventsString = "AND diagcode IN ('D0002','D0006','D0008','D0010','D0011','D0013','D0014','D0001','D0016')";
    }
 
    let tableData = alasql(`
@@ -296,7 +296,9 @@ function getCode(code) {
       "D0012": "Screen Locked 3 | Power Savings Lock Initiated | System Process",
       "D0013": "Screen Unlocked | 8th Sensus EVE Stopped | Error",
       "D0014": "Screen Unlocked | Video Conference in progress| Confidence 1:5,000,000",
-      "D0015": "Screen Locked 1 | Over the Shoulder unauthorized user(s) presented |  > 1"
+      "D0015": "Screen Locked 1 | Over the Shoulder unauthorized user(s) presented |  > 1",
+      "D0016": "Authenticated User at Desk",
+      "D0017": "Away from Desk"
    }];
 
    $.each(codeJson[0], function (key, value) {
@@ -317,8 +319,8 @@ $("#slctUserId").on('change', async function(){
 
    let resultMax = alasql(`SELECT MAX(id) [id], userid FROM ? GROUP BY userid`, [res])
    let resultA = alasql(`
-      SELECT 
-         CASE 
+      SELECT
+         CASE
             WHEN NOT LEN(a.userId) >= 0 THEN r.userid
             ELSE a.userId
          END [userid],
@@ -326,11 +328,11 @@ $("#slctUserId").on('change', async function(){
       FROM ? r
       INNER JOIN ? max
       ON r.id = max.id
-      LEFT JOIN ? a 
+      LEFT JOIN ? a
       ON r.machinename IN a.machineName
       WHERE customerid = '${ webConfig.customerFilter }'
    `, [res, resultMax, resa]);
-   
+
    let result = alasql(`
       SELECT userid, r.id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       FROM ? r
@@ -340,7 +342,7 @@ $("#slctUserId").on('change', async function(){
 
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
-   
+
    let machinesData = alasql(`
       SELECT machinename
       FROM ?
@@ -356,7 +358,7 @@ $("#slctUserId").on('change', async function(){
 
    $("#slctMachine").html(slctMachineHtml);
    $(".ms-selectall").trigger("click");
-            
+
 });
 
 async function getAllDocs() {

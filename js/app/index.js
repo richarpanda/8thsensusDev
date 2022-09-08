@@ -46,7 +46,6 @@ async function init() {
       GROUP BY userid, id, key, customerid, mac, remoteip, diagcode, version, machinename, devicelist, confidence, type, os, hardware, applications, perfcounters, localip, gps, utc, stamp
       `, [resultA]);
 
-
    document.getElementById("loader").classList.remove("show-loader");
    document.getElementById("loader").classList.add("hide-loader");
 
@@ -321,7 +320,7 @@ function generateLicencesGraph(result) {
       }
    }
 
-   let finalResult = alasql(`SELECT TOP 7 * FROM ? ORDER BY date DESC`, [licensesPerDayArr]);
+   let finalResult = alasql(`SELECT TOP 14 * FROM ? ORDER BY date DESC`, [licensesPerDayArr]);
 
    const data = {
       labels: getGraphLabels(finalResult),
