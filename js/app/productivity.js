@@ -4,7 +4,7 @@ var ctx2 = null;
 var chart = null;
 var selectedUsers = [];
 var selectedDeps = [];
-var dateFrom = moment().add(-1, 'days').format('YYYY-MM-DDT00:00:00');
+var dateFrom = moment().add(0, 'days').format('YYYY-MM-DDT00:00:00');
 var dateTo = moment().format('YYYY-MM-DDT23:59:59');
 
 Date.prototype.addDays = function (days) {
